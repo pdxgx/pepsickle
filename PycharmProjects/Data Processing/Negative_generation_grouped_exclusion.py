@@ -32,10 +32,10 @@ import time
 import multiprocessing as mp
 
 max_epitope_length = 20
-cterm_range = 3
+conservative_range = 3
 np_expand = 10
 unprocessed_epitope_length = 24
-align_expand = unprocessed_epitope_length - 3 - cterm_range + np_expand
+align_expand = unprocessed_epitope_length - 3 - conservative_range + np_expand
 
 # X below denotes an incomplete window
 _features = {
@@ -156,8 +156,9 @@ def get_alignement_sequence(x):
 
 df["Alignment"] = df.apply(get_alignement_sequence, axis=1)
 df["Range"] = df.apply(lambda x: list(
-    range(x["Alignment"].find(x["Description"]), x["Alignment"].find(
-        x["Description"]) + len(x["Description"]) - cterm_range)), axis=1)
+    range(x["Alignment"].find(x["Description"]) + conservative_range - 1,
+          x["Alignment"].find(x["Description"]) + len(x["Description"])
+          - conservative_range)), axis=1)
 df["Positive Window"] = df.apply(
     lambda x: x["Alignment"][-(align_expand - np_expand + 2 * np_expand + 1):
                              -(align_expand - np_expand)], axis=1)
