@@ -34,9 +34,6 @@ X_neg = np.load("npy/digestion_negatives_2d.npy")
 total_X = preprocessing.scale(np.append(X_pos, X_neg, axis=0))
 total_y = np.append(np.ones(len(X_pos)), np.zeros(len(X_neg)), axis=0)
 
-non_cleavage_X = np.append(total_X[len(total_X) - len(X_neg):], total_X[:10],
-                           axis=0)
-
 indices = np.arange(total_X.shape[0])
 np.random.shuffle(indices)
 total_X = total_X[indices]
@@ -80,9 +77,4 @@ with open(file_name, "w") as f:
     print("Test Set:")
     f.write("Test Set:\n")
     print_results(test_X, test_y)
-    print()
-
-    print("Non-cleavage Set:")
-    f.write("Non-cleavage Set:\n")
-    print_results(non_cleavage_X, np.append(np.zeros(len(X_neg)), np.ones(10),
-                                            axis=0))
+    

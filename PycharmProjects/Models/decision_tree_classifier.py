@@ -29,18 +29,12 @@ class_weight = {0: 0.45, 1: 1}
 ratio = 0.1
 file_name = "txt/decision_tree.txt"
 
-# X_neg = np.load("npy/digestion_negatives_2d.npy")
-# X_pos = np.load("npy/digestion_positives_2d.npy")
-
 X_pos = np.load("npy/converged_filtered_positives_2d.npy")
 X_neg = np.append(np.load("npy/converged_filtered_negatives_2d.npy"),
                   np.load("npy/digestion_negatives_2d.npy"), axis=0)
 
 total_X = preprocessing.scale(np.append(X_pos, X_neg, axis=0))
 total_y = np.append(np.ones(len(X_pos)), np.zeros(len(X_neg)), axis=0)
-
-non_cleavage_X = np.append(total_X[len(total_X) - len(X_neg):], total_X[:10],
-                           axis=0)
 
 indices = np.arange(total_X.shape[0])
 np.random.shuffle(indices)
@@ -110,11 +104,5 @@ with open(file_name, "w") as f:
     print("Test Set:")
     f.write("Test Set:\n")
     print_results(test_X, test_y)
-    print()
-
-    print("Non-cleavage Set:")
-    f.write("Non-cleavage Set:\n")
-    print_results(non_cleavage_X, np.append(np.zeros(len(X_neg)), np.ones(10),
-                                            axis=0))
 
 print("--- %s minutes ---" % ((time.time() - start_time) / 60))
