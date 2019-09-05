@@ -80,15 +80,15 @@ Digestion table
 
 Epitope table
 
-| File name	| Link | Doi | Programs used In	| Description |
+| File name	| Source \(Data\) | Source \(DOI\) | Programs used In	| Description |
 | --------- | ---- | --- | ---------------- | ----------- |
-| IEDB.csv	| http://www.iedb.org/downloader.php?file_name=doc/mhc_ligand_full.zip	| 10.1093/nar/gky1006	| IEDB_mhc_ligand_extraction.py	| csv file with info from the IEDB |
-| AntiJen.csv	| http://www.ddg-pharmfac.net/antijen/AntiJen/antijenhomepage.htm	| 10.1186/1745-7580-1-4	| "AntiJen_T_Cell_Epitope_extraction.py, AntiJen_TAP_extraction.py"	| csv file with info from AntiJen Database (both T-cell epitope and TAP) |
-| Breast_cancer.csv	| https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5999401/bin/NIHMS962814-supplement-Supplemental.zip	| 10.1016/j.jprot.2018.01.004	| Breast_Cancer_extraction.py	| csv file with info from the study MHC class I loaded ligands from breast cancer cell lines: A potential HLA-I-typed antigen collection |
-| CTL_HIV.csv	| http://www.cbs.dtu.dk/suppl/immunology/CTL.php	| 10.1002/eji.200425811	| CTL_extraction.py	| "csv file with info from the study An integrative approach to CTL epitope prediction. A combined algorithm integrating MHC-I binding, TAP transport efficiency, and proteasomal cleavage predictions" |
-| CTL_SYF.csv	| http://www.cbs.dtu.dk/suppl/immunology/CTL.php	| 10.1002/eji.200425811	| CTL_extraction.py	| "csv file with info from the study An integrative approach to CTL epitope prediction. A combined algorithm integrating MHC-I binding, TAP transport efficiency, and proteasomal cleavage predictions" |
-| Pcleavage.csv	| https://academic.oup.com/view-large/91491181	| 10.1093/intimm/dxg084	| Pcleavage_extraction.py	| csv file with info from the study Predicting proteasomal cleavage sites: a comparison of available methods (although it is called Pcleavage as the project used the data as an independent test set) |
-| SYFPEITHI.csv	| http://www.syfpeithi.de	| 10.1007/978-1-60327-118-9_5	| SYFPEITHI_extraction.py	| csv file with info from SYFPEITHI |
-| VHSE_S1.csv	| https://doi.org/10.1371/journal.pone.0074506.s001	| 10.1371/journal.pone.0074506	| VHSE_S1_extraction.py	| csv file with info from the study The VHSE-Based Prediction of Proteasomal Cleavage Sites (Supplementary 1) |
-| VHSE_S3.csv	| https://doi.org/10.1371/journal.pone.0074506.s003	| 10.1371/journal.pone.0074506	| VHSE_S3_extraction.py	csv file with info from the study The VHSE-Based Prediction of Proteasomal Cleavage Sites (Supplementary 3) |
-| VHSE_S5.csv	| https://doi.org/10.1371/journal.pone.0074506.s005	| 10.1371/journal.pone.0074506	| VHSE_S5_extraction.py	| csv file with info from the study The VHSE-Based Prediction of Proteasomal Cleavage Sites (Supplementary 5) |
+| IEDB.csv	| [IEDB](http://www.iedb.org/downloader.php?file_name=doc/mhc_ligand_full.zip)	| 10.1093/nar/gky1006	| IEDB_mhc_ligand_extraction.py	| IEDB |
+| AntiJen.csv	| [AntiJen](http://www.ddg-pharmfac.net/antijen/AntiJen/antijenhomepage.htm)	| 10.1186/1745-7580-1-4	| "AntiJen_T_Cell_Epitope_extraction.py, AntiJen_TAP_extraction.py"	| AntiJen Database (both T-cell epitope and TAP) |
+| Breast_cancer.csv	| [Rozanov et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5999401/bin/NIHMS962814-supplement-Supplemental.zip)	| 10.1016/j.jprot.2018.01.004	| Breast_Cancer_extraction.py	| MHC class I loaded ligands from breast cancer cell lines: A potential HLA-I-typed antigen collection |
+| CTL_HIV.csv	| [Larsen et al.](http://www.cbs.dtu.dk/suppl/immunology/CTL.php)	| 10.1002/eji.200425811	| CTL_extraction.py	| "An integrative approach to CTL epitope prediction. A combined algorithm integrating MHC-I binding, TAP transport efficiency, and proteasomal cleavage predictions" |
+| CTL_SYF.csv	| [Larsen et al.](http://www.cbs.dtu.dk/suppl/immunology/CTL.php)	| 10.1002/eji.200425811	| CTL_extraction.py	| "An integrative approach to CTL epitope prediction. A combined algorithm integrating MHC-I binding, TAP transport efficiency, and proteasomal cleavage predictions" |
+| Pcleavage.csv	| [Saxova et al.](https://academic.oup.com/view-large/91491181)	| 10.1093/intimm/dxg084	| Pcleavage_extraction.py	| Predicting proteasomal cleavage sites: a comparison of available methods (although it is called Pcleavage as the project used the data as an independent test set) |
+| SYFPEITHI.csv	| [SYFPEITHI](http://www.syfpeithi.de)	| 10.1007/978-1-60327-118-9_5	| SYFPEITHI_extraction.py	| SYFPEITHI |
+| VHSE_S1.csv	| [Xie et al.](https://doi.org/10.1371/journal.pone.0074506.s001)	| 10.1371/journal.pone.0074506	| VHSE_S1_extraction.py	| The VHSE-Based Prediction of Proteasomal Cleavage Sites (Supplementary 1) |
+| VHSE_S3.csv	| [Xie et al.](https://doi.org/10.1371/journal.pone.0074506.s003)	| 10.1371/journal.pone.0074506	| VHSE_S3_extraction.py	| The VHSE-Based Prediction of Proteasomal Cleavage Sites (Supplementary 3) |
+| VHSE_S5.csv	| [Xie et al.](https://doi.org/10.1371/journal.pone.0074506.s005)	| 10.1371/journal.pone.0074506	| VHSE_S5_extraction.py	| The VHSE-Based Prediction of Proteasomal Cleavage Sites (Supplementary 5) |
