@@ -8,7 +8,6 @@ This script contains an amino acid feature matrix as well as functions for
 encoding and formatting amino acid feature arrays for downstream analysis
 """
 
-import pandas as pd
 import numpy as np
 
 # aa matrix, cols 1:20 are sparse encodings of aa identity, 21:25 are...
@@ -37,3 +36,29 @@ _features = {
     'Y': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 5.66,  137,   1.677],
     'X': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     -1,    -1000]
 }
+
+
+# define function that returns np array of feature vectors
+def featurize_sequence(seq):
+    """
+    takes an input aa sequence of any length and returns a 2D numpy array
+    of feature values with rows as positions and columns as feature values
+    :param seq: a string of amino acid symbols of any length
+    :return feature_matrix:
+    """
+    feature_matrix = np.array([_features[aa] for aa in seq], dtype=np.int16)
+    return feature_matrix
+
+
+def generate_feature_array(seq_list):
+    """
+    generates a 3D array of of 2D feature matrices for a list of sequences
+    :param seq_list: list of sequences to featurize
+    :return feature_array: 3D numpy array of 2D feature matrices for each seq
+    """
+    feature_array = np.array([featurize_sequence(s) for s in seq_list])
+    return feature_array
+
+
+# define function that gets C-term position
+# define function that returns window given upstream and downstream int values
