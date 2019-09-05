@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-sequence_featurization.py
+sequence_featurization_tools.py
 
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
@@ -11,9 +11,12 @@ encoding and formatting amino acid feature arrays for downstream analysis
 import numpy as np
 from scipy.sparse import csr_matrix
 
-# aa matrix, cols 1:20 are sparse encodings of aa identity, 21:25 are...
-# UPDATE with encoding explanation from Ellysia
-# UPDATE with ambiguous AA's. Fix X to NaN's instead of extreme encodings
+# aa matrix, cols 1:20 are sparse encodings of aa identity, 21:25 are:
+# Aromatic (0/1)
+# #Hydroxyl (0/1)
+# Polarity (PI)
+# Molecular Volume (1024 Vtrib)
+# Hydrophobicity (cos θ)
 _features = {
     'A': [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6,     29.5, -0.495],
     'C': [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5.07,  51.6,  0.081],
