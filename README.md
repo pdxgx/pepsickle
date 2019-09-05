@@ -3,10 +3,10 @@ A backup of all the programs used in the proteasome project
 
 Digestion table
 
-| Filename	| Doi	| Description |
-| --------- | --- | ----------- |
-| cbeta-casein.txt	| 10.1074/jbc.M000740200	| txt file with digestion info from The Human 26 S and 20 S Proteasomes Generate Overlapping but Different Sets of Peptide Fragments from a Model Protein Substrate |
-| ibeta-casein.txt	| 10.1074/jbc.M000740200	| txt file with digestion info from The Human 26 S and 20 S Proteasomes Generate Overlapping but Different Sets of Peptide Fragments from a Model Protein Substrate |
+| Filename	| Doi	| <td colspan=3>Description |
+| --------- | --- | <td colspan=3>----------- |
+| cbeta-casein.txt	| 10.1074/jbc.M000740200	| <td colspan=3>txt file with digestion info from The Human 26 S and 20 S Proteasomes Generate Overlapping but Different Sets of Peptide Fragments from a Model Protein Substrate |
+| ibeta-casein.txt	| 10.1074/jbc.M000740200	| <td colspan=3>txt file with digestion info from The Human 26 S and 20 S Proteasomes Generate Overlapping but Different Sets of Peptide Fragments from a Model Protein Substrate |
 | HIV-1Nef-1.txt	| 10.1084/jem.191.2.239	| txt file with digestion info from Cytotoxic T lymphocyte epitopes of HIV-1 Nef: generation of multiple definitive major histocompatibility complex class I ligands by proteasomes |
 | HBVcAg.txt	| 10.1006/jmbi.1998.2530	| txt file with digestion info from A theoretical approach towards the identification of cleavage-determining amino acid motifs of the 20 S proteasome |
 | InsulinBchain.txt	| 10.1006/jmbi.1998.2530	| txt file with digestion info from A theoretical approach towards the identification of cleavage-determining amino acid motifs of the 20 S proteasome |
