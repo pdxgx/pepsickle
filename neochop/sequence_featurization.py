@@ -9,6 +9,7 @@ encoding and formatting amino acid feature arrays for downstream analysis
 """
 
 import numpy as np
+from scipy.sparse import csr_matrix
 
 # aa matrix, cols 1:20 are sparse encodings of aa identity, 21:25 are...
 # UPDATE with encoding explanation from Ellysia
@@ -46,19 +47,33 @@ def featurize_sequence(seq):
     :param seq: a string of amino acid symbols of any length
     :return feature_matrix:
     """
-    feature_matrix = np.array([_features[aa] for aa in seq], dtype=np.int16)
+    feature_matrix = np.array([_features[aa] for aa in seq], dtype=float)
     return feature_matrix
 
 
 def generate_feature_array(seq_list):
     """
     generates a 3D array of of 2D feature matrices for a list of sequences
-    :param seq_list: list of sequences to featurize
+    :param seq_list: list of sequences to featurize (of the same length)
     :return feature_array: 3D numpy array of 2D feature matrices for each seq
     """
     feature_array = np.array([featurize_sequence(s) for s in seq_list])
     return feature_array
 
 
+def generate_sparse_feature_matrix(seq_list):
+    """
+    generates 2D array of (sequence, features) in condensed sparse row format
+    from a given sequence list
+    :param seq_list: list of amino acid strings of the same length to featurize
+    :return feature_matrix: 2D array of features for each sequence given
+    """
+    feature_matrix = csr_matrix(
+        [featurize_sequence(s).flatten() for s in seq_list]
+    )
+    return feature_matrix
+
+
 # define function that gets C-term position
+
 # define function that returns window given upstream and downstream int values
