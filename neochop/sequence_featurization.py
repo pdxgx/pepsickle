@@ -74,6 +74,6 @@ def generate_sparse_feature_matrix(seq_list):
     return feature_matrix
 
 
-# define function that gets C-term position
+# define generic function that gets C-term position (maybe just copy?)
 
 # define function that returns window given upstream and downstream int values
