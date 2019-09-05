@@ -3,33 +3,33 @@ A backup of all the programs used in the proteasome project
 
 Digestion table
 
-| Filename	| Doi	| \# Peptide Fragments | Proteasome | Organism |
+| Filename	| Source \(DOI\)	| \# Peptide Fragments | Proteasome | Organism |
 | --------- | --- | ----------- | ---------- | -------- |
-| cbeta-casein.txt	| 10.1074/jbc.M000740200	| ? | Constitutive 20S, 26S | Human |
-| ibeta-casein.txt	| 10.1074/jbc.M000740200	| ? | Immuno- 20S, 26S | Human |
-| HIV-1Nef-1.txt	| 10.1084/jem.191.2.239	| ? | ? | Human |
-| HBVcAg.txt	| 10.1006/jmbi.1998.2530	| ? | 20S | ? |
-| InsulinBchain.txt	| 10.1006/jmbi.1998.2530	| ? | 20S | ? |
-| Jak1.txt	| 10.1006/jmbi.1998.2530	| ? | 20S | ? |
-| Ova239-281.txt	| 10.1006/jmbi.1998.2530	| ? | 20S | ? |
-| OvaY51-71.txt	| 10.1006/jmbi.1998.2530	| ? | 20S | ? |
-| OvaY249-269.txt	| 10.1006/jmbi.1998.2530	| ? | 20S | ? |
-| P53wt.txt	| 10.1006/jmbi.1998.2530	| ? | 20S | ? |
-| pp89.txt	| 10.1006/jmbi.1998.2530	| ? | 20S | ? |
-| RU1.txt	| 10.1016/S1074-7613(00)80163-6	| ? | ? | ? |
-| SSX2-1.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
-| SSX2-2.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
-| SSX2-3.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
-| SSX2-4.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
-| SSX2-5.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
-| SSX2-6.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
-| SSX2-7.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
-| SSX2-8.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
-| SSX2-9.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
-| SSX2-10.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
-| SSX2-11.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
-| SSX2-12.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
-| SSX2-13.txt	| 10.4049/jimmunol.168.4.1717	| ? | ? | ? |
+| cbeta-casein.txt	| [10.1074/jbc.M000740200](https://www.doi.org/10.1074/jbc.M000740200)	| ? | Constitutive 20S, 26S | Human |
+| ibeta-casein.txt	| [10.1074/jbc.M000740200](https://www.doi.org/10.1074/jbc.M000740200)	| ? | Immuno- 20S, 26S | Human |
+| HIV-1Nef-1.txt	| [10.1084/jem.191.2.239](https://www.doi.org/10.1084/jem.191.2.239)	| ? | ? | Human |
+| HBVcAg.txt	| [10.1006/jmbi.1998.2530](https://www.doi.org/10.1006/jmbi.1998.2530)	| ? | 20S | ? |
+| InsulinBchain.txt	| [10.1006/jmbi.1998.2530](https://www.doi.org/10.1006/jmbi.1998.2530)	| ? | 20S | ? |
+| Jak1.txt	| [10.1006/jmbi.1998.2530](https://www.doi.org/10.1006/jmbi.1998.2530)	| ? | 20S | ? |
+| Ova239-281.txt	| [10.1006/jmbi.1998.2530](https://www.doi.org/10.1006/jmbi.1998.2530)	| ? | 20S | ? |
+| OvaY51-71.txt	| [10.1006/jmbi.1998.2530](https://www.doi.org/10.1006/jmbi.1998.2530)	| ? | 20S | ? |
+| OvaY249-269.txt	| [10.1006/jmbi.1998.2530](https://www.doi.org/10.1006/jmbi.1998.2530)	| ? | 20S | ? |
+| P53wt.txt	| [10.1006/jmbi.1998.2530](https://www.doi.org/10.1006/jmbi.1998.2530)	| ? | 20S | ? |
+| pp89.txt	| [10.1006/jmbi.1998.2530](https://www.doi.org/10.1006/jmbi.1998.2530)	| ? | 20S | ? |
+| RU1.txt	| [10.1016/S1074-7613(00)80163-6](https://www.doi.org/10.1016/S1074-7613(00)80163-6)	| ? | ? | ? |
+| SSX2-1.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
+| SSX2-2.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
+| SSX2-3.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
+| SSX2-4.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
+| SSX2-5.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
+| SSX2-6.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
+| SSX2-7.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
+| SSX2-8.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
+| SSX2-9.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
+| SSX2-10.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
+| SSX2-11.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
+| SSX2-12.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
+| SSX2-13.txt	| [10.4049/jimmunol.168.4.1717](https://www.doi.org/10.4049/jimmunol.168.4.1717)	| ? | ? | ? |
 | tyrosinase.txt	| 10.1073/pnas.1101892108	| ? | ? | ? |
 | SP110.txt	| 10.1126/science.1130660	| ? | ? | ? |
 | GP100-2.txt	| 10.4049/jimmunol.1302032	| ? | ? | ? |
