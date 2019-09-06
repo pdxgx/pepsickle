@@ -37,3 +37,7 @@ vignettes/*.pdf
 
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
+/data_processing/excluded_data/
+/data_processing/filtered_data/
+/data_processing/generated_training_sets/
+/data_extraction/raw_data/
