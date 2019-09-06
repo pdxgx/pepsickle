@@ -37,6 +37,8 @@ vignettes/*.pdf
 
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
+
+# directories with large data files
 /data_processing/excluded_data/
 /data_processing/filtered_data/
 /data_processing/generated_training_sets/
