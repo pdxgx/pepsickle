@@ -21,13 +21,13 @@ import pandas as pd
 
 columns = ["Parent Protein IRI (Uniprot)", "Starting Position", "Description",
            "Allele Name"]
-file_names = ["HIV1.data.fsa.txt", "HIV2.data.fsa.txt", "SYF1.data.fsa.txt",
-              "SYF2.data.fsa.txt"]
+file_names = ["HIV1.raw_data.fsa.txt", "HIV2.raw_data.fsa.txt", "SYF1.raw_data.fsa.txt",
+              "SYF2.raw_data.fsa.txt"]
 export_names = ["HIV1.csv", "HIV2.csv", "SYF1.csv", "SYF2.csv"]
 
 
 def load_data(file_name):
-    """Extracts the data from the text files into a pandas Dataframe
+    """Extracts the raw_data from the text files into a pandas Dataframe
        Arguments:
            file_name (str): the name and location of the file to be extracted
        Returns:

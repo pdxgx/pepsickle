@@ -6,7 +6,7 @@ Ellysia Li (lie@ohsu.edu)
 Python 3.7
 
 This script allows the user to obtain a 3D and 2D numpy array containing the
-positive data to be inputted into the machine learning model. It only accepts
+positive raw_data to be inputted into the machine learning model. It only accepts
 comma separated value files (.csv) at the moment.
 
 This script requires that `pandas` and `numpy` be installed within the Python
@@ -21,7 +21,7 @@ Inputs:
                               be in the protein sequence (str)
 
 Outputs:
-    The numpy 3D and 2D array containing the positive data sets for the model
+    The numpy 3D and 2D array containing the positive raw_data sets for the model
 """
 
 import pandas as pd

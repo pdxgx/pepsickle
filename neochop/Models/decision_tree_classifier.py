@@ -71,8 +71,8 @@ def print_results(X, y):
                               accuracy and macro/weighted average
 
        Arguments:
-           X (numpy): the input data the trained model predicts
-           y (numpy): the expected output for the input data
+           X (numpy): the input raw_data the trained model predicts
+           y (numpy): the expected output for the input raw_data
        Returns:
            None
     """

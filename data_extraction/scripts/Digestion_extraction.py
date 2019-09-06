@@ -1,40 +1,48 @@
 #!/usr/bin/env Python3
-"""negative_generation.py
+"""Digestion_extraction.py
 
 Ellysia Li (lie@ohsu.edu)
 
 Python 3.7
 
-This script allows the user to obtain a 3D numpy array containing the negative
-data to be inputted into the machine learning model. It only accepts comma
-separated value files (.csv) at the moment.
-Negative data was generated using
-the known regions of protein digested and the digestion products; any amino
-acids which are within the region examined and are not from the C-terminus of
-a cleavage are regarded as negative points
+This script allows the user to obtain a 3D numpy array containing positive
+raw_data derived from digestion products to be inputted into a model. It only
+accepts comma separated value files (.csv) at the moment. Sources of each
+text file can be found from files_dict where each doi is included
 
-This script requires that `pandas` and `numpy` be installed within the Python
-environment you are running this script in.
+This script requires that `pandas`, `numpy`, and 'biopython' be installed
+within the Python environment you are running this script in.
+The script includes user input when multiple different sites for a given
+digestion product are present in the corresponding protein sequence. In the
+case of current files being inputted, the corresponding positions are:
+0, 0, 37, 92, 37, 37, 8
 
 Inputs:
+    The location of the UniProt SwissProt database (saved as a fasta file)
+
     A list with all the locations of the text files containing the information
-    of the positive data set (the epitopes/proteasome products and their
+    of the positive raw_data set (the epitopes/proteasome products and their
     respective parent proteins.
     The text files are formatted in the following way:
-        Epitope Comment to signify the data is from a digestion map
+        Epitope Comment to signify the raw_data is from a digestion map
         Parent Protein Description
         Parent Protein IRI (UniProt)
         A list of the digested products (one per line)
 
-Outputs:
-    A csv file containing the negative data set information (including a column
-    with the window sequences of each point)
-"""
 
+
+Outputs:
+    A csv file containing the positive raw_data set information (some with
+    window sequences instead of digestion products)
+
+    A numpy array containing the feature set for each generated window from
+    the digestion products which can be directly inputed into the model
+"""
 import pandas as pd
 import numpy as np
 from Bio import SeqIO
-from sklearn import preprocessing
+
+expand = 10
 
 # X below denotes an incomplete window
 _features = {
@@ -60,13 +68,11 @@ _features = {
     'Y': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 5.66,  137,   1.677],
     'X': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     -1,    -1000]
 }
-expand = 10
-
 files_dict = {
     "cbeta-casein.txt": "10.1074/jbc.M000740200",
+    "ibeta-casein.txt": "10.1074/jbc.M000740200",
     "HBVcAg.txt": "10.1006/jmbi.1998.2530",
     "HIV-1 Nef-1.txt": "10.1084/jem.191.2.239",
-    "ibeta-casein.txt": "10.1074/jbc.M000740200",
     "Insulin B chain.txt": "10.1006/jmbi.1998.2530",
     "Jak 1.txt": "10.1006/jmbi.1998.2530",
     "Ova 239-281.txt": "10.1006/jmbi.1998.2530",
@@ -144,68 +150,13 @@ sprot_index = SeqIO.index_db("sprot/sprot_index.idx",
                              key_function=lambda x: x.split("|")[1])
 
 
-def get_position(peptide, protein_seq):
-    """Obtains the position of a given digestion product from the protein
-       context
-
-       Gets the position of the product from the entire protein sequence;
-       if multiple different positions are found, asks the user to input the
-       correct position and continues to ask until a correct position is given
-
-       Arguments:
-            x (pd.Series): directory of the dataframe
-
-       Returns:
-            int: the position (from the N-terminus)
-    """
-    if protein_seq.count(peptide) > 1:
-        position = int(input("Multiple positions found for " + peptide
-                             + " in " + protein_seq
-                             + "!\nPlease input the correct position: "))
-        while type(position) != int \
-                or protein_seq[position:position + len(peptide)] != peptide:
-            position = int(input("Multiple positions found for " + peptide
-                                 + " in " + protein_seq
-                                 + "!\nPlease input the correct position: "))
-        return position
-    else:
-        return protein_seq.find(peptide)
-
-
-def get_negatives(peptides, protein_seq):
-    """Obtains a list of positions representing negative sites for a given text
-       file
-       Arguments:
-            peptides (str): list of peptides
-            protein_seq (str): string depicting protein sequence
-       Returns:
-            int: list of negative sites
-    """
-    positive_pos = []
-    potential_negative_pos = []
-    for peptide in peptides:
-        if protein_seq.count(peptide) > 1:
-            start = int(get_position(peptide, protein_seq))
-        else:
-            start = protein_seq.find(peptide)
-        potential_negative_pos += list(range(start + len(peptide) - 1))
-        if start > 0:
-            positive_pos += [start - 1]
-        if len(protein_seq) != start + len(peptide):
-            positive_pos += [start + len(peptide) - 1]
-
-    return list(set(potential_negative_pos) ^
-                (set(potential_negative_pos) & set(positive_pos)))
-
-
 def load_data(file_name):
-    """Obtains a pandas Dataframe for a given text file
+    """Load raw_data from the text file into a pandas Dataframe
        Arguments:
-            file_name (str): name of text file
+            file_name (str): name of file
        Returns:
-            pd.Dataframe: dataframe with information from the text file
+            pd.Dataframe: Dataframe created from text file
     """
-    df = pd.DataFrame()
     with open("files/" + file_name) as f:
         e_comments = f.readline().strip()
         protein = f.readline().strip()
@@ -237,11 +188,12 @@ def load_data(file_name):
                     peptide_buffer += buffer
                     buffer = f.readline().strip()
                 buffer = peptide_buffer
-            peptides.append(buffer)
+            if protein_seq.find(buffer) + len(buffer) != len(protein_seq):
+                peptides.append(buffer)
             buffer = f.readline().strip()
-        negatives = get_negatives(peptides, protein_seq)
 
-        df["Buffer"] = negatives
+        df = pd.DataFrame()
+        df["Description"] = peptides
         df["Parent Protein"] = protein
         df["Parent Protein IRI (Uniprot)"] = protein_id
         df["Protein Sequence"] = protein_seq
@@ -255,19 +207,54 @@ for file in files_dict.keys():
     df = df.append(load_data(file))
 
 
-def get_window(x):
+def get_position(x):
+    """Obtains the position of a given digestion product from the protein
+       context
+
+       Gets the position of the product from the entire protein sequence;
+       if multiple different positions are found, asks the user to input the
+       correct position and continues to ask until a correct position is given
+
+       Arguments:
+            x (pd.Series): directory of the dataframe
+
+       Returns:
+            int: the position (from the N-terminus)
+    """
+    if x["Protein Sequence"].count(x["Description"]) > 1:
+        position = int(input("Multiple positions found for " + x["Description"]
+                             + " in " + x["Protein Sequence"]
+                             + "!\nPlease input the correct position: "))
+        while type(position) != int \
+                or x["Protein Sequence"][position:
+        position + len(x["Description"])] != x["Description"]:
+            position = int(input("Multiple positions found for " + x["Description"]
+                                 + " in " + x["Protein Sequence"]
+                                 + "!\nPlease input the correct position: "))
+        return position
+    else:
+        return x["Protein Sequence"].find(x["Description"])
+
+
+def get_window(x, position=-1):
     """Obtains the window of interest (with the cleavage site at the center)
        from the information given; when necessary, adds "X" to the ends of the
        window if cleavage site is at the beginning/end of protein
        (meaning the window is incomplete)
        Arguments:
             x (pd.Series): directory of the dataframe
+            position (int): position of the start of the description in the
+                            protein sequence
        Returns:
             str: the window sequence
     """
     window = ""
-    position = int(x["Buffer"])
+    position = int(position)
     incomplete = False
+
+    if position == -1:
+        position = get_position(x)
+
     if position < expand:
         incomplete = True
         for i in range(expand - position):
@@ -288,25 +275,46 @@ def get_window(x):
     return window
 
 
-df["Window"] = df.apply(get_window, axis=1)
+def get_upstream_positives(x):
+    """Obtains the upstream positive site for each digestion product if the
+       product is not at the beginning of the protein sequence
+       Arguments:
+            x (int): the directory of the dataframe
+       Returns:
+            int/float: the position of the upstream positive site
+                       (if the product is at the very beginning, returns 
+                       np.nan)
+    """
+    product_position = get_position(x)
+    if product_position > 0:
+        return product_position - 1
+    else:
+        return np.nan
+
+
+df["Window"] = df.apply(lambda x: get_window(x), axis=1)
+
+buffer = df.copy()
+buffer["Positions"] = buffer.apply(get_upstream_positives, axis=1)
+buffer.dropna(subset=["Positions"], inplace=True)
+buffer["Window"] = buffer.apply(lambda x: get_window(x, x["Positions"]), axis=1)
+buffer["Description"] = np.nan
+
+df = df.append(buffer, sort=False)
 df.drop_duplicates(subset=["Window"], inplace=True)
-df = df.drop(columns=["Buffer"])
+df.drop(columns=["Positions"], inplace=True)
 
 print(df.shape)
 
-df.to_csv("csv/digestion_negatives.csv", index=False)
+df.to_csv("csv/digestion.csv", index=False)
 
 for i in range(expand * 2 + 1):
     df[i] = df["Window"].apply(lambda x: _features[x[i]])
 
-np_negatives = np.array(df.apply(lambda x: pd.DataFrame(
+np_positives = np.array(df.apply(lambda x: pd.DataFrame(
             {y: x[y] for y in range(expand * 2 + 1)}).to_numpy(),
                           axis=1).to_list())
 
-np.save("npy/digestion_negatives.npy", np_negatives)
-
-np_negatives = np.load("npy/digestion_negatives.npy")
-
-n_samples, nx, ny = np_negatives.shape
-np.save("npy/digestion_negatives_2d.npy", np_negatives.reshape(
+n_samples, nx, ny = np_positives.shape
+np.save("npy/digestion_positives_2d.npy", np_positives.reshape(
     (n_samples, nx*ny)))

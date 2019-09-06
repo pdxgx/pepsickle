@@ -24,7 +24,7 @@ Inputs:
         [Starting Position]: the position of the epitope in its protein
 
 Outputs:
-    The numpy 3D array containing the negative data set for the model saved as
+    The numpy 3D array containing the negative raw_data set for the model saved as
     a np file
 """
 import pandas as pd
