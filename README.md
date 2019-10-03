@@ -82,7 +82,7 @@ Epitope table
 
 | File name	| Source \(Data\) | Source \(DOI\) | Programs used In	| \# Peptides |
 | --------- | ---- | --- | ---------------- | ----------- |
-| IEDB.csv	| [IEDB](http://www.iedb.org/downloader.php?file_name=doc/mhc_ligand_full.zip)	| 10.1093/nar/gky1006	| IEDB_mhc_ligand_extraction.py	| ? |
+| iedb_public.sql	| [IEDB](http://www.iedb.org/downloader.php?file_name=doc/iedb_public.sql.gz)	| (update)	| iedb_mysql_query.py	| ? |
 | AntiJen.csv	| [AntiJen](http://www.ddg-pharmfac.net/antijen/AntiJen/antijenhomepage.htm)	| 10.1186/1745-7580-1-4	| "AntiJen_T_Cell_Epitope_extraction.py, AntiJen_TAP_extraction.py"	| ? |
 | Breast_cancer.csv	| [Rozanov et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5999401/bin/NIHMS962814-supplement-Supplemental.zip)	| 10.1016/j.jprot.2018.01.004	| Breast_Cancer_extraction.py	| ? |
 | CTL_HIV.csv	| [Larsen et al.](http://www.cbs.dtu.dk/suppl/immunology/CTL.php)	| 10.1002/eji.200425811	| CTL_extraction.py	| ? |
