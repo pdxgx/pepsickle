@@ -11,7 +11,7 @@ mydb = mysql.connector.connect(
   host="localhost",
   user="root",
   passwd="password",
-  database="iedb",
+  database="iedb_public",
   auth_plugin='mysql_native_password'
 )
 
@@ -19,12 +19,12 @@ mydb = mysql.connector.connect(
 mycursor = mydb.cursor()
 
 # retrieve column names
-mycursor.execute("DESCRIBE foo")
+mycursor.execute("DESCRIBE full_epitope_output")
 foo_desc = mycursor.fetchall()
 col_names = [desc[0] for desc in foo_desc]
 
 # return full table of sequence info
-mycursor.execute("SELECT * FROM foo")
+mycursor.execute("SELECT * FROM full_epitope_output")
 myresult = mycursor.fetchall()
 
 # generate pandas df from results list
