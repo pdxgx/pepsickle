@@ -17,6 +17,10 @@ from scipy.sparse import csr_matrix
 # Polarity (PI)
 # Molecular Volume (1024 Vtrib)
 # Hydrophobicity (cos θ)
+
+## to do:
+# add in ambiguous aa's
+# add in an "unknown" separate from having no amino acid?
 _features = {
     'A': [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6,     29.5, -0.495],
     'C': [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5.07,  51.6,  0.081],
