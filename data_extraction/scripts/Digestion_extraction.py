@@ -6,7 +6,7 @@ Ellysia Li (lie@ohsu.edu)
 Python 3.7
 
 This script allows the user to obtain a 3D numpy array containing positive
-raw_data derived from digestion products to be inputted into a model. It only
+data derived from digestion products to be inputted into a model. It only
 accepts comma separated value files (.csv) at the moment. Sources of each
 text file can be found from files_dict where each doi is included
 
@@ -21,10 +21,10 @@ Inputs:
     The location of the UniProt SwissProt database (saved as a fasta file)
 
     A list with all the locations of the text files containing the information
-    of the positive raw_data set (the epitopes/proteasome products and their
+    of the positive data set (the epitopes/proteasome products and their
     respective parent proteins.
     The text files are formatted in the following way:
-        Epitope Comment to signify the raw_data is from a digestion map
+        Epitope Comment to signify the data is from a digestion map
         Parent Protein Description
         Parent Protein IRI (UniProt)
         A list of the digested products (one per line)
@@ -32,7 +32,7 @@ Inputs:
 
 
 Outputs:
-    A csv file containing the positive raw_data set information (some with
+    A csv file containing the positive data set information (some with
     window sequences instead of digestion products)
 
     A numpy array containing the feature set for each generated window from
@@ -139,7 +139,10 @@ files_dict = {
     "HLA-B27 165-194.txt": "10.1074/jbc.M308816200",
     "Histone 2A 77-105.txt": "10.1074/jbc.M308816200",
     "Fatty Acid Synthase 1689-1718.txt": "10.1074/jbc.M308816200",
-    "Beta-2m 1-24.txt": "10.1074/jbc.M308816200"
+    "Beta-2m 1-24.txt": "10.1074/jbc.M308816200",
+    "OvaRFP.txt": "10.1016/j.molcel.2012.08.029",
+    "p21RFP-26S.txt": "10.1016/j.molcel.2012.08.029",
+    "p21RFP-20S.txt": "10.1016/j.molcel.2012.08.029"
 }
 
 sprot_files = ["cbeta-casein.txt", "ibeta-casein.txt", "ENO1.txt",
@@ -151,7 +154,7 @@ sprot_index = SeqIO.index_db("sprot/sprot_index.idx",
 
 
 def load_data(file_name):
-    """Load raw_data from the text file into a pandas Dataframe
+    """Load data from the text file into a pandas Dataframe
        Arguments:
             file_name (str): name of file
        Returns:
