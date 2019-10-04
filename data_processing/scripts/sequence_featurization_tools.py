@@ -17,6 +17,7 @@ from scipy.sparse import csr_matrix
 # Polarity (PI)
 # Molecular Volume (1024 Vtrib)
 # Hydrophobicity (cos θ)
+
 # B, J, & Z represent ambiguous aa's that could be one of two similar residues
 _features = {
     'A': [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   6.0,   29.5, -0.495],
