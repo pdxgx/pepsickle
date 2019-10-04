@@ -10,7 +10,7 @@ CREATE INDEX t_ind ON mhc_elution(as_type_id);
 CREATE INDEX ta_ind ON mhc_elution(mhc_allele_restriction_id);
 CREATE INDEX te_ind ON mhc_elution(curated_epitope_id);
 CREATE INDEX to_ind ON mhc_elution(h_organism_id);
-CREATE INDEX a_ind ON assay_type(as_type_id);
+CREATE INDEX a_ind ON assay_type(assay_type_id);
 CREATE INDEX m_ind ON mhc_allele_restriction(mhc_allele_restriction_id);
 CREATE INDEX ce_ind ON curated_epitope(curated_epitope_id);
 CREATE INDEX o_ind ON object(object_id);
