@@ -82,9 +82,6 @@ def generate_sparse_feature_matrix(seq_list):
     return feature_matrix
 
 
-# define generic function that gets C-term position (maybe just copy?)
-
-# define function that returns window given upstream and downstream int values
 def create_sequence_regex(epitope_sequence):
     """
     creates a regular expression from a possibly ambiguous AA sequence
@@ -104,3 +101,23 @@ def create_sequence_regex(epitope_sequence):
         epitope_sequence = epitope_sequence.replace("Z", "[Z|E|Q]")
         epitope_sequence = epitope_sequence.replace("X", "[A-Z]")
         return epitope_sequence
+
+
+# define generic function that gets C-term position (maybe just copy?)
+
+# define function that returns window given upstream and downstream int values
+def get_peptide_window(pd_entry, upstream=10, downstream=10):
+    """
+    returns the window of AA's around the C-term of an epitope, given defined
+    upstream and downstream window sizes and a row from a pandas df with
+    ending position and full origin sequence of the epitope.
+    :param pd_entry: pandas entry with (at min.) ending_position and sequence
+    :param upstream: number of upstream AA's to return
+    :param downstream: number of downstream AA's to return
+    :return: full window of AA's including the C_terminal splice site
+    """
+    c_term = int(pd_entry['ending_position'])
+    upstream_seq = pd_entry['sequence'][(c_term - upstream):upstream]
+    downstream_seq = pd_entry['sequence'][
+                     (c_term + 1):(c_term + downstream + 1)]
+    return upstream_seq + pd_entry['sequence'][c_term] + downstream_seq
