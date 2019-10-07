@@ -100,3 +100,4 @@ def create_sequence_regex(epitope_sequence):
         epitope_sequence = epitope_sequence.replace("Z", "(Z|E|Q)")
         epitope_sequence = epitope_sequence.replace("X", "[A-Z]")
         return epitope_sequence
+
