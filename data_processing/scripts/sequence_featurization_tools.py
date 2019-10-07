@@ -95,9 +95,9 @@ def create_sequence_regex(epitope_sequence):
         return epitope_sequence
     # if any abiguous characters are present, preplace them with OR statements
     else:
-        epitope_sequence = epitope_sequence.replace("B", "(B|D|N)")
-        epitope_sequence = epitope_sequence.replace("J", "(J|I|L)")
-        epitope_sequence = epitope_sequence.replace("Z", "(Z|E|Q)")
+        epitope_sequence = epitope_sequence.replace("B", "[B|D|N]")
+        epitope_sequence = epitope_sequence.replace("J", "[J|I|L]")
+        epitope_sequence = epitope_sequence.replace("Z", "[Z|E|Q]")
         epitope_sequence = epitope_sequence.replace("X", "[A-Z]")
         return epitope_sequence
 
