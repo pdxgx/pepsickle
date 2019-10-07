@@ -10,6 +10,7 @@ encoding and formatting amino acid feature arrays for downstream analysis
 
 import numpy as np
 from scipy.sparse import csr_matrix
+import re
 
 # aa matrix, cols 1:20 are sparse encodings of aa identity, 21:25 are:
 # Aromatic (0/1)
@@ -86,18 +87,21 @@ def generate_sparse_feature_matrix(seq_list):
 
 # define function that returns window given upstream and downstream int values
 def create_sequence_regex(epitope_sequence):
-
+    """
+    creates a regular expression from a possibly ambiguous AA sequence
+    :param epitope_sequence: epitope sequence of any length (string)
+    :return: epitope sequence in re form (string)
+    """
     # ensure that sequence is a string
     epitope_sequence = str(epitope_sequence)
     # if no ambiguous characters are present, return the original seq.
     if ("B" not in epitope_sequence and "J" not in epitope_sequence and "Z"
             not in epitope_sequence and "X" not in epitope_sequence):
         return epitope_sequence
-    # if any abiguous characters are present, preplace them with OR statements
+    # if any ambiguous characters are present, replace them with OR statements
     else:
         epitope_sequence = epitope_sequence.replace("B", "[B|D|N]")
         epitope_sequence = epitope_sequence.replace("J", "[J|I|L]")
         epitope_sequence = epitope_sequence.replace("Z", "[Z|E|Q]")
         epitope_sequence = epitope_sequence.replace("X", "[A-Z]")
         return epitope_sequence
-
