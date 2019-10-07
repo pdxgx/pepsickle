@@ -10,7 +10,6 @@ encoding and formatting amino acid feature arrays for downstream analysis
 
 import numpy as np
 from scipy.sparse import csr_matrix
-import re
 
 # aa matrix, cols 1:20 are sparse encodings of aa identity, 21:25 are:
 # Aromatic (0/1)
