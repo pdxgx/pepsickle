@@ -26,3 +26,5 @@ for i in range(len(epitope_df)):
     window = sf.get_peptide_window(row)
     pos_cleavage_windows.append(window)
 
+positive_feature_matrix = \
+    sf.generate_sparse_feature_matrix(pos_cleavage_windows)
