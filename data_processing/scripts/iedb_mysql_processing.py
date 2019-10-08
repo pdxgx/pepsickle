@@ -33,6 +33,8 @@ results_pd = results_pd.drop_duplicates()
 results_pd = results_pd.dropna(subset=['linear_peptide_seq', 'sequence'])
 
 
+# !! Note: this is cursory filtering... will be replaced with more thorough
+# version in extra_code dir
 mismatch = 0
 no_pos = 0
 seq_not_in_string = 0
