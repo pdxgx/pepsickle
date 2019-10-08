@@ -103,9 +103,8 @@ def create_sequence_regex(epitope_sequence):
         return epitope_sequence
 
 
-# define generic function that gets C-term position (maybe just copy?)
-
-# NOTE!!! edit to handle cleavage events too close to the start or end of the peptide
+# NOTE!!! may need to edit to use value other than X (x only for unknown but
+# present amino acids
 def get_peptide_window(pd_entry, upstream=10, downstream=10):
     """
     returns the window of AA's around the C-term of an epitope, given defined
