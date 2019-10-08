@@ -28,3 +28,5 @@ for i in range(len(epitope_df)):
 
 positive_feature_matrix = \
     sf.generate_sparse_feature_matrix(pos_cleavage_windows)
+
+np.save("converged_positive_feature_matrix_csr.npy", positive_feature_matrix)
