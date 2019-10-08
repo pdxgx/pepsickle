@@ -20,8 +20,8 @@ mycursor = mydb.cursor()
 
 # retrieve column names
 mycursor.execute("DESCRIBE full_epitope_output")
-foo_desc = mycursor.fetchall()
-col_names = [desc[0] for desc in foo_desc]
+feo_desc = mycursor.fetchall()
+col_names = [desc[0] for desc in feo_desc]
 
 # return full table of sequence info
 mycursor.execute("SELECT * FROM full_epitope_output")

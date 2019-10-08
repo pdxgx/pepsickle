@@ -5,7 +5,8 @@ sequence_featurization_tools.py
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
 This script contains an amino acid feature matrix as well as functions for
-encoding and formatting amino acid feature arrays for downstream analysis
+extracting, processing, encoding and formatting amino acid sequences into
+feature arrays for downstream analysis.
 """
 
 import numpy as np
@@ -105,7 +106,7 @@ def create_sequence_regex(epitope_sequence):
 
 # NOTE!!! may need to edit to use value other than X (x only for unknown but
 # present amino acids
-def get_peptide_window(pd_entry, upstream=10, downstream=10):
+def get_peptide_window(pd_entry, upstream=10, downstream=10, c_terminal=True):
     """
     returns the window of AA's around the C-term of an epitope, given defined
     upstream and downstream window sizes and a row from a pandas df with
@@ -113,25 +114,33 @@ def get_peptide_window(pd_entry, upstream=10, downstream=10):
     :param pd_entry: pandas entry with (at min.) ending_position and sequence
     :param upstream: number of upstream AA's to return
     :param downstream: number of downstream AA's to return
-    :return: full window of AA's including the C_terminal splice site
+    :param c_terminal: whether c or n terminal cleavage site is to be used for
+    window midpoint
+    :return: full window of AA's including the cleavage site
     """
-    c_term_index = int(pd_entry['ending_position'])
+    if c_terminal:
+        cleave_index = int(pd_entry['ending_position']) - 1
+    if not c_terminal:
+        cleave_index = int(pd_entry['starting_position']) - 1
 
-    if (c_term_index - upstream) >= 0:
+    if (cleave_index - upstream) >= 0:
         upstream_seq = pd_entry['sequence'][
-                       (c_term_index - upstream):c_term_index]
-    if c_term_index - upstream < 0:
-        tmp_seq = pd_entry['sequence'][0:c_term_index]
-        upstream_seq = abs(c_term_index - upstream) * "X" + tmp_seq
+                       (cleave_index - upstream):cleave_index]
+    if cleave_index - upstream < 0:
+        tmp_seq = pd_entry['sequence'][0:cleave_index]
+        upstream_seq = abs(cleave_index - upstream) * "X" + tmp_seq
 
     # check here to make sure this is handled correctly
-    if (c_term_index + 1 + downstream) <= len(pd_entry['sequence']):
+    if (cleave_index + 1 + downstream) < len(pd_entry['sequence']):
         downstream_seq = pd_entry['sequence'][
-                         (c_term_index + 1):(c_term_index + downstream + 1)]
-    if (c_term_index + 1 + downstream) > len(pd_entry['sequence']):
-        tmp_seq = pd_entry['sequence'][
-                  (c_term_index + 1):len(pd_entry['sequence'])]
-        downstream_seq = tmp_seq + (downstream + 1 +
-                                    c_term_index -
-                                    len(pd_entry['sequence'])) * "X"
-    return upstream_seq + pd_entry['sequence'][c_term_index] + downstream_seq
+                         (cleave_index + 1):(cleave_index + downstream + 1)]
+    if (cleave_index + 1 + downstream) >= len(pd_entry['sequence']):
+        if cleave_index == (len(pd_entry['sequence']) - 1):
+            downstream_seq = downstream * "X"
+        else:
+            tmp_seq = pd_entry['sequence'][
+                      (cleave_index + 1):len(pd_entry['sequence'])]
+            downstream_seq = tmp_seq + (downstream + 1 + cleave_index -
+                                        len(pd_entry['sequence'])) * "X"
+
+    return upstream_seq + pd_entry['sequence'][cleave_index] + downstream_seq
