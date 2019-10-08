@@ -1,6 +1,6 @@
 #! usr/bin/env python3
 """
-positive_window_generation_v2.py
+positive_event_featurization.py
 
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
