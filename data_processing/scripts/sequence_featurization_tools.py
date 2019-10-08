@@ -105,7 +105,7 @@ def create_sequence_regex(epitope_sequence):
 
 # define generic function that gets C-term position (maybe just copy?)
 
-# define function that returns window given upstream and downstream int values
+# NOTE!!! edit to handle cleavage events too close to the start or end of the peptide
 def get_peptide_window(pd_entry, upstream=10, downstream=10):
     """
     returns the window of AA's around the C-term of an epitope, given defined
@@ -116,8 +116,23 @@ def get_peptide_window(pd_entry, upstream=10, downstream=10):
     :param downstream: number of downstream AA's to return
     :return: full window of AA's including the C_terminal splice site
     """
-    c_term = int(pd_entry['ending_position'])
-    upstream_seq = pd_entry['sequence'][(c_term - upstream):upstream]
-    downstream_seq = pd_entry['sequence'][
-                     (c_term + 1):(c_term + downstream + 1)]
-    return upstream_seq + pd_entry['sequence'][c_term] + downstream_seq
+    c_term_index = int(pd_entry['ending_position'])
+
+    if (c_term_index - upstream) >= 0:
+        upstream_seq = pd_entry['sequence'][
+                       (c_term_index - upstream):c_term_index]
+    if c_term_index - upstream < 0:
+        tmp_seq = pd_entry['sequence'][0:c_term_index]
+        upstream_seq = abs(c_term_index - upstream) * "X" + tmp_seq
+
+    # check here to make sure this is handled correctly
+    if (c_term_index + 1 + downstream) <= len(pd_entry['sequence']):
+        downstream_seq = pd_entry['sequence'][
+                         (c_term_index + 1):(c_term_index + downstream + 1)]
+    if (c_term_index + 1 + downstream) > len(pd_entry['sequence']):
+        tmp_seq = pd_entry['sequence'][
+                  (c_term_index + 1):len(pd_entry['sequence'])]
+        downstream_seq = tmp_seq + (downstream + 1 +
+                                    c_term_index -
+                                    len(pd_entry['sequence'])) * "X"
+    return upstream_seq + pd_entry['sequence'][c_term_index] + downstream_seq
