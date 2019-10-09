@@ -52,3 +52,7 @@ for i in range(1, len(data_files)):
     del tmp_df
 
 
+# next, retrieve parent protein if missing ... may need to be function
+# depending on which IRI is present
+
+# use code to check/repair sequence indices
