@@ -7,6 +7,13 @@ For issues contact Ben Weeder (weeder@ohsu.edu)
 This script takes a pandas data frame with epitopes, origin peptide seq's,
 start positions, and stop positions and returns the feature window around
 C-terminal cleavage sites of interest.
+
+Input:
+- .csv file of filtered cleavage events from XXXX (script)
+
+Output:
+- condensed sparse row matrix of events * features for a defined window around
+each cleavage event.
 """
 import sys
 import pandas as pd
