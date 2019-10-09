@@ -29,6 +29,7 @@ import urllib.request
 import pandas as pd
 import numpy as np
 from itertools import product
+import extraction_functions as ef
 
 # Generate combinations and their respective lists
 amino_acids = ["A", "R", "N", "D", "C", "E", "Q", "G", "H", "O", "I", "L", "K",
@@ -56,65 +57,16 @@ pd.DataFrame({"Description": running_epitopes}).to_csv("TAP.csv", index=False)
 """ Data Extraction """
 df = pd.read_csv("TAP.csv")[["Description"]]
 
-
-def f(x):
-    """Obtains the script of the page related to the given description
-       Arguments:
-           x (str): a certain epitope description in the dataframe
-       Returns:
-           str: the full script of the page
-    """
-    with urllib.request.urlopen("http://www.ddg-pharmfac.net/antijen/scripts/"
-                                + "aj_scripts/aj_tapcalc2.pl?epitope=" + x
-                                + "&CAT=TAP+Ligand&detailinfo=no&detailmin="
-                                + "&detailmax=") as h:
-        return str(h.read())
-
-
-df["Buffer"] = df["Description"].apply(f)
+df["Buffer"] = df["Description"].apply(ef.get_script_page, call="TAP")
 df.to_csv("TAP_.csv", index=False)
 
 df = pd.read_csv("TAP_.csv")
 
+df["Parent_Protein_IRI"] = df["Buffer"].apply(ef.get_sprot_IRI)
+df['IRI_type'] = "Uniprot"
+df["MHC"] = df.apply(ef.get_mhc_types, axis=1)
 
-def get_sprot(buffer):
-    """Obtains the UniProt IRI of the protein an epitope is derived from
-       Arguments:
-           x (int): the directory of the dataframe
-       Returns:
-           str: the UniProt IRI
-    """
-    if len(buffer.split("sprot-entry?")) > 1:
-        return buffer.split("sprot-entry?")[1].split("\"")[0].split("http")[0]
-    else:
-        return np.nan
-
-
-def get_mhc(x):
-    """Obtains the organism name of the MHC species the epitope came from\
-
-         Used to filter for human MHC species later
-
-         Arguments:
-             x (int): the directory of the dataframe
-         Returns:
-             str: the MHC species of the epitope
-      """
-    try:
-        # Manually check any epitopes which may have a HUMAN MHC (just not in the first row)
-        if "HUMAN" in x["Buffer"] \
-                and x["Buffer"].split(x["Description"] + "</td>\\n\\t<td>")[1].split("<")[0] != "HUMAN" \
-                and len(x["Buffer"].split(x["Description"] + "</td>\\n\\t<td>")) > 2:
-            print(x["Description"])
-        return x["Buffer"].split(x["Description"] + "</td>\\n\\t<td>")[1].split("<")[0]
-    except IndexError:
-        return np.nan
-
-
-df["Parent Protein IRI (Uniprot)"] = df["Buffer"].apply(get_sprot)
-df["MHC"] = df.apply(get_mhc, axis=1)
-
-df = df[[x == "HUMAN" for x in df["MHC"]]]
+df = df[[m == "HUMAN" for m in df["MHC"]]]
 df.drop(columns=["Buffer", "MHC"], inplace=True)
-df.dropna(subset=["Parent Protein IRI (Uniprot)"], inplace=True)
+df.dropna(subset=["Parent Protein IRI"], inplace=True)
 df.to_csv("TAP.csv", index=False)

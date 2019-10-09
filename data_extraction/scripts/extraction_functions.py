@@ -11,18 +11,25 @@ import urllib.request
 import numpy as np
 
 
-def get_script_page(x):
+def get_script_page(epitope_description, call="T_cell"):
     """Obtains the script of the page related to the given description
        Arguments:
            x (str): a certain epitope description in the dataframe
        Returns:
            str: the full script of the page
     """
-    with urllib.request.urlopen("http://www.ddg-pharmfac.net/antijen/scripts/"
-                                + "aj_scripts/aj_tcellcalc2.pl?epitope="
-                                + x + "&AL=%25&ST=%25&CAT="
-                                + "T+Cell+Epitope") as h:
-        return str(h.read())
+    if call == "T_cell":
+        with urllib.request.urlopen("http://www.ddg-pharmfac.net/antijen/scripts/"
+                                    + "aj_scripts/aj_tcellcalc2.pl?epitope="
+                                    + x + "&AL=%25&ST=%25&CAT="
+                                    + "T+Cell+Epitope") as h:
+            return str(h.read())
+    if call == "TAP":
+        with urllib.request.urlopen("http://www.ddg-pharmfac.net/antijen/scripts/"
+                                    + "aj_scripts/aj_tapcalc2.pl?epitope=" + x
+                                    + "&CAT=TAP+Ligand&detailinfo=no&detailmin="
+                                    + "&detailmax=") as h:
+            return str(h.read())
 
 
 def get_alleles(x):
@@ -71,7 +78,10 @@ def get_mhc_types(x):
       """
     try:
         # Manually check any epitopes which may have a HUMAN MHC (just not in the first row)
-        if "HUMAN" in x["Buffer"] and x["Buffer"].split("CLASS-2</td>\\n\\t<td>")[1].split("<")[0] != "HUMAN" and len(x["Buffer"].split("CLASS-1</td>\\n\\t<td>")) > 2:
+        if "HUMAN" in x["Buffer"] and \
+                x["Buffer"].split("CLASS-2</td>\\n\\t<td>")[1].split("<")[0] \
+                != "HUMAN" \
+                and len(x["Buffer"].split("CLASS-1</td>\\n\\t<td>")) > 2:
             print(x["Description"])
         return x["Buffer"].split("CLASS-2</td>\\n\\t<td>")[1].split("<")[0]
     except IndexError:

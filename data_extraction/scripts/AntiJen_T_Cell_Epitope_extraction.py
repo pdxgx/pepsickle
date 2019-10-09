@@ -35,9 +35,9 @@ df = pd.read_csv(file_name)[["Description"]]
 print(df.shape)
 
 
-df["Buffer"] = df["Description"].apply(ef.get_script_page)
-df["Allele Name"] = df.apply(ef.get_alleles, axis=1)
-df["Parent Protein IRI"] = df["Buffer"].apply(ef.get_sprot_IRI)
+df["Buffer"] = df["Description"].apply(ef.get_script_page, call="T_cell")
+df["Allele_Name"] = df.apply(ef.get_alleles, axis=1)
+df["Parent_Protein_IRI"] = df["Buffer"].apply(ef.get_sprot_IRI)
 df['IRI_type'] = "Uniprot"
 df["MHC"] = df.apply(ef.get_mhc_types, axis=1)
 
