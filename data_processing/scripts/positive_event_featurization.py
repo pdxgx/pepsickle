@@ -21,7 +21,6 @@ epitope_df = pd.read_csv("new/path/to/converged_filtered.csv",
 
 pos_cleavage_windows = []
 for i in range(len(epitope_df)):
-    print(i)
     row = epitope_df.iloc[i]
     window = sf.get_peptide_window(row)
     pos_cleavage_windows.append(window)
