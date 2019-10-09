@@ -1,4 +1,4 @@
-#! usr/bin/env python3
+#!usr/bin/env python3
 """
 positive_event_featurization.py
 
@@ -18,7 +18,6 @@ each cleavage event.
 import sys
 import pandas as pd
 import numpy as np
-import re
 sys.path.insert(1, './data_processing/scripts')  # think this is not the best way to import
 import sequence_featurization_tools as sf
 
