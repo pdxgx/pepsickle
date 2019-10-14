@@ -23,12 +23,15 @@ Outputs:
     A csv file containing the information from the epitopes extracted - 
     including an epitope's description, allele class, and UniProt IRI
 """
-import urllib.request
 import pandas as pd
 import numpy as np
 import extraction_functions as ef
 
-file_name = "T C2.csv"
+# in future replace with argparse input
+file_name = "/Users/weeder/PycharmProjects/proteasome/data_extraction/raw_data/AntiJen/T C2.csv"
+
+# add argparse with call type for t-cell vs. TAP... then antijen extraction
+# can be a single script with 2 processing options
 
 """ Data Extraction """
 df = pd.read_csv(file_name)[["Description"]]
@@ -39,11 +42,14 @@ df["Buffer"] = df["Description"].apply(ef.get_script_page, call="T_cell")
 df["Allele_Name"] = df.apply(ef.get_alleles, axis=1)
 df["Parent_Protein_IRI"] = df["Buffer"].apply(ef.get_sprot_IRI)
 df['IRI_type'] = "Uniprot"
-df["MHC"] = df.apply(ef.get_mhc_types, axis=1)
+# seems to be a parsing error here...some have \n in name
+df["host_org"] = df.apply(ef.get_mhc_organism, axis=1)
 
-df = df[[m == "HUMAN" for m in df["MHC"]]]
+# we want to keep all mammal for now, so comment this out
+# df = df[[m == "HUMAN" for m in df["MHC"]]]
+df = df[[m is not None for m in df['host_org']]]
 
-df.drop(columns=["Buffer", "MHC"], inplace=True)
+df.drop(columns=["Buffer"], inplace=True)
 df.dropna(subset=["Parent Protein IRI"], inplace=True)
 
 df.to_csv("T_Cell_C2.csv", index=False)

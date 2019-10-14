@@ -12,21 +12,21 @@ import numpy as np
 
 
 def get_script_page(epitope_description, call="T_cell"):
-    """Obtains the script of the page related to the given description
-       Arguments:
-           x (str): a certain epitope description in the dataframe
-       Returns:
-           str: the full script of the page
+    """
+    Obtains the script of the page related to the given description.
+    :param epitope_description:
+    :param call:
+    :return:
     """
     if call == "T_cell":
         with urllib.request.urlopen("http://www.ddg-pharmfac.net/antijen/scripts/"
                                     + "aj_scripts/aj_tcellcalc2.pl?epitope="
-                                    + x + "&AL=%25&ST=%25&CAT="
+                                    + epitope_description + "&AL=%25&ST=%25&CAT="
                                     + "T+Cell+Epitope") as h:
             return str(h.read())
     if call == "TAP":
         with urllib.request.urlopen("http://www.ddg-pharmfac.net/antijen/scripts/"
-                                    + "aj_scripts/aj_tapcalc2.pl?epitope=" + x
+                                    + "aj_scripts/aj_tapcalc2.pl?epitope=" + epitope_description
                                     + "&CAT=TAP+Ligand&detailinfo=no&detailmin="
                                     + "&detailmax=") as h:
             return str(h.read())
@@ -56,7 +56,7 @@ def get_alleles(x):
 def get_sprot_IRI(buffer):
     """Obtains the UniProt IRI of the protein an epitope is derived from
        Arguments:
-           x (int): the directory of the dataframe
+           buffer (int): the pandas index for the corresponding epitope buffer
        Returns:
            str: the UniProt IRI
     """
@@ -66,7 +66,7 @@ def get_sprot_IRI(buffer):
         return np.nan
 
 
-def get_mhc_types(x):
+def get_mhc_organism(x):
     """Obtains the organism name of the MHC species the epitope came from\
 
          Used to filter for human MHC species later
@@ -85,4 +85,4 @@ def get_mhc_types(x):
             print(x["Description"])
         return x["Buffer"].split("CLASS-2</td>\\n\\t<td>")[1].split("<")[0]
     except IndexError:
-        return np.nan
+        return None

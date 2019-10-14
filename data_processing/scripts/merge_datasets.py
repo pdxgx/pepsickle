@@ -9,7 +9,7 @@ from different sources and compiles them into a single csv for
 further filtering and featurization downstream.
 
 Input:
-- .csv files from the ./data_processing/pre-merged_data directory
+- .csv files from the ./data_processing/un-merged_data directory
 
 Output:
 - a single merged .csv with consistent column headers
@@ -19,7 +19,7 @@ import re
 import pandas as pd
 
 # Later replace file_dir with -i argparse
-file_dir = os.getcwd() + "/../pre-merged_data/"
+file_dir = os.getcwd() + "/../un-merged_data/"
 # get lists of positive and negative files to load in
 pos_data_files = os.listdir(file_dir + "positives/")
 neg_data_files = os.listdir(file_dir + "negatives/")
