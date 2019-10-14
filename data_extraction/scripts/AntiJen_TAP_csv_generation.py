@@ -23,5 +23,4 @@ for i in combos:
 
 running_epitopes = list(dict.fromkeys(running_epitopes))
 
-pd.DataFrame({"Description": running_epitopes}).to_csv("TAP.csv", index=False)
-
+pd.DataFrame({"Description": running_epitopes}).to_csv("/Users/weeder/PycharmProjects/proteasome/data_extraction/raw_data/AntiJen/TAP.csv", index=False)

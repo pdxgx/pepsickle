@@ -24,20 +24,17 @@ Outputs:
     A csv file containing the information from the epitopes extracted -
     including an epitope's description, allele class, and UniProt IRI
 """
-
-""" Data Extraction """
-df = pd.read_csv("TAP.csv")[["Description"]]
+import pandas as pd
+import extraction_functions as ef
+df = pd.read_csv("/Users/weeder/PycharmProjects/proteasome/data_extraction/raw_data/AntiJen/TAP.csv")[["Description"]]
 
 df["Buffer"] = df["Description"].apply(ef.get_script_page, call="TAP")
-df.to_csv("TAP_.csv", index=False)
-
-df = pd.read_csv("TAP_.csv")
 
 df["Parent_Protein_IRI"] = df["Buffer"].apply(ef.get_sprot_IRI)
 df['IRI_type'] = "Uniprot"
-df["MHC"] = df.apply(ef.get_mhc_types, axis=1)
+df["host_org"] = df.apply(ef.get_mhc_organism, axis=1)
 
-df = df[[m == "HUMAN" for m in df["MHC"]]]
-df.drop(columns=["Buffer", "MHC"], inplace=True)
-df.dropna(subset=["Parent Protein IRI"], inplace=True)
-df.to_csv("TAP.csv", index=False)
+df = df[[org is not None for org in df['host_org']]]
+df.drop(columns=["Buffer"], inplace=True)
+df.dropna(subset=["Parent_Protein_IRI"], inplace=True)
+df.to_csv("/Users/weeder/PycharmProjects/proteasome/data_extraction/raw_data/AntiJen/TAP_full_df.csv", index=False)
