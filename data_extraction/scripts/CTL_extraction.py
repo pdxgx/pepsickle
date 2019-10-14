@@ -18,15 +18,19 @@ Outputs:
     The csv files corresponding to the text files
 """
 import pandas as pd
+import os
 
-columns = ["Parent Protein IRI (Uniprot)", "Starting Position", "Description",
-           "Allele Name"]
-file_names = ["HIV1.raw_data.fsa.txt", "HIV2.raw_data.fsa.txt", "SYF1.raw_data.fsa.txt",
-              "SYF2.raw_data.fsa.txt"]
+columns = ["Parent_Protein_IRI", "Starting_Position",
+           "Description", "Allele_Name"]
+file_names = os.listdir("/Users/weeder/PycharmProjects/proteasome/"
+                        "data_extraction/raw_data/CTL")
+# file_names = ["HIV1.raw_data.fsa.txt", "HIV2.raw_data.fsa.txt",
+# "SYF1.raw_data.fsa.txt", "SYF2.raw_data.fsa.txt"]
+
 export_names = ["HIV1.csv", "HIV2.csv", "SYF1.csv", "SYF2.csv"]
 
 
-def load_data(file_name):
+def load_CTL_data(file_name):
     """Extracts the raw_data from the text files into a pandas Dataframe
        Arguments:
            file_name (str): the name and location of the file to be extracted
@@ -48,12 +52,13 @@ def load_data(file_name):
         df = df.append(pd.DataFrame(row, columns=columns))
         df = df.append(pd.DataFrame([], columns=columns))
 
-    df["Allele Name"] = "HLA-" + df["Allele Name"].astype(str)
-
+    df["Allele_Name"] = "HLA-" + df["Allele_Name"].astype(str)
+    df["IRI_type"] = "Uniprot"
     return df
 
-
-def process_data(file_name, export_name):
+# this should probably not output files...
+# either remove final "full" statements or don't output in this function
+def process_CTL_data(file_name, export_name):
     """Process the dataframe by converging all epitopes with identical
        descriptions together and combining the different allele names
        Arguments:
@@ -63,22 +68,27 @@ def process_data(file_name, export_name):
        Returns:
            pandas Dataframe: the corresponding Dataframe
     """
-    df = load_data(file_name)
-    g = {c: ", ".join if c == "Allele Name" else 'first' for c in columns}
+    indir = "/Users/weeder/PycharmProjects/proteasome/data_extraction/" \
+            "raw_data/CTL/"
+    outdir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
+             "un-merged_data/positives/"
+    df = load_CTL_data(indir + file_name)
+    g = {c: ", ".join if c == "Allele_Name" else 'first' for c in columns}
     df = df.groupby("Description").agg(g)
-    df["Allele Name"] = df["Allele Name"].apply(lambda x: ", ".join(
+    df["Allele_Name"] = df["Allele_Name"].apply(lambda x: ", ".join(
         sorted(list((dict.fromkeys(x.split(", ")))))))
 
-    df.to_csv(export_name, index=False)
+    df.to_csv(outdir + export_name, index=False)
     return df
 
 
 data_frames = []
 
 for i in range(len(file_names)):
-    data_frames.append(process_data(file_names[i], export_names[i]))
+    data_frames.append(process_CTL_data(file_names[i], export_names[i]))
 
-
+# temporarily comment out
+"""
 Entire_HIV = data_frames[0].append(data_frames[1], ignore_index=True)
 f = {c: ", ".join if c == "Allele Name" else 'first' for c in columns}
 Entire_HIV = Entire_HIV.groupby("Description").agg(f)
@@ -92,3 +102,4 @@ Entire_SYF = Entire_SYF.groupby("Description").agg(f)
 Entire_SYF["Allele Name"] = Entire_SYF["Allele Name"].apply(
     lambda x: ", ".join(sorted(list((dict.fromkeys(x.split(", ")))))))
 Entire_SYF.to_csv("Entire SYF.csv", index=False)
+"""
