@@ -11,7 +11,7 @@ combos = list(product(amino_acids, repeat=2))
 running_epitopes = []
 
 for i in combos:
-    print("".join(i))
+    # print("".join(i))
     with urllib.request.urlopen("http://www.ddg-pharmfac.net/antijen/scripts/"
                                 + "aj_scripts/aj_tapcalc.pl?epitope="
                                 + "".join(i)

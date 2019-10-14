@@ -26,10 +26,11 @@ Outputs:
 """
 import pandas as pd
 import extraction_functions as ef
+
+# change to use argparse for input file, output file, and call type... merge with other related script
 df = pd.read_csv("/Users/weeder/PycharmProjects/proteasome/data_extraction/raw_data/AntiJen/TAP.csv")[["Description"]]
 
 df["Buffer"] = df["Description"].apply(ef.get_script_page, call="TAP")
-
 df["Parent_Protein_IRI"] = df["Buffer"].apply(ef.get_sprot_IRI)
 df['IRI_type'] = "Uniprot"
 df["host_org"] = df.apply(ef.get_mhc_organism, axis=1)
