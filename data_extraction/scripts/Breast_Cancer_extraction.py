@@ -26,7 +26,6 @@ Outputs:
     protein's UniProt IRI
 """
 import pandas as pd
-import numpy as np
 
 df = pd.DataFrame()
 
@@ -34,21 +33,29 @@ df = pd.DataFrame()
 # the range(2, 24) corresponds to the different excel sheets which contain
 # epitope information
 for i in range(2, 24):
-    df = df.append(pd.read_excel("breast_cancer.xlsx", sheet_name=i, header=2)[["Sequence", "Protein Link", "Unique"]])
+    df = df.append(pd.read_excel("/Users/weeder/PycharmProjects/proteasome/"
+                                 "data_extraction/raw_data/Breast Cancer/"
+                                 "breast_cancer.xlsx",
+                                 sheet_name=i, header=2)[["Sequence",
+                                                          "Protein Link",
+                                                          "Unique"]])
 
-key = pd.read_csv("key.csv")
-dict_key = {k: v for k, v in zip(key["Input"].to_list(), key["Entry"].tolist())}
-df["Parent Protein IRI (Uniprot)"] = df["Protein Link"].map(dict_key)
+key = pd.read_csv("breast_cancer_key.csv")
+dict_key = {k: v for k, v in zip(key["Input"].to_list(),
+                                 key["Entry"].tolist())}
+df["Parent_Protein_IRI"] = df["Protein Link"].map(dict_key)
+df['IRI_type'] = "Uniprot"
 df.dropna(subset=["Sequence"], inplace=True)
 
 df = df[df["Unique"] == 1]
-print(df.shape)
+# print(df.shape)
 
 df["Sequence"] = df["Sequence"].apply(lambda x: x.split(".")[1])
 
 df.drop(columns=["Protein Link", "Unique"], inplace=True)
 df.rename(columns={"Sequence": "Description"}, inplace=True)
 
-print(df.shape)
+# print(df.shape)
 
-df.to_csv("breast_cancer.csv", index=False)
+df.to_csv("/Users/weeder/PycharmProjects/proteasome/data_processing/"
+          "un-merged_data/positives/breast_cancer.csv", index=False)
