@@ -13,10 +13,11 @@ import numpy as np
 
 def get_script_page(epitope_description, call="T_cell"):
     """
-    Obtains the script of the page related to the given description.
-    :param epitope_description:
-    :param call:
-    :return:
+    Obtains the script of the page related to the given description (epitope).
+    from the Antigen site.
+    :param epitope_description: string containing the epitope sequence
+    :param call: type of epitope script to pull... either T_cell or TAP
+    :return: buffer with info on specific epitope used for query
     """
     if call == "T_cell":
         with urllib.request.urlopen("http://www.ddg-pharmfac.net/antijen/scripts/"
@@ -33,11 +34,11 @@ def get_script_page(epitope_description, call="T_cell"):
 
 
 def get_alleles(x):
-    """Obtains the allele types of a certain epitope using the script
-       Arguments:
-           x (int): the directory of the dataframe
-       Returns:
-           str: the allele type(s) of a certain epitope
+    """
+    gets the alleles associated with a given epitope based on the buffer (from
+    get_script_page()) for that epitope.
+    :param x: index of the epitope/buffer
+    :return: list of alleles associated with epitope
     """
     split_allele = x["Buffer"].split("allele.cgi?")
     alleles = []
@@ -54,28 +55,25 @@ def get_alleles(x):
 
 
 def get_sprot_IRI(buffer):
-    """Obtains the UniProt IRI of the protein an epitope is derived from
-       Arguments:
-           buffer (int): the pandas index for the corresponding epitope buffer
-       Returns:
-           str: the UniProt IRI
+    """
+    gets the uniprot IRI associated with a given epitope based on the buffer
+    (from get_script_page()) for that epitope.
+    :param buffer: index of the epitope/buffer
+    :return: uniprot IRI
     """
     if len(buffer.split("sprot-entry?")) > 1:
         return buffer.split("sprot-entry?")[1].split("\"")[0].split("http")[0]
     else:
-        return np.nan
+        return None
 
 
 def get_mhc_organism(x):
-    """Obtains the organism name of the MHC species the epitope came from\
-
-         Used to filter for human MHC species later
-
-         Arguments:
-             x (int): the directory of the dataframe
-         Returns:
-             str: the MHC species of the epitope
-      """
+    """
+    gets the organism associated with a given epitope based on the buffer (from
+    get_script_page()) for that epitope.
+    :param x: index of the epitope/buffer
+    :return: name of organism associated with the epitope
+    """
     try:
         # Manually check any epitopes which may have a HUMAN MHC (just not in the first row)
         if "HUMAN" in x["Buffer"] and \
