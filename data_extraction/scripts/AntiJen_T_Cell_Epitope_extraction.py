@@ -24,7 +24,6 @@ Outputs:
     including an epitope's description, allele class, and UniProt IRI
 """
 import pandas as pd
-import numpy as np
 import extraction_functions as ef
 
 # in future replace with argparse input
@@ -35,7 +34,7 @@ file_name = "/Users/weeder/PycharmProjects/proteasome/data_extraction/raw_data/A
 
 """ Data Extraction """
 df = pd.read_csv(file_name)[["Description"]]
-print(df.shape)
+# print(df.shape)
 
 
 df["Buffer"] = df["Description"].apply(ef.get_script_page, call="T_cell")
@@ -47,9 +46,9 @@ df["host_org"] = df.apply(ef.get_mhc_organism, axis=1)
 
 # we want to keep all mammal for now, so comment this out
 # df = df[[m == "HUMAN" for m in df["MHC"]]]
-df = df[[m is not None for m in df['host_org']]]
+df = df[[org is not None for org in df['host_org']]]
 
 df.drop(columns=["Buffer"], inplace=True)
-df.dropna(subset=["Parent Protein IRI"], inplace=True)
+df.dropna(subset=["Parent_Protein_IRI"], inplace=True)
 
-df.to_csv("T_Cell_C2.csv", index=False)
+df.to_csv("/Users/weeder/PycharmProjects/proteasome/data_extraction/raw_data/AntiJen/T_Cell_C2.csv", index=False)
