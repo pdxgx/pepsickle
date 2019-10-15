@@ -44,30 +44,6 @@ from Bio import SeqIO
 
 expand = 10
 
-# X below denotes an incomplete window
-_features = {
-    'A': [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6,     29.5,  -0.495],
-    'C': [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5.07,  51.6,  0.081],
-    'D': [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2.77,  44.2,  9.573],
-    'E': [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3.22,  70.6,  3.173],
-    'F': [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 5.48,  135.2, -0.37],
-    'G': [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5.97,  0,     0.386],
-    'H': [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 7.59,  96.3,  2.029],
-    'I': [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6.02,  108.5, -0.528],
-    'K': [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9.74,  98,    2.101],
-    'L': [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5.98,  108.6, -0.342],
-    'M': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5.74,  104.9, -0.324],
-    'N': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5.41,  58.8,  2.354],
-    'P': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6.3,   54.1,  -0.322],
-    'Q': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 5.65,  81.5,  2.176],
-    'R': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 10.76, 110.5, 4.383],
-    'S': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 5.68,  29.9,  0.936],
-    'T': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 5.6,   56.8,  0.853],
-    'V': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 5.96,  80.5,  -0.308],
-    'W': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 5.89,  164,   -0.27],
-    'Y': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 5.66,  137,   1.677],
-    'X': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     -1,    -1000]
-}
 files_dict = {
     "cbeta-casein.txt": "10.1074/jbc.M000740200",
     "ibeta-casein.txt": "10.1074/jbc.M000740200",
@@ -153,7 +129,7 @@ sprot_index = SeqIO.index_db("sprot/sprot_index.idx",
                              key_function=lambda x: x.split("|")[1])
 
 
-def load_data(file_name):
+def load_digestion_data(file_name):
     """Load data from the text file into a pandas Dataframe
        Arguments:
             file_name (str): name of file
@@ -207,7 +183,7 @@ def load_data(file_name):
 
 df = pd.DataFrame()
 for file in files_dict.keys():
-    df = df.append(load_data(file))
+    df = df.append(load_digestion_data(file))
 
 
 def get_position(x):
@@ -307,17 +283,7 @@ df = df.append(buffer, sort=False)
 df.drop_duplicates(subset=["Window"], inplace=True)
 df.drop(columns=["Positions"], inplace=True)
 
-print(df.shape)
+# print(df.shape)
 
 df.to_csv("csv/digestion.csv", index=False)
 
-for i in range(expand * 2 + 1):
-    df[i] = df["Window"].apply(lambda x: _features[x[i]])
-
-np_positives = np.array(df.apply(lambda x: pd.DataFrame(
-            {y: x[y] for y in range(expand * 2 + 1)}).to_numpy(),
-                          axis=1).to_list())
-
-n_samples, nx, ny = np_positives.shape
-np.save("npy/digestion_positives_2d.npy", np_positives.reshape(
-    (n_samples, nx*ny)))
