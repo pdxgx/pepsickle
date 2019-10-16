@@ -13,7 +13,14 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 
-def compile_antijen_url(aa_sequence, query_type="T_cell"):
+def compile_AntiJen_url(aa_sequence, query_type="T_cell"):
+    """
+    compiles a query url for a given sequence or subsequence based on the
+    desired query type and returns the search URL link.
+    :param aa_sequence: amino acid sequence or sub sequence
+    :param query_type: type of sequence query to be made
+    :return: URL query link
+    """
     query_types = ['T_cell', 'TAP', 'TAP_substring']
     if query_type not in query_types:
         raise ValueError("Invalid. Expected either: %s" % query_types)
