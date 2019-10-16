@@ -79,7 +79,7 @@ def extract_AntiJen_table(antijen_url, page_type="T_cell"):
     buffer = BeautifulSoup(str(handle.read()), 'html.parser')
     # find all tables
     tables = buffer.find_all("table")
-    if len(tables) <= 2:
+    if len(tables) < 2:
         raise EmptyQueryError(len(tables), "is too few. Missing content table")
     # first tables[0] is formatted header, tables[1] is nested epitope info
     epitope_table = tables[1]
