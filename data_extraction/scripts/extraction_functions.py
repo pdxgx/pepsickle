@@ -8,7 +8,9 @@ This script consolidates functions previously written for use in epitope and
 cleavage site extraction scripts.
 """
 import urllib.request
+import re
 import pandas as pd
+from bs4 import BeautifulSoup
 
 
 def extract_AntiJen_table(antijen_url, page_type="T_cell"):
@@ -62,8 +64,12 @@ def extract_AntiJen_table(antijen_url, page_type="T_cell"):
             # init empty list to be appended
             col_entries = []
             for column in columns:
+                # get text and clean HTML artifacts
+                col_text = column.get_text()
+                col_text = col_text.strip()
+                clean_text = re.sub("\\\.*", "", col_text)
                 # creates list of entries to append
-                col_entries.append(column.get_text())
+                col_entries.append(clean_text)
             # if first row, use as column header
             if row_num == 0:
                 out_df.columns = col_entries
