@@ -4,8 +4,8 @@ extraction_functions.py
 
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
-This script consolidates functions previously written for use in epitope and
-cleavage site extraction scripts.
+This script houses and consolidates functions for extracting cleavage data
+from various sources.
 """
 import urllib.request
 import re
@@ -61,6 +61,9 @@ def extract_AntiJen_table(antijen_url, page_type="T_cell"):
     buffer = BeautifulSoup(str(handle.read()), 'html.parser')
     # find all tables
     tables = buffer.find_all("table")
+    if len(tables) <= 2:
+        print("No Query Results found")
+        return None
     # first tables[0] is formatted header, tables[1] is nested epitope info
     epitope_table = tables[1]
 
