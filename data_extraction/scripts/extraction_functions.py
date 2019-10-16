@@ -13,6 +13,24 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 
+class Error(Exception):
+    """Base class for other exceptions"""
+    pass
+
+
+class EmptyQueryError(Error):
+    """
+    Raised when query returns no content table
+
+    Attributes:
+        expression -- input expression in which the error occurred
+        message -- explanation of the error
+    """
+    def __init__(self, n_tables, message):
+        self.n_tables = n_tables
+        self.message = message
+
+
 def compile_AntiJen_url(aa_sequence, query_type="T_cell"):
     """
     compiles a query url for a given sequence or subsequence based on the
@@ -62,8 +80,7 @@ def extract_AntiJen_table(antijen_url, page_type="T_cell"):
     # find all tables
     tables = buffer.find_all("table")
     if len(tables) <= 2:
-        print("No Query Results found")
-        return None
+        raise EmptyQueryError(len(tables), "is too few. Missing content table")
     # first tables[0] is formatted header, tables[1] is nested epitope info
     epitope_table = tables[1]
 

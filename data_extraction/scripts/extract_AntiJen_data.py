@@ -37,6 +37,6 @@ for query in query_list:
         for tmp_ep in tmp_epitopes:
             if tmp_ep not in TAP_epitopes:
                 TAP_epitopes.append(tmp_ep)
-    except:
+    except extraction_functions.EmptyQueryError:
         print(query)
 print(TAP_epitopes)
