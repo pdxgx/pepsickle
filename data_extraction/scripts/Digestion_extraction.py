@@ -8,7 +8,7 @@ Python 3.7
 This script allows the user to obtain a 3D numpy array containing positive
 data derived from digestion products to be inputted into a model. It only
 accepts comma separated value files (.csv) at the moment. Sources of each
-text file can be found from files_dict where each doi is included
+text file can be found from file_source_map where each doi is included
 
 This script requires that `pandas`, `numpy`, and 'biopython' be installed
 within the Python environment you are running this script in.
@@ -38,13 +38,17 @@ Outputs:
     A numpy array containing the feature set for each generated window from
     the digestion products which can be directly inputed into the model
 """
+import os
 import pandas as pd
 import numpy as np
 from Bio import SeqIO
 
-expand = 10
+# expand = 10
+indir = "/Users/weeder/PycharmProjects/proteasome/data_extraction/" \
+        "raw_data/Digestion/txt/"
+file_names = os.listdir(indir)
 
-files_dict = {
+file_source_map = {
     "cbeta-casein.txt": "10.1074/jbc.M000740200",
     "ibeta-casein.txt": "10.1074/jbc.M000740200",
     "HBVcAg.txt": "10.1006/jmbi.1998.2530",
@@ -129,14 +133,15 @@ sprot_index = SeqIO.index_db("sprot/sprot_index.idx",
                              key_function=lambda x: x.split("|")[1])
 
 
-def load_digestion_data(file_name):
+def load_digestion_data(file_path, file_name):
     """Load data from the text file into a pandas Dataframe
        Arguments:
             file_name (str): name of file
        Returns:
             pd.Dataframe: Dataframe created from text file
     """
-    with open("files/" + file_name) as f:
+    # this may need to be recoded since name is hardcoded
+    with open(file_path + file_name) as f:
         e_comments = f.readline().strip()
         protein = f.readline().strip()
         if file_name in sprot_files:
@@ -173,16 +178,17 @@ def load_digestion_data(file_name):
 
         df = pd.DataFrame()
         df["Description"] = peptides
-        df["Parent Protein"] = protein
-        df["Parent Protein IRI (Uniprot)"] = protein_id
-        df["Protein Sequence"] = protein_seq
-        df["Epitope Comments"] = e_comments
-        df["Source"] = files_dict[file_name]
+        df["Parent_Protein"] = protein
+        df["Parent_Protein_IRI"] = protein_id
+        df['IRI_type'] = "Uniprot"
+        df["Protein_Sequence"] = protein_seq
+        df["Epitope_Comments"] = e_comments
+        df["Source"] = file_source_map[file_name]
     return df
 
 
 df = pd.DataFrame()
-for file in files_dict.keys():
+for file in file_source_map.keys():
     df = df.append(load_digestion_data(file))
 
 
