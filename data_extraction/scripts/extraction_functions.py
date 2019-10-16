@@ -41,6 +41,7 @@ def compile_AntiJen_url(aa_sequence, query_type="T_cell"):
     full_query = base_url.format(aa_sequence)
     return full_query
 
+
 def extract_AntiJen_table(antijen_url, page_type="T_cell"):
     """
     given a URL for the AntiJen database, this function parses the table and
