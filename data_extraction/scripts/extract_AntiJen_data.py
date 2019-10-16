@@ -16,6 +16,7 @@ AntiJen_tcell_summary_url = "http://www.ddg-pharmfac.net/antijen/scripts/" \
                             "Tcell=Search+AntiJen"
 
 ##### add in code for generating TAP queries
+# may be worth pulling AA names from keys of feature matrix
 amino_acids = ["A", "R", "N", "D", "C", "E", "Q", "G", "H", "O", "I", "L", "K",
                "M", "F", "P", "U", "S", "T", "W", "Y", "V"]
 
@@ -32,11 +33,14 @@ TAP_epitopes = []
 for query in query_list:
     try:
         tmp_df = extraction_functions.extract_AntiJen_table(query,
-                                                            page_type="Summary")
-        tmp_epitopes = list(tmp_df['Epitope'])
-        for tmp_ep in tmp_epitopes:
-            if tmp_ep not in TAP_epitopes:
-                TAP_epitopes.append(tmp_ep)
+                                                            page_type="Summary"
+                                                            )
     except extraction_functions.EmptyQueryError:
-        print(query)
+        continue
+
+    tmp_epitopes = list(tmp_df['Epitope'])
+    for tmp_ep in tmp_epitopes:
+        if tmp_ep not in TAP_epitopes:
+            TAP_epitopes.append(tmp_ep)
+
 print(TAP_epitopes)
