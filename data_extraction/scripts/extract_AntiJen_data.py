@@ -20,7 +20,6 @@ tcell_epitope_df = ef.extract_AntiJen_table(AntiJen_tcell_summary_url,
 
 tcell_epitope_list = list(tcell_epitope_df["Epitope"])
 
-##### add in code for generating TAP queries
 # may be worth pulling AA names from keys of feature matrix
 amino_acids = ["A", "R", "N", "D", "C", "E", "Q", "G", "H", "O", "I", "L", "K",
                "M", "F", "P", "U", "S", "T", "W", "Y", "V"]
@@ -46,8 +45,10 @@ for query in query_list:
                 TAP_peptides.append(tmp_ep)
 
     except ef.EmptyQueryError:
+        print(query)
         continue
 
 print(tcell_epitope_list)
 print(TAP_peptides)
 
+# next, query each entry, pull out/format relevant data, compile

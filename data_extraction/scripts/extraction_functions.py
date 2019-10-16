@@ -95,38 +95,38 @@ def extract_AntiJen_table(antijen_url, page_type="T_cell"):
     row_num = 0  # initialize
     # iterate through "tr" entries (table rows)
     for row in epitope_table.find_all("tr"):
-            columns = row.find_all('td')
+        columns = row.find_all('td')
 
-            # handle if not expected column number
-            if page_type == "T_cell":
-                # all cols should be 8
-                assert len(columns) == 8
-            if page_type == "TAP":
-                # columns not == 5 are table footers
-                if len(columns) != 5:
-                    row_num += 1
-                    continue
-            if page_type == "Summary":
-                # all cols should be 3
-                assert len(columns) == 3
+        # handle if not expected column number
+        if page_type == "T_cell":
+            # all cols should be 8
+            assert len(columns) == 8
+        if page_type == "TAP":
+            # columns not == 5 are table footers
+            if len(columns) != 5:
+                row_num += 1
+                continue
+        if page_type == "Summary":
+            # all cols should be 3
+            assert len(columns) == 3
 
-            # init empty list to be appended
-            col_entries = []
-            for column in columns:
-                # get text and clean HTML artifacts
-                col_text = column.get_text()
-                col_text = col_text.strip()
-                clean_text = re.sub("\\\.*", "", col_text)
-                # creates list of entries to append
-                col_entries.append(clean_text)
-            # if first row, use as column header
-            if row_num == 0:
-                out_df.columns = col_entries
-            # if column matches col header, ignore
-            elif set(out_df.columns) == set(col_entries):
-                pass
-            # append
-            else:
-                out_df.loc[len(out_df), :] = col_entries
-            row_num += 1
+        # init empty list to be appended
+        col_entries = []
+        for column in columns:
+            # get text and clean HTML artifacts
+            col_text = column.get_text()
+            col_text = col_text.strip()
+            clean_text = re.sub("\\\.*", "", col_text)
+            # creates list of entries to append
+            col_entries.append(clean_text)
+        # if first row, use as column header
+        if row_num == 0:
+            out_df.columns = col_entries
+        # if column matches col header, ignore
+        elif set(out_df.columns) == set(col_entries):
+            pass
+        # append
+        else:
+            out_df.loc[len(out_df), :] = col_entries
+        row_num += 1
     return out_df
