@@ -13,6 +13,27 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 
+def compile_antijen_url(aa_sequence, query_type="T_cell"):
+    query_types = ['T_cell', 'TAP', 'TAP_substring']
+    if query_type not in query_types:
+        raise ValueError("Invalid. Expected either: %s" % query_types)
+
+    if query_type == "T_cell":
+        base_url = "http://www.ddg-pharmfac.net/antijen/scripts/aj_scripts/" \
+                   "aj_tcellcalc2.pl?epitope={}&AL=%25&ST=%25&" \
+                   "CAT=T+Cell+Epitope"
+    if query_type == "TAP":
+        base_url = "http://www.ddg-pharmfac.net/antijen/scripts/aj_scripts/" \
+                   "aj_tapcalc2.pl?epitope={}&CAT=TAP+Ligand&detailinfo=no&" \
+                   "detailmin=&detailmax="
+    if query_type == "TAP_substring":
+        base_url = "http://www.ddg-pharmfac.net/antijen/scripts/aj_scripts/" \
+                   "aj_tapcalc.pl?epitope={}&MIN=&MAX=&allele=&CATEGORY=TAP&" \
+                   "ic50MIN=&ic50MAX=&KDNMMIN=&KDNMMAX=&TAP=Search+AntiJen"
+
+    full_query = base_url.format(aa_sequence)
+    return full_query
+
 def extract_AntiJen_table(antijen_url, page_type="T_cell"):
     """
     given a URL for the AntiJen database, this function parses the table and
@@ -25,7 +46,7 @@ def extract_AntiJen_table(antijen_url, page_type="T_cell"):
     """
     page_types = ['T_cell', 'TAP', 'Summary']
     if page_type not in page_types:
-        raise ValueError("Invalid page type. Expected either: %s" % page_types)
+        raise ValueError("Invalid Expected either: %s" % page_types)
 
     # open file and parse html structure
     handle = urllib.request.urlopen(antijen_url)
