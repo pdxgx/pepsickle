@@ -10,8 +10,8 @@ from itertools import product
 import pandas as pd
 import extraction_functions as ef
 
-outdir ="/Users/weeder/PycharmProjects/proteasome/data_processing/" \
-        "un-merged_data/positives/"
+outdir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
+         "un-merged_data/positives/"
 
 # set url for summary tcell assay table
 AntiJen_tcell_summary_url = "http://www.ddg-pharmfac.net/antijen/scripts/" \
@@ -20,7 +20,7 @@ AntiJen_tcell_summary_url = "http://www.ddg-pharmfac.net/antijen/scripts/" \
                             "Tcell=Search+AntiJen"
 
 tcell_epitope_table = ef.extract_AntiJen_table(AntiJen_tcell_summary_url,
-                                            page_type="Summary")
+                                               page_type="Summary")
 
 tcell_epitope_list = list(tcell_epitope_table["Epitope"])
 
