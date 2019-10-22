@@ -11,7 +11,7 @@ import pandas as pd
 import extraction_functions as ef
 
 outdir ="/Users/weeder/PycharmProjects/proteasome/data_processing/" \
-        "n-merged_data/positives/"
+        "un-merged_data/positives/"
 
 # set url for summary tcell assay table
 AntiJen_tcell_summary_url = "http://www.ddg-pharmfac.net/antijen/scripts/" \
@@ -99,8 +99,8 @@ for epitope in tcell_epitope_list:
 
 # repeat above with TAP associated peptides
 tap_epitope_df = pd.DataFrame(columns=["Epitope", "Species", "Categories",
-                                         "Protein_refs", "Ref_type",
-                                         "Journal_refs"])
+                                       "Protein_refs", "Ref_type",
+                                       "Journal_refs"])
 
 for epitope in TAP_peptides:
     query = ef.compile_AntiJen_url(epitope, query_type="TAP")
@@ -133,5 +133,6 @@ for epitope in TAP_peptides:
 
 
 # put write outs here
+
 tcell_epitope_df.to_csv(outdir+"/AntiJen_Tcell_epitopes.csv", index=False)
 tap_epitope_df.to_csv(outdir+"/AntiJen_tap_epitopes.csv", index=False)
