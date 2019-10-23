@@ -6,7 +6,7 @@ Ellysia Li (lie@ohsu.edu)
 Python 3.7
 
 This script extracts the information from the S3 supplementary of _The
-VHSE-Based Prediction of Proteasomal Cleavage Sites_ (doi: 10.1371/
+VHSE_data-Based Prediction of Proteasomal Cleavage Sites_ (doi: 10.1371/
 journal.pone.0074506) and converts it into a csv file
 
 This script requires that `pandas`, `biopython`, and `numpy` be installed 

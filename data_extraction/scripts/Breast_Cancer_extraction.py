@@ -43,8 +43,8 @@ for i in range(2, 24):
 key = pd.read_csv("breast_cancer_key.csv")
 dict_key = {k: v for k, v in zip(key["Input"].to_list(),
                                  key["Entry"].tolist())}
-df["Parent_Protein_IRI"] = df["Protein Link"].map(dict_key)
-df['IRI_type'] = "Uniprot"
+df["Protein_ref"] = df["Protein Link"].map(dict_key)
+df['Ref_type'] = "Uniprot"
 df.dropna(subset=["Sequence"], inplace=True)
 
 df = df[df["Unique"] == 1]

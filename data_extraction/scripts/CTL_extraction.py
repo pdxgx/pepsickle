@@ -20,7 +20,7 @@ Outputs:
 import pandas as pd
 import os
 
-columns = ["Parent_Protein_IRI", "Starting_Position",
+columns = ["Protein_ref", "Starting_Position",
            "Description", "Allele_Name"]
 file_names = os.listdir("/Users/weeder/PycharmProjects/proteasome/"
                         "data_extraction/raw_data/CTL")
@@ -53,8 +53,9 @@ def load_CTL_data(file_name):
         df = df.append(pd.DataFrame([], columns=columns))
 
     df["Allele_Name"] = "HLA-" + df["Allele_Name"].astype(str)
-    df["IRI_type"] = "Uniprot"
+    df["Ref_type"] = "Uniprot"
     return df
+
 
 # this should probably not output files...
 # either remove final "full" statements or don't output in this function

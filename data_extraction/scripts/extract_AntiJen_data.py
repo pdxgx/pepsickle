@@ -86,12 +86,12 @@ for epitope in tcell_epitope_list:
     MHC_types = "; ".join(mhc_class)
     MHC_species = "; ".join(mhc_species)
     Categories = "; ".join(category)
-    Protein_refs = "; ".join(swissprot_refs)
+    Protein_ref = "; ".join(swissprot_refs)
     Ref_type = "Uniprot"  # define reference database used
     Journal_refs = "; ".join(journal_refs)
     # reformat
     tcell_entry = pd.Series([epitope, MHC_types, MHC_species, Categories,
-                             Protein_refs, Ref_type, Journal_refs],
+                             Protein_ref, Ref_type, Journal_refs],
                             index=tcell_epitope_df.columns)
     # append
     tcell_epitope_df = tcell_epitope_df.append(tcell_entry, ignore_index=True)
@@ -99,7 +99,7 @@ for epitope in tcell_epitope_list:
 
 # repeat above with TAP associated peptides
 tap_epitope_df = pd.DataFrame(columns=["Epitope", "Species", "Categories",
-                                       "Protein_refs", "Ref_type",
+                                       "Protein_ref", "Ref_type",
                                        "Journal_refs"])
 
 for epitope in TAP_peptides:
@@ -123,10 +123,10 @@ for epitope in TAP_peptides:
 
     MHC_species = "; ".join(mhc_species)
     Categories = "; ".join(category)
-    Protein_refs = "; ".join(swissprot_refs)
+    Protein_ref = "; ".join(swissprot_refs)
     Ref_type = "Uniprot"
     Journal_refs = "; ".join(journal_refs)
-    TAP_entry = pd.Series([epitope, MHC_species, Categories, Protein_refs,
+    TAP_entry = pd.Series([epitope, MHC_species, Categories, Protein_ref,
                            Ref_type, Journal_refs],
                           index=tap_epitope_df.columns)
     tap_epitope_df = tap_epitope_df.append(TAP_entry, ignore_index=True)

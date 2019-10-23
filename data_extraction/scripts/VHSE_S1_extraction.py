@@ -6,7 +6,7 @@ Ellysia Li (lie@ohsu.edu)
 Python 3.7
 
 This script extracts the epitope information from the S1
-supplementary of _The VHSE-Based Prediction of Proteasomal
+supplementary of _The VHSE_data-Based Prediction of Proteasomal
 Cleavage Sites_ (doi: 10.1371/journal.pone.0074506) into a csv file
 
 This script requires that `pandas` be installed within the Python
@@ -20,7 +20,11 @@ Outputs:
 """
 import pandas as pd
 
-df = pd.read_excel("S1.xlsx")
+indir = "/Users/weeder/PycharmProjects/proteasome/data_extraction/" \
+        "raw_data/VHSE_data/"
+
+
+df = pd.read_excel(indir + "VHSE_S1.xlsx")
 
 columns = ["Description", "Parent Protein IRI (Uniprot)","Allele Name",
            "Epitope Comments"]

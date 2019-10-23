@@ -6,7 +6,7 @@ Ellysia Li (lie@ohsu.edu)
 Python 3.7
 
 This script reformats the information from the S5 supplementary of _The
-VHSE-Based Prediction of Proteasomal Cleavage Sites_ 
+VHSE_data-Based Prediction of Proteasomal Cleavage Sites_
 (doi: 10.1371/journal.pone.0074506)
 
 This script requires that `pandas` be installed within the Python
