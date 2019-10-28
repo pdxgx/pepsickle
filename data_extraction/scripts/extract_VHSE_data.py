@@ -13,25 +13,27 @@ s3_df = pd.read_excel(indir + "Dataset_s3.xls")
 s5_df = pd.read_excel(indir + "Dataset_s5.xlsx")
 # s7 relevant for digesion map data?
 
-
+# initiate data frame
 s1_cleaned_df = pd.DataFrame(columns=["Epitope", "MHC_types", "Species",
                                       "Categories", "Protein_refs",
                                       "Ref_type", "Journal_refs"])
 for e in range(len(s1_df)):
+    # pull entries one at a time
     entry = s1_df.iloc[e]
 
+    # for each new entry... (blank if added info for prev. epitope)
     if entry['Epitope'] is not np.nan:
+        # pull primary entry + added info
         entry_n = entry['Number of results']
         tmp_df = s1_df.iloc[e:int(e+entry_n)]
 
         # make empty lists
-        # append entries if novel
         Class = []
         Species = []
         Category = []
         Protein_ref = []
         Journal_ref = []
-
+        # append entries if novel
         for i in range(len(tmp_df)):
             dat = tmp_df.iloc[i]
             if dat['Class'] not in Class:
@@ -54,6 +56,7 @@ for e in range(len(s1_df)):
         Ref_type = "Uniprot"  # define reference database used
         Journal_refs = "; ".join(Journal_ref)
 
+        # compile into new entry
         new_entry = pd.Series([epitope, MHC_types, MHC_species, Categories,
                               Protein_ref, Ref_type, Journal_refs],
                               index=s1_cleaned_df.columns)
@@ -61,7 +64,8 @@ for e in range(len(s1_df)):
         s1_cleaned_df = s1_cleaned_df.append(new_entry, ignore_index=True)
 
 
-# some fully duplicated rows...
+# table S3 processing
+# first drop completely redundant rows
 s3_df.drop_duplicates(inplace=True)
 
 # some duplicated sequences still, but rows are unique... looks like p mods?
