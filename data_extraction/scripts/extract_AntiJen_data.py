@@ -8,7 +8,7 @@ For issues contact Ben Weeder (weeder@ohsu.edu)
 """
 from itertools import product
 import pandas as pd
-from extraction_functions import *
+import extraction_functions as ef
 
 outdir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
          "un-merged_data/positives/"

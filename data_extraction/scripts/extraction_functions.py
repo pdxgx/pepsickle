@@ -170,8 +170,10 @@ def extract_SYF_table(query):
     start_flag = False
     for row in epitope_table.find_all("tr"):
         if start_flag is False:
-            if len(row) < 4 and "Example for Ligand" in row.text:
-                start_flag = True
+            if len(row) < 4:
+                if "Example for Ligand" in row.text or \
+                        "T-cell epitope" in row.text:
+                    start_flag = True
             else:
                 pass
 
