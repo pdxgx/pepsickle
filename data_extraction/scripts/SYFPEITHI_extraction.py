@@ -147,5 +147,3 @@ df.drop(df[[y not in x for x, y in zip(df["Protein Sequence"], df["Description"]
 df.drop(df[[len(x) <= 6 for x in df["Description"]]].index, inplace=True)
 df.drop(df[["X" in x for x in df["Protein Sequence"]]].index, inplace=True)
 df.drop(df[["U" in x for x in df["Protein Sequence"]]].index, inplace=True)
-
-df.to_csv("syfpeithi_ncbi.csv", index=False)

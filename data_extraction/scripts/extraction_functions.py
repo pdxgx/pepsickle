@@ -130,3 +130,38 @@ def extract_AntiJen_table(antijen_url, page_type="T_cell"):
             out_df.loc[len(out_df), :] = col_entries
         row_num += 1
     return out_df
+
+
+def get_SYF_alleles():
+    query = "http://www.syfpeithi.de/bin/MHCServer.dll/FindYourMotif.htm"
+    handle = urllib.request.urlopen(query)
+    buffer = BeautifulSoup(str(handle.read()), 'html.parser')
+    tables = buffer.find_all("table")
+    MHC_tab = tables[1]
+    options = []
+    for option in MHC_tab.find_all('option'):
+        if option.text not in options:
+            options.append(option.text)
+    return options
+
+
+def compile_SYF_url(hla_type, html_encoded=False):
+    base_url = "http://www.syfpeithi.de/bin/MHCServer.dll/FindYourMotif?" \
+               "HLA_TYPE={}&AASequence=&OP1=AND&select1=002&content1=&" \
+               "OP2=AND&select2=004&content2=&OP3=AND&select3=003&" \
+               "content3=&OP4=AND"
+
+    if html_encoded:
+        hla_query = hla_type
+    else:
+        hla_query = urllib.request.pathname2url(hla_type)
+
+    query = base_url.format(hla_query)
+    return query
+
+
+def extract_SYF_table(query):
+    handle = urllib.request.urlopen(query)
+    buffer = BeautifulSoup(str(handle.read()), 'html.parser')
+    tables = buffer.find_all("table")
+    epitope_table = tables[1]
