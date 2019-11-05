@@ -10,6 +10,7 @@ from various sources.
 import urllib.request
 import re
 import pandas as pd
+import numpy as np
 from bs4 import BeautifulSoup
 
 
@@ -165,3 +166,39 @@ def extract_SYF_table(query):
     buffer = BeautifulSoup(str(handle.read()), 'html.parser')
     tables = buffer.find_all("table")
     epitope_table = tables[1]
+    out_df = pd.DataFrame(columns=['epitope', 'source', 'reference'])
+    start_flag = False
+    for row in epitope_table.find_all("tr"):
+        if start_flag is False:
+            if len(row) < 4 and "Example for Ligand" in row.text:
+                start_flag = True
+            else:
+                pass
+
+        if start_flag is True:
+            if len(row) == 4:
+                epitope, source, ref, _ = row
+
+                epitope = epitope.text.replace("\xa0", "")
+                # source links may be depreciated... if so pull name
+                source = source.text.replace("\xa0", " ")
+                """
+                if source.find('a', href=True):
+                    source = source.find('a', href=True)['href']
+                    prot_id = re.search("emblfetch\?(.*)", source).groups()[0]
+                else:
+                    source = np.nan
+                    prot_id = np.nan
+                """
+                if ref.find('a', href=True):
+                    ref = ref.find('a', href=True)['href']
+                    pubmed_id = re.search("uids=(\d*)&", ref).groups()[0]
+                else:
+                    pubmed_id = np.nan
+
+                tmp_row = pd.Series([epitope, source, pubmed_id],
+                                    index=out_df.columns)
+                out_df = out_df.append(tmp_row, ignore_index=True)
+            else:
+                pass
+    return out_df
