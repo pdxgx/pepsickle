@@ -20,9 +20,8 @@ for a in allele_list:
     allele_query = ef.compile_SYF_url(a)
     try:
         tmp_df = ef.extract_SYF_table(allele_query)
-    except:
-        print(a)
-        tmp_df = None
+    except ef.EmptyQueryError:
+        continue
     if len(tmp_df) > 0:
         tmp_df['allele'] = a
         full_SYF_df = full_SYF_df.append(tmp_df, ignore_index=True)

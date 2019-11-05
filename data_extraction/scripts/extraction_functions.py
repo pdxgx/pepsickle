@@ -165,6 +165,9 @@ def extract_SYF_table(query):
     handle = urllib.request.urlopen(query)
     buffer = BeautifulSoup(str(handle.read()), 'html.parser')
     tables = buffer.find_all("table")
+    if len(tables) < 2:
+        raise EmptyQueryError(len(tables), "is too few. Missing content table")
+
     epitope_table = tables[1]
     out_df = pd.DataFrame(columns=['epitope', 'source', 'reference'])
     start_flag = False
