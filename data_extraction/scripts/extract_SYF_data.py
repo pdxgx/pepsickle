@@ -10,6 +10,8 @@ import extraction_functions as ef
 outdir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
          "un-merged_data/positives/"
 
+# NOTE: Pulls all epitopes, for class I & II and different organisms... need
+# to restrict this further to save time/downstream filtering issues...
 raw_allele_list = ef.get_SYF_alleles()
 allele_list = raw_allele_list[2:]
 
