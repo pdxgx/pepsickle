@@ -26,7 +26,6 @@ full_SYF_df = pd.DataFrame(columns=['epitope', 'prot_name', 'ebi_id'
                                     'reference', 'allele'])
 
 for a in allele_list:
-    print(a)
     allele_query = ef.compile_SYF_url(a)
     try:
         tmp_df = ef.extract_SYF_table(allele_query)
