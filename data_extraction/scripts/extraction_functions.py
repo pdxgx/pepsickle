@@ -9,6 +9,7 @@ from various sources.
 """
 import urllib.request
 import re
+import ssl
 import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
@@ -169,7 +170,7 @@ def extract_SYF_table(query):
         raise EmptyQueryError(len(tables), "is too few. Missing content table")
 
     epitope_table = tables[1]
-    out_df = pd.DataFrame(columns=['epitope', 'prot_name', 'prot_id',
+    out_df = pd.DataFrame(columns=['epitope', 'prot_name', 'ebi_id',
                                    'reference'])
     start_flag = False
     for row in epitope_table.find_all("tr"):
@@ -187,7 +188,7 @@ def extract_SYF_table(query):
 
                 epitope = epitope.text.replace("\xa0", "")
                 # source links may be depreciated... if so pull name
-                prot_name = source.text.replace("\xa0", " ")
+                prot_name = source.text.replace("\xa0", " ").strip()
                 if source.find('a', href=True):
                     source = source.find('a', href=True)['href']
                     prot_id = re.search("emblfetch\?(.*)", source).groups()[0]
@@ -207,3 +208,44 @@ def extract_SYF_table(query):
                 pass
     return out_df
 
+
+def compile_UniProt_url(clean_prot_name, prot_id=np.nan,
+                        include_experimental=False, html_encoded=False):
+    # add flag for column=reviewed
+    if include_experimental:
+        base_url = "https://www.uniprot.org/uniprot/?query={}&" \
+               "sort=score&columns=id,reviewed,length,organism&format=tab"
+    else:
+        base_url = "https://www.uniprot.org/uniprot/?query=reviewed:yes&{}&" \
+               "sort=score&columns=id,reviewed, length,organism&format=tab"
+
+    if prot_id is np.nan:
+        base_entry = clean_prot_name
+    if prot_id is not np.nan:
+        base_entry = clean_prot_name + prot_id
+
+    if html_encoded:
+        base_entry = base_entry
+    else:
+        base_entry = urllib.request.pathname2url(base_entry)
+    query = base_url.format(base_entry)
+    return query
+
+
+def extract_UniProt_table(query):
+    out_df = pd.DataFrame(columns=["Entry", "Length", "Organism"])
+    context = ssl._create_unverified_context()
+    handle = urllib.request.urlopen(query, context=context)
+    buffer = BeautifulSoup(handle, "html.parser")
+
+    if len(buffer) > 0:
+        rows = buffer.contents[0].split("\n")
+        for entry in range(len(rows)):
+            if rows[entry]:
+                values = rows[entry].split("\t")
+                if entry == 0:
+                    pass
+                else:
+                    tmp_row = pd.Series(values, index=out_df.columns)
+                    out_df = out_df.append(tmp_row, ignore_index=True)
+    return out_df

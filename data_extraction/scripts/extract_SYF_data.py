@@ -4,8 +4,9 @@ This script extracts the epitope/ligand information from the SYFPEITHI
 database (http://www.syfpeithi.de) and converts it into a csv file
 """
 import pandas as pd
+import numpy as np
+import re
 import extraction_functions as ef
-import os
 
 indir = "/Users/weeder/PycharmProjects/proteasome/data_extraction/raw_data/"
 outdir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
@@ -22,10 +23,11 @@ mammal_allele_df = mammal_allele_df[mammal_allele_df.Class != "II"]
 
 allele_list = mammal_allele_df.Allele
 
-full_SYF_df = pd.DataFrame(columns=['epitope', 'prot_name', 'ebi_id'
+full_SYF_df = pd.DataFrame(columns=['epitope', 'prot_name', 'ebi_id',
                                     'reference', 'allele'])
 
 for a in allele_list:
+    print(a)
     allele_query = ef.compile_SYF_url(a)
     try:
         tmp_df = ef.extract_SYF_table(allele_query)
@@ -35,5 +37,28 @@ for a in allele_list:
         tmp_df['allele'] = a
         full_SYF_df = full_SYF_df.append(tmp_df, ignore_index=True, sort=True)
 
+full_SYF_df['UniProt_id'] = np.nan
+full_SYF_df['Position'] = np.nan
 
-full_SYF_df.to_csv(outdir+"SYFPEITHI_epitopes.csv", index=False)
+for e in range(len(full_SYF_df)):
+    entry = full_SYF_df.iloc[e]
+    if entry['prot_name']:
+        prot_name = entry['prot_name'].strip()
+        try:
+            pos = re.search("([0-9]+-[0-9]+)", prot_name).group()
+            clean_prot_name = re.sub(pos, "", prot_name)
+        except AttributeError:
+            pos == np.nan
+            clean_prot_name = re.sub(pos, "", prot_name)
+
+        query = ef.compile_UniProt_url(clean_prot_name, entry['ebi_id'])
+        tmp_df = ef.extract_UniProt_table(query)
+        ids = ";".join(tmp_df['Entry'])
+        full_SYF_df['UniProt_id'].iloc[e] = ids
+        full_SYF_df['Position'].iloc[e] = pos
+    print(round(e/len(full_SYF_df)*100, 2))
+
+
+
+
+# full_SYF_df.to_csv(outdir+"SYFPEITHI_epitopes.csv", index=False)
