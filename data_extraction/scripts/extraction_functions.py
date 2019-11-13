@@ -216,8 +216,9 @@ def compile_UniProt_url(clean_prot_name, prot_id=np.nan,
         base_url = "https://www.uniprot.org/uniprot/?query={}&" \
                "sort=score&columns=id,reviewed,length,organism&format=tab"
     else:
-        base_url = "https://www.uniprot.org/uniprot/?query=reviewed:yes&{}&" \
-               "sort=score&columns=id,reviewed, length,organism&format=tab"
+        base_url = "https://www.uniprot.org/uniprot/?query={}&fil=reviewed" \
+                   "%3Ayes&sort=score&columns=id,reviewed,length,organism&" \
+                   "format=tab"
 
     if prot_id is np.nan:
         base_entry = clean_prot_name
@@ -228,6 +229,7 @@ def compile_UniProt_url(clean_prot_name, prot_id=np.nan,
         base_entry = base_entry
     else:
         base_entry = urllib.request.pathname2url(base_entry)
+
     query = base_url.format(base_entry)
     return query
 

@@ -39,6 +39,7 @@ for a in allele_list:
 
 full_SYF_df['UniProt_id'] = np.nan
 full_SYF_df['Position'] = np.nan
+flags = []
 
 for e in range(len(full_SYF_df)):
     entry = full_SYF_df.iloc[e]
@@ -50,13 +51,17 @@ for e in range(len(full_SYF_df)):
         except AttributeError:
             pos == np.nan
             clean_prot_name = re.sub(pos, "", prot_name)
-
-        query = ef.compile_UniProt_url(clean_prot_name, entry['ebi_id'])
-        tmp_df = ef.extract_UniProt_table(query)
-        ids = ";".join(tmp_df['Entry'])
-        full_SYF_df['UniProt_id'].iloc[e] = ids
-        full_SYF_df['Position'].iloc[e] = pos
-    print(round(e/len(full_SYF_df)*100, 2))
+        try:
+            query = ef.compile_UniProt_url(clean_prot_name, entry['ebi_id'])
+            tmp_df = ef.extract_UniProt_table(query)
+            ids = ";".join(tmp_df['Entry'])
+            full_SYF_df['UniProt_id'].iloc[e] = ids
+            full_SYF_df['Position'].iloc[e] = pos
+            # potentially add search for exp if no results for reviewed
+        except:
+            print("error")
+            flags.append(e)
+    print(round(e/len(full_SYF_df)*100, 2), "% complete")
 
 
 
