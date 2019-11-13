@@ -235,7 +235,7 @@ def compile_UniProt_url(clean_prot_name, prot_id=np.nan,
 
 
 def extract_UniProt_table(query):
-    out_df = pd.DataFrame(columns=["Entry", "Length", "Organism"])
+    out_df = pd.DataFrame(columns=["Entry", "Reviewed", "Length", "Organism"])
     context = ssl._create_unverified_context()
     handle = urllib.request.urlopen(query, context=context)
     buffer = BeautifulSoup(handle, "html.parser")
