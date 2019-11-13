@@ -107,8 +107,6 @@ def create_sequence_regex(epitope_sequence):
         return epitope_sequence
 
 
-# NOTE!!! may need to edit to use value other than X (x only for unknown but
-# present amino acids
 def get_peptide_window(pd_entry, upstream=10, downstream=10, c_terminal=True):
     """
     returns the window of AA's around the C-term of an epitope, given defined
@@ -136,7 +134,7 @@ def get_peptide_window(pd_entry, upstream=10, downstream=10, c_terminal=True):
         # retrieve relevant sequence
         tmp_seq = pd_entry['sequence'][0:cleave_index]
         # add empty AA's prior to seq start
-        upstream_seq = abs(cleave_index - upstream) * "X" + tmp_seq
+        upstream_seq = abs(cleave_index - upstream) * "*" + tmp_seq
     # repeat above with downstream window
     if (cleave_index + 1 + downstream) < len(pd_entry['sequence']):
         downstream_seq = pd_entry['sequence'][
@@ -145,11 +143,11 @@ def get_peptide_window(pd_entry, upstream=10, downstream=10, c_terminal=True):
         # handles issue where cleavage site was end of protein and
         # cleave_index + 1 was beyond sequence bounds
         if cleave_index == (len(pd_entry['sequence']) - 1):
-            downstream_seq = downstream * "X"
+            downstream_seq = downstream * "*"
         else:
             tmp_seq = pd_entry['sequence'][
                       (cleave_index + 1):len(pd_entry['sequence'])]
             downstream_seq = tmp_seq + (downstream + 1 + cleave_index -
-                                        len(pd_entry['sequence'])) * "X"
+                                        len(pd_entry['sequence'])) * "*"
     # return up/down stream windows + cleavage site
     return upstream_seq + pd_entry['sequence'][cleave_index] + downstream_seq
