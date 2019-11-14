@@ -50,7 +50,6 @@ _features = {
     'X': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, np.nan, np.nan,    med,    med,    med]
 }
 
-
 # define function that returns np array of feature vectors
 def featurize_sequence(seq):
     """
@@ -107,12 +106,16 @@ def create_sequence_regex(epitope_sequence):
         return epitope_sequence
 
 
-def get_peptide_window(pd_entry, upstream=10, downstream=10, c_terminal=True):
+def get_peptide_window(sequence, starting_position, ending_position, upstream=10, 
+                       downstream=10, c_terminal=True):
     """
     returns the window of AA's around the C-term of an epitope, given defined
     upstream and downstream window sizes and a row from a pandas df with
     ending position and full origin sequence of the epitope.
     :param pd_entry: pandas entry with (at min.) ending_position and sequence
+    :param sequence: protein sequence from which to extract peptide window
+    :param starting_position: N terminal starting position for epitope (1 based, inclusive)
+    :param ending_position: C terminal ending position for epitope (1 based, exclusive)
     :param upstream: number of upstream AA's to return
     :param downstream: number of downstream AA's to return
     :param c_terminal: whether c or n terminal cleavage site is to be used for
@@ -121,33 +124,30 @@ def get_peptide_window(pd_entry, upstream=10, downstream=10, c_terminal=True):
     """
     # set cleavage site index based on function flag
     if c_terminal:
-        cleave_index = int(pd_entry['ending_position']) - 1
+        cleave_index = int(ending_position) - 1
     if not c_terminal:
-        cleave_index = int(pd_entry['starting_position']) - 1
+        cleave_index = int(starting_position) - 1
 
     # if upstream window does not hit boundary
     if (cleave_index - upstream) >= 0:
-        upstream_seq = pd_entry['sequence'][
-                       (cleave_index - upstream):cleave_index]
+        upstream_seq = sequence[(cleave_index - upstream):cleave_index]
     # if peptide boundary is within upstream window
     if cleave_index - upstream < 0:
         # retrieve relevant sequence
-        tmp_seq = pd_entry['sequence'][0:cleave_index]
+        tmp_seq = sequence[0:cleave_index]
         # add empty AA's prior to seq start
         upstream_seq = abs(cleave_index - upstream) * "*" + tmp_seq
     # repeat above with downstream window
-    if (cleave_index + 1 + downstream) < len(pd_entry['sequence']):
-        downstream_seq = pd_entry['sequence'][
-                         (cleave_index + 1):(cleave_index + downstream + 1)]
-    if (cleave_index + 1 + downstream) >= len(pd_entry['sequence']):
+    if (cleave_index + 1 + downstream) < len(sequence):
+        downstream_seq = sequence[(cleave_index + 1):(cleave_index + downstream + 1)]
+    if (cleave_index + 1 + downstream) >= len(sequence):
         # handles issue where cleavage site was end of protein and
         # cleave_index + 1 was beyond sequence bounds
-        if cleave_index == (len(pd_entry['sequence']) - 1):
+        if cleave_index == (len(sequence) - 1):
             downstream_seq = downstream * "*"
         else:
-            tmp_seq = pd_entry['sequence'][
-                      (cleave_index + 1):len(pd_entry['sequence'])]
+            tmp_seq = sequence[(cleave_index + 1):len(sequence)]
             downstream_seq = tmp_seq + (downstream + 1 + cleave_index -
-                                        len(pd_entry['sequence'])) * "*"
+                                        len(sequence)) * "*"
     # return up/down stream windows + cleavage site
-    return upstream_seq + pd_entry['sequence'][cleave_index] + downstream_seq
+    return upstream_seq + sequence[cleave_index] + downstream_seq
