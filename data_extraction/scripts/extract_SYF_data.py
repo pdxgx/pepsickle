@@ -58,9 +58,9 @@ for e in range(len(full_SYF_df)):
             tmp_df = ef.extract_UniProt_table(query)
             ids = ";".join(tmp_df['Entry'])
             full_SYF_df.at[e, 'UniProt_id'] = ids
-            full_SYF_df.at[e, 'UniProt_reviewed'] = "reviewed" in tmp_df['Reviewed']
+            full_SYF_df.at[e, 'UniProt_reviewed'] = "reviewed" in list(tmp_df['Reviewed'])
             full_SYF_df.at[e, 'Position'] = pos
-            # potentially add search for exp if no results for reviewed
+            # potentially add search for experimental if no results for reviewed
         except:
             flags.append(e)
     print(round(e/len(full_SYF_df)*100, 2), "% complete")
@@ -70,4 +70,4 @@ print("Total entries: ", len(full_SYF_df))
 print("Retrieved ID's: ", full_SYF_df['UniProt_id'].count())
 print("Missing: ", len(full_SYF_df) - full_SYF_df['UniProt_id'].count())
 
-# full_SYF_df.to_csv(outdir+"SYFPEITHI_epitopes.csv", index=False)
+full_SYF_df.to_csv(outdir+"tmp_SYFPEITHI_epitopes.csv", index=False)
