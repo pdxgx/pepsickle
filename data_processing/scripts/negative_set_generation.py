@@ -119,10 +119,10 @@ if __name__ == '__main__':
 	# Create feature arrays for positive and negative examples
 	data_set = {'positives': {}, 'negatives': {}}
 	for window in positives:
-		matrix = sf.generate_feature_array(window)
+		matrix = sf.generate_sparse_feature_matrix(window)
 		data_set['positives'][window] = matrix
 	for window in negatives:
-		matrix = sf.generate_feature_array(window)
+		matrix = sf.generate_sparse_feature_matrix(window)
 		data_set['negatives'][window] = matrix
 
 	# Store dataset to pickled dictionary
