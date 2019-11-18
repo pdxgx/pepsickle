@@ -40,6 +40,7 @@ for a in allele_list:
 full_SYF_df['UniProt_id'] = None
 full_SYF_df['UniProt_reviewed'] = None
 full_SYF_df['Position'] = None
+n_entries = []
 flags = []
 
 for e in range(len(full_SYF_df)):
@@ -54,8 +55,30 @@ for e in range(len(full_SYF_df)):
             clean_prot_name = re.sub(pos, "", prot_name)
 
         try:
+            # make base query with id and protein name
             query = ef.compile_UniProt_url(clean_prot_name, entry['ebi_id'])
             tmp_df = ef.extract_UniProt_table(query)
+            # if no results try without protein name
+            if len(tmp_df) == 0 and entry['ebi_id'] is not np.nan:
+                query = ef.compile_UniProt_url("", entry['ebi_id'])
+                tmp_df = ef.extract_UniProt_table(query)
+                # if nothing, repeat with only protein name
+                if len(tmp_df) == 0 and entry['ebi_id'] is not np.nan:
+                    query = ef.compile_UniProt_url(clean_prot_name)
+                    tmp_df = ef.extract_UniProt_table(query)
+                    # if nothing, repeat with experimental included
+                    if len(tmp_df) == 0 and entry['ebi_id'] is not np.nan:
+                        query = ef.compile_UniProt_url(clean_prot_name,
+                                                       entry['ebi_id'],
+                                                       include_experimental=True)
+                        tmp_df = ef.extract_UniProt_table(query)
+                        # if nothing repeat with exp. and no protein name
+                        if len(tmp_df) == 0 and entry['ebi_id'] is not np.nan:
+                            query = ef.compile_UniProt_url("",
+                                                           entry['ebi_id'],
+                                                           include_experimental=True)
+                            tmp_df = ef.extract_UniProt_table(query)
+
             ids = ";".join(tmp_df['Entry'])
             full_SYF_df.at[e, 'UniProt_id'] = ids
             full_SYF_df.at[e, 'UniProt_reviewed'] = "reviewed" in list(tmp_df['Reviewed'])
@@ -63,11 +86,21 @@ for e in range(len(full_SYF_df)):
             # potentially add search for experimental if no results for reviewed
         except:
             flags.append(e)
-    print(round(e/len(full_SYF_df)*100, 2), "% complete")
+    print(e, "/", len(full_SYF_df), " complete", sep="")
 
 print(flags)
 print("Total entries: ", len(full_SYF_df))
-print("Retrieved ID's: ", full_SYF_df['UniProt_id'].count())
-print("Missing: ", len(full_SYF_df) - full_SYF_df['UniProt_id'].count())
+print("Queried ID's: ", full_SYF_df['UniProt_id'].count())
+
+missing_id = []
+for entry in full_SYF_df['UniProt_id']:
+    if str(entry) == "":
+        missing_id.append(True)
+    else:
+        missing_id.append(False)
+
+missing_id_index = [i for i, val in enumerate(missing_id) if val]
+print("Missing: ",len(missing_id_index))
+print(missing_id_index)
 
 full_SYF_df.to_csv(outdir+"tmp_SYFPEITHI_epitopes.csv", index=False)
