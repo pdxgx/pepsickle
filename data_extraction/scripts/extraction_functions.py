@@ -251,3 +251,14 @@ def extract_UniProt_table(query):
                     tmp_row = pd.Series(values, index=out_df.columns)
                     out_df = out_df.append(tmp_row, ignore_index=True)
     return out_df
+
+
+def retrieve_UniProt_seq(UniProt_id):
+    base_query = "https://www.uniprot.org/uniprot/?query={}&format=fasta"
+    query = base_query.format(UniProt_id)
+    context = ssl._create_unverified_context()
+    handle = urllib.request.urlopen(query, context=context)
+    buffer = BeautifulSoup(handle, "html.parser").prettify()
+    buffer_split = buffer.split("\n")
+    sequence = "".join(buffer_split[1:])
+    return sequence
