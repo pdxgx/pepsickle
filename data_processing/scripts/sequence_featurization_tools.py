@@ -23,7 +23,7 @@ from scipy.sparse import csr_matrix
 # Hydrophobicity: Hydrophobicity Scale using the contact angle of a water nanodroplet (cos θ), 
 #                 obtained from: https://doi.org/10.1073/pnas.1616138113
 # Conformational Entropy: Conformational entropy of AA's not interacting in secondary structures.
-#                 Data Pulled from https://doi:10.1371/journal.pone.0132356
+#                         Data Pulled from https://doi:10.1371/journal.pone.0132356
 
 # B, J, & Z represent ambiguous aa's that could be one of two similar residues
 # * = absence of amino acid: pI = 7.5 (normal cytoplasmic pH), molecular volume = 0
@@ -51,11 +51,11 @@ _features = {
     'W': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,      1,      0,   5.89,  137.5186,  -0.27, -4.8],
     'Y': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,      1,      1,   5.66,  121.5862,  1.677, -5.4],
     '*': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0, 7.5,      0.0, np.nan, np.nan],
-    'B': [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0,   4.09,   73.30601,  5.964, x],
-    'Z': [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,      0,      0,   4.44,   87.49089,  2.675, x],
-    'J': [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0,    6.0,  103.2094,  -.426, x],
+    'B': [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0,   4.09,   73.30601,  5.964, -4.6],
+    'Z': [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,      0,      0,   4.44,   87.49089,  2.675, -5.35],
+    'J': [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0,    6.0,  103.2094,  -0.426, -6.45],
     #'U': [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0,      x,      x,      x, x],
-    'X': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5,    6.008095,    88.55829,    np.nan, np.nan]
+    'X': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5,    6.008095,    88.55829,    np.nan, -4.845]
 }
 
 
