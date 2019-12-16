@@ -19,7 +19,7 @@ import re
 import pandas as pd
 
 # Later replace file_dir with -i argparse
-file_dir = os.getcwd() + "/../un-merged_data/"
+file_dir = "/Users/weeder/PycharmProjects/proteasome/data_processing/un-merged_data/"
 # get lists of positive and negative files to load in
 pos_data_files = os.listdir(file_dir + "positives/")
 neg_data_files = os.listdir(file_dir + "negatives/")

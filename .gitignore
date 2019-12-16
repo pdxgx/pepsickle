@@ -39,8 +39,7 @@ vignettes/*.pdf
 rsconnect/
 
 # directories with large data files
-/data_processing/merged_data/excluded/
-/data_processing/merged_data/filtered/
 /data_processing/un-merged_data/
 /data_processing/generated_training_sets/
 /data_extraction/raw_data/
+/data_processing/merged_data/
