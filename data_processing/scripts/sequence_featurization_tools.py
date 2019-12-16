@@ -15,11 +15,19 @@ from scipy.sparse import csr_matrix
 # aa matrix, cols 1:20 are sparse encodings of aa identity, 21:25 are:
 # Aromatic (0/1)
 # Hydroxyl (0/1)
-# Polarity (PI)
-# Molecular Volume (1024 Vtrib)
-# Hydrophobicity (cos θ)
+# Polarity: Isoelectric point (pI = pH at isoelectric point),
+#           obtained from: https://www.sigmaaldrich.com/life-science/metabolomics/learning-center/amino-acid-reference-chart.html#4
+#           (D.R. Lide, Handbook of Chemistry and Physics, 72nd Edition, CRC Press, Boca Raton, FL, 1991)
+# Molecular Volume: Partial molar volume of AA sidechain @ 37 degrees C, 
+#                   obtained from: https://doi.org/10.1016/S0301-4622(99)00104-0
+# Hydrophobicity: Hydrophobicity Scale using the contact angle of a water nanodroplet (cos θ), 
+#                 obtained from: https://doi.org/10.1073/pnas.1616138113
+# Conformational Entropy: Conformational entropy of AA's not interacting in secondary structures.
+#                         Data Pulled from https://doi:10.1371/journal.pone.0132356
 
 # B, J, & Z represent ambiguous aa's that could be one of two similar residues
+# * = absence of amino acid: pI = 7.5 (normal cytoplasmic pH), Molecular volume = 0, Hydrophobicity = 1.689157 (extrapolated cos θ for water), Entropy = 0 
+# X = any amino acid: Aromatic = 0.5, Hydroxl = 0.5, Hydrophobicity = median, all other values are averages
 # U is still in progress and needs to be edited further
 _features = {
     'A': [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0,    6.0,   56.15265, -0.495, -2.4],
@@ -42,11 +50,11 @@ _features = {
     'V': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,      0,      0,   5.96,   86.28358, -0.308, -4.6],
     'W': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,      1,      0,   5.89,  137.5186,  -0.27, -4.8],
     'Y': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,      1,      1,   5.66,  121.5862,  1.677, -5.4],
-    '*': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0, 7.5,      0.0, 0, 1.689157],
+    '*': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0, 7.5,      0.0, 1.689157, 0.0],
     'B': [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0,   4.09,   73.30601,  5.964, -4.6],
     'Z': [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,      0,      0,   4.44,   87.49089,  2.675, -5.35],
     'J': [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0,    6.0,  103.2094,  -0.426, -6.45],
-    'U': [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0,   5.07,   69.61701,  0.081, -4.7],
+    #'U': [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,      0,      0,      x,      x,      x, x],
     'X': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5,    6.008095,    88.55829,    0.6195, -4.845]
 }
 
@@ -73,15 +81,15 @@ def generate_feature_array(seq_list):
     return feature_array
 
 
-def generate_feature_matrix(seq_list):
+def generate_sparse_feature_matrix(seq_list):
     """
     generates 2D array of (sequence, features) in condensed sparse row format
     from a given sequence list
     :param seq_list: list of amino acid strings of the same length to featurize
     :return feature_matrix: 2D array of features for each sequence given
     """
-    feature_matrix = np.concatenate(
-        [featurize_sequence(s).reshape(1, -1) for s in seq_list]
+    feature_matrix = csr_matrix(
+        [featurize_sequence(s).flatten() for s in seq_list]
     )
     return feature_matrix
 
@@ -107,12 +115,16 @@ def create_sequence_regex(epitope_sequence):
         return epitope_sequence
 
 
-def get_peptide_window(pd_entry, upstream=10, downstream=10, c_terminal=True):
+def get_peptide_window(sequence, starting_position, ending_position, upstream=10, 
+                       downstream=10, c_terminal=True):
     """
     returns the window of AA's around the C-term of an epitope, given defined
     upstream and downstream window sizes and a row from a pandas df with
     ending position and full origin sequence of the epitope.
     :param pd_entry: pandas entry with (at min.) ending_position and sequence
+    :param sequence: protein sequence from which to extract peptide window
+    :param starting_position: N terminal starting position for epitope (1 based, inclusive)
+    :param ending_position: C terminal ending position for epitope (1 based, exclusive)
     :param upstream: number of upstream AA's to return
     :param downstream: number of downstream AA's to return
     :param c_terminal: whether c or n terminal cleavage site is to be used for
@@ -121,33 +133,30 @@ def get_peptide_window(pd_entry, upstream=10, downstream=10, c_terminal=True):
     """
     # set cleavage site index based on function flag
     if c_terminal:
-        cleave_index = int(pd_entry['ending_position']) - 1
+        cleave_index = int(ending_position) - 1
     if not c_terminal:
-        cleave_index = int(pd_entry['starting_position']) - 1
+        cleave_index = int(starting_position) - 1
 
     # if upstream window does not hit boundary
     if (cleave_index - upstream) >= 0:
-        upstream_seq = pd_entry['sequence'][
-                       (cleave_index - upstream):cleave_index]
+        upstream_seq = sequence[(cleave_index - upstream):cleave_index]
     # if peptide boundary is within upstream window
     if cleave_index - upstream < 0:
         # retrieve relevant sequence
-        tmp_seq = pd_entry['sequence'][0:cleave_index]
+        tmp_seq = sequence[0:cleave_index]
         # add empty AA's prior to seq start
         upstream_seq = abs(cleave_index - upstream) * "*" + tmp_seq
     # repeat above with downstream window
-    if (cleave_index + 1 + downstream) < len(pd_entry['sequence']):
-        downstream_seq = pd_entry['sequence'][
-                         (cleave_index + 1):(cleave_index + downstream + 1)]
-    if (cleave_index + 1 + downstream) >= len(pd_entry['sequence']):
+    if (cleave_index + 1 + downstream) < len(sequence):
+        downstream_seq = sequence[(cleave_index + 1):(cleave_index + downstream + 1)]
+    if (cleave_index + 1 + downstream) >= len(sequence):
         # handles issue where cleavage site was end of protein and
         # cleave_index + 1 was beyond sequence bounds
-        if cleave_index == (len(pd_entry['sequence']) - 1):
+        if cleave_index == (len(sequence) - 1):
             downstream_seq = downstream * "*"
         else:
-            tmp_seq = pd_entry['sequence'][
-                      (cleave_index + 1):len(pd_entry['sequence'])]
+            tmp_seq = sequence[(cleave_index + 1):len(sequence)]
             downstream_seq = tmp_seq + (downstream + 1 + cleave_index -
-                                        len(pd_entry['sequence'])) * "*"
+                                        len(sequence)) * "*"
     # return up/down stream windows + cleavage site
-    return upstream_seq + pd_entry['sequence'][cleave_index] + downstream_seq
+    return upstream_seq + sequence[cleave_index] + downstream_seq
