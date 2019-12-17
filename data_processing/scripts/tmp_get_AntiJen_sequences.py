@@ -52,9 +52,10 @@ new_col_names = ['fragment', 'MHC_types', 'origin_species', 'category', 'UniProt
                  'ref_type', 'lit_reference', 'full_sequence', 'entry_source',
                  'start_pos', 'end_pos']
 
+# fix column names on antijen df...
 antijen_tcell_df.columns = new_col_names
 
-# fix column names on antijen df...
+# subset relevant columns
 antijen_tcell_df = antijen_tcell_df[['fragment', 'MHC_types', 'origin_species',
                                      'UniProt_parent_id',  'lit_reference',
                                      'full_sequence', 'entry_source',
