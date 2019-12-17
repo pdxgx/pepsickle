@@ -1,7 +1,7 @@
 import pandas as pd
 import extraction_functions
 
-indir = "/Users/weeder/PycharmProjects/proteasome/data_processing/un-merged_data/positives/"
+indir = "/Users/weeder/PycharmProjects/proteasome/data_processing/un-merged_data/"
 iedb_df = pd.read_csv(indir + "IEDB.csv", low_memory=False)
 
 # iedb_df['full_sequence'] = None

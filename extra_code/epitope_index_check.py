@@ -5,7 +5,7 @@ import pandas as pd
 file_dir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
            "un-merged_data/"
 
-df = pd.read_csv(file_dir + 'tmp_merged.csv')
+df = pd.read_csv(file_dir + 'tmp_merged_v2.csv', low_memory=False)
 df = df.where(pd.notnull(df), None)
 df = df[df.full_sequence.notnull()]
 df = df.reset_index(drop=True)
@@ -101,4 +101,4 @@ for i in range(len(df)):
 df.drop(index=mismatch_indices, inplace=True)
 df = df.reset_index(drop=True)
 
-df.to_csv(file_dir+"tmp_data_indices_repaired.csv", index=False)
+df.to_csv(file_dir+"tmp_data_v2_indices_repaired.csv", index=False)

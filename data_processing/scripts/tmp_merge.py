@@ -6,8 +6,9 @@ import pandas as pd
 file_dir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
            "un-merged_data/"
 
-SYF_df = pd.read_csv(file_dir + "positives/" + "SYF_data_w_sequences.csv")
-IEDB_df = pd.read_csv(file_dir + "positives/" + "IEDB_data_w_sequences.csv")
+SYF_df = pd.read_csv(file_dir + "SYF_data_w_sequences.csv")
+IEDB_df = pd.read_csv(file_dir + "IEDB_data_w_sequences.csv")
+digestion_df = pd.read_csv(file_dir + "edited_digestion.csv")
 IEDB_df['entry_source'] = "IEDB"
 
 new_col_names = ['IEDB_id', 'fragment', 'start_pos', 'end_pos',
@@ -49,5 +50,6 @@ for i in range(len(IEDB_df)):
         IEDB_df.at[i, 'origin_species'] = "mammal_other"
 
 out_df = IEDB_df.append(SYF_df, ignore_index=True, sort=True)
+out_df = out_df.append(digestion_df, ignore_index=True, sort=True)
 
-out_df.to_csv(file_dir + "tmp_merged.csv", index=False)
+out_df.to_csv(file_dir + "tmp_merged_v2.csv", index=False)
