@@ -135,6 +135,10 @@ def extract_AntiJen_table(antijen_url, page_type="T_cell"):
 
 
 def get_SYF_alleles():
+    """
+    performs a web query that returns all allele options in the SYF database
+    :return: list of MHC options
+    """
     query = "http://www.syfpeithi.de/bin/MHCServer.dll/FindYourMotif.htm"
     handle = urllib.request.urlopen(query)
     buffer = BeautifulSoup(str(handle.read()), 'html.parser')
@@ -148,6 +152,14 @@ def get_SYF_alleles():
 
 
 def compile_SYF_url(hla_type, html_encoded=False):
+    """
+    creates a SYF query for all epitopes associated with the given hla and
+    returns a formatted query string.
+    :hla_type: the name of the HLA to search in the SYF database
+    :html_encoded: flag, true if special characters in hla_type should be html
+    encoded in the output
+    :return: query string for SYF database
+    """
     base_url = "http://www.syfpeithi.de/bin/MHCServer.dll/FindYourMotif?" \
                "HLA_TYPE={}&AASequence=&OP1=AND&select1=002&content1=&" \
                "OP2=AND&select2=004&content2=&OP3=AND&select3=003&" \
@@ -163,6 +175,12 @@ def compile_SYF_url(hla_type, html_encoded=False):
 
 
 def extract_SYF_table(query):
+    """
+    returns a parsed pandas df of entries for a given SYF query.
+    :query: SYF html query
+    :return: a pandas data frame with epitope entries and relevant supporting
+    information
+    """
     handle = urllib.request.urlopen(query)
     buffer = BeautifulSoup(str(handle.read()), 'html.parser')
     tables = buffer.find_all("table")
@@ -209,8 +227,17 @@ def extract_SYF_table(query):
     return out_df
 
 
-def compile_UniProt_url(clean_prot_name, prot_id=np.nan,
+def compile_UniProt_url(prot_name, prot_id=np.nan,
                         include_experimental=False, html_encoded=False):
+    """
+    compiles uniprot HTML query
+    :prot_name: plain text name of the protein to be queried
+    :prot_id: optional, uniprot ID or alias ID
+    :include_experimental: flag, whether to include experimental proteins along
+    with reviewed proteins
+    :html_encoded: flag, true if output query should be html encoded.
+    :return: UniProt query string for the protein requested
+    """
     # add flag for column=reviewed
     if include_experimental:
         base_url = "https://www.uniprot.org/uniprot/?query={}&" \
@@ -221,9 +248,9 @@ def compile_UniProt_url(clean_prot_name, prot_id=np.nan,
                    "format=tab"
 
     if prot_id is np.nan:
-        base_entry = clean_prot_name
+        base_entry = prot_name
     if prot_id is not np.nan:
-        base_entry = clean_prot_name + prot_id
+        base_entry = prot_name + prot_id
 
     if html_encoded:
         base_entry = base_entry
@@ -235,6 +262,12 @@ def compile_UniProt_url(clean_prot_name, prot_id=np.nan,
 
 
 def extract_UniProt_table(query):
+    """
+    extracts a pandas data frame of relevant UniProt data for a given UniProt
+    query
+    :query: a UniProt HTML query
+    :return: pandas data frame with parsed info from UniProt
+    """
     out_df = pd.DataFrame(columns=["Entry", "Reviewed", "Length", "Organism"])
     context = ssl._create_unverified_context()
     handle = urllib.request.urlopen(query, context=context)
@@ -254,6 +287,11 @@ def extract_UniProt_table(query):
 
 
 def retrieve_UniProt_seq(UniProt_id):
+    """
+    returns the full UniProt reference sequence for a given UniProt ID.
+    :UniProt_id: uniprot identifier
+    :return: full AA sequence of a protein
+    """
     base_query = "https://www.uniprot.org/uniprot/?query={}&format=fasta"
     query = base_query.format(UniProt_id)
     context = ssl._create_unverified_context()
