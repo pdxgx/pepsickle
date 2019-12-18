@@ -116,29 +116,28 @@ def create_sequence_regex(epitope_sequence):
 
 
 def get_peptide_window(sequence, starting_position, ending_position, upstream=10, 
-                       downstream=10, c_terminus=True):
+                       downstream=10, c_terminal=True):
     """
     returns the window of AA's around the C-term of an epitope, given defined
     upstream and downstream window sizes and a row from a pandas df with
     ending position and full origin sequence of the epitope.
     :param pd_entry: pandas entry with (at min.) ending_position and sequence
     :param sequence: protein sequence from which to extract peptide window
-    :param starting_position: N terminal starting position for epitope (0 based, inclusive)
-    :param ending_position: C terminal ending position for epitope (0 based, exclusive)
+    :param starting_position: N terminal starting position for epitope (1 based, inclusive)
+    :param ending_position: C terminal ending position for epitope (1 based, exclusive)
     :param upstream: number of upstream AA's to return
     :param downstream: number of downstream AA's to return
-    :param c_terminus: whether c or n terminal cleavage site is to be used for
+    :param c_terminal: whether c or n terminal cleavage site is to be used for
     window midpoint
     :return: full window of AA's including the cleavage site
     """
     # set cleavage site index based on function flag
-    if c_terminus:
+    if c_terminal:
         cleave_index = int(ending_position) - 1
-    if not c_terminus:
-        # cleavage occurs at right of AA
+    if not c_terminal:
         cleave_index = int(starting_position) - 1
 
-    if cleave_index < 0 or (cleave_index + 1) == len(sequence):
+    if cleave_index <= 0 or (cleave_index - 1) >= len(sequence):
         return None
 
     # if upstream window does not hit boundary
