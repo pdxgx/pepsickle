@@ -8,6 +8,7 @@ file_dir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
 
 SYF_df = pd.read_csv(file_dir + "SYF_data_w_sequences.csv")
 IEDB_df = pd.read_csv(file_dir + "IEDB_data_w_sequences.csv")
+antijen_df = pd.read_csv(file_dir + "AntiJen_Tcell_w_sequences.csv")
 digestion_df = pd.read_csv(file_dir + "edited_digestion.csv")
 IEDB_df['entry_source'] = "IEDB"
 
@@ -31,6 +32,7 @@ SYF_df['IEDB_id'] = None
 SYF_df = SYF_df[['IEDB_id','epitope', 'start_pos', 'end_pos', 'UniProt_id',
                  'Human', 'reference', 'full_sequence', 'Origin']]
 
+
 SYF_df.columns = new_col_names
 SYF_df['origin_species'] = SYF_df['origin_species'].astype(str)
 for i in range(len(SYF_df)):
@@ -49,7 +51,21 @@ for i in range(len(IEDB_df)):
     else:
         IEDB_df.at[i, 'origin_species'] = "mammal_other"
 
+
+# antijen
+antijen_df["IEDB_id"] = None
+
+for i in range(len(antijen_df)):
+    entry = antijen_df.iloc[i]['origin_species']
+    if 'HUMAN' in entry:
+        antijen_df.at[i, 'origin_species'] = "human"
+    else:
+        antijen_df.at[i, 'origin_species'] = "mammal_other"
+
+antijen_df.drop(columns="MHC_types", inplace=True)
+
 out_df = IEDB_df.append(SYF_df, ignore_index=True, sort=True)
+out_df = out_df.append(antijen_df, ignore_index=True, sort=True)
 out_df = out_df.append(digestion_df, ignore_index=True, sort=True)
 
 out_df.to_csv(file_dir + "tmp_merged_v2.csv", index=False)
