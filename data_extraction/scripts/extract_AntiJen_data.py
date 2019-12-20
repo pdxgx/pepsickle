@@ -8,6 +8,7 @@ For issues contact Ben Weeder (weeder@ohsu.edu)
 """
 from itertools import product
 import pandas as pd
+from optparse import OptionParser
 import extraction_functions as ef
 
 
@@ -18,9 +19,6 @@ parser.add_option("-o", "--out_dir", dest="out_dir",
 
 
 (options, args) = parser.parse_args()
-
-outdir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
-         "un-merged_data/positives/"
 
 # set url for summary tcell assay table
 AntiJen_tcell_summary_url = "http://www.ddg-pharmfac.net/antijen/scripts/" \
