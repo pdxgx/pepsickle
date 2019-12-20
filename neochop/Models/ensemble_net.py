@@ -105,9 +105,24 @@ if dtype == torch.cuda.FloatTensor:
 handle = open(indir + file, "rb")
 data = pickle.load(handle)
 
-pos_windows = list(data['positives'].keys())
+# for human only...
+pos_windows = []
+for key in data['positives'].keys():
+    entry = data['positives'][key]
+    if any('human' in i for i in entry):
+        pos_windows.append(key)
+
+# for all mammals
+# pos_windows = list(data['positives'].keys())
 pos_feature_matrix = torch.from_numpy(generate_feature_array(pos_windows))
-neg_windows = list(data['negatives'].keys())
+
+neg_windows = []
+for key in data['negatives'].keys():
+    entry = data['negatives'][key]
+    if any('human' in i for i in entry):
+        neg_windows.append(key)
+
+# neg_windows = list(data['negatives'].keys())
 neg_feature_matrix = torch.from_numpy(generate_feature_array(neg_windows))
 
 
