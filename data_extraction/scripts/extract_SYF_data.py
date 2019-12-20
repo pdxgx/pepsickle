@@ -9,6 +9,7 @@ import re
 from optparse import OptionParser
 from extraction_functions import *
 
+# define command line options
 parser = OptionParser()
 parser.add_option("--allele_file", dest="allele_file",
                   help="input csv of alleles to query")

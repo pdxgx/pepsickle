@@ -10,6 +10,15 @@ from itertools import product
 import pandas as pd
 import extraction_functions as ef
 
+
+# define command line parameters
+parser = OptionParser()
+parser.add_option("-o", "--out_dir", dest="out_dir",
+                  help="output directory where antigen csv's are exported")
+
+
+(options, args) = parser.parse_args()
+
 outdir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
          "un-merged_data/positives/"
 
@@ -134,5 +143,5 @@ for epitope in TAP_peptides:
 
 # put write outs here
 
-tcell_epitope_df.to_csv(outdir+"/AntiJen_Tcell_epitopes.csv", index=False)
-tap_epitope_df.to_csv(outdir+"/AntiJen_tap_epitopes.csv", index=False)
+tcell_epitope_df.to_csv(options.out_dir+"/AntiJen_Tcell_epitopes.csv", index=False)
+tap_epitope_df.to_csv(options.outdir+"/AntiJen_tap_epitopes.csv", index=False)
