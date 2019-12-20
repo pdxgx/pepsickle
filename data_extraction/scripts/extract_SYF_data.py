@@ -6,19 +6,24 @@ database (http://www.syfpeithi.de) and converts it into a csv file
 import pandas as pd
 import numpy as np
 import re
-import extraction_functions
+from optparse import OptionParser
+from extraction_functions import *
 
-indir = "/Users/weeder/PycharmProjects/proteasome/data_extraction/raw_data/"
-outdir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
-         "un-merged_data/positives/"
+parser = OptionParser()
+parser.add_option("--allele_file", dest="allele_file",
+                  help="input csv of alleles to query")
+parser.add_option("-o", "--out_file", dest="out_file",
+                  help="output csv with SYFPEITHI entries")
 
+
+(options, args) = parser.parse_args()
 # NOTE: Pulls all epitopes, for class I & II and different organisms... need
 # to restrict this further to save time/downstream filtering issues...
 # raw_allele_list = ef.get_SYF_alleles()
 # allele_series = pd.Series(raw_allele_list)
 # allele_series.to_csv("../raw_allele_series.csv", index=False, header=False)
 
-mammal_allele_df = pd.read_csv(indir + "raw_mammal_allele_series.csv")
+mammal_allele_df = pd.read_csv(options.allele_file)
 mammal_allele_df = mammal_allele_df[mammal_allele_df.Class != "II"]
 
 allele_list = mammal_allele_df.Allele
@@ -105,6 +110,6 @@ print(missing_id_index)
 
 full_SYF_df.dropna(subset=["UniProt_id"], inplace=True)
 full_SYF_df['Human'] = ["HLA-" in a for a in full_SYF_df['allele']]
-full_SYF_df = full_SYF_df[['allele', 'epitope', 'UniProt_id','Position', 'Human', 'reference']]
+full_SYF_df = full_SYF_df[['allele', 'epitope', 'UniProt_id', 'Position', 'Human', 'reference']]
 
-full_SYF_df.to_csv(outdir+"tmp_SYFPEITHI_epitopes.csv", index=False)
+full_SYF_df.to_csv(options.out_file, index=False)
