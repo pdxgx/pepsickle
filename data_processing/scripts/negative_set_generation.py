@@ -151,8 +151,10 @@ if __name__ == '__main__':
 													upstream=upstream_window, 
 													downstream=downstream_window,
 					)
-					unknowns[peptide_window].add((tuple(row[0:-3])))
-			elif row['start_pos'] != 0 and not args.no_positive_n_terminus:
+					if peptide_window is not None:
+						# Adds window to unknowns if center is in valid protein space
+						unknowns[peptide_window].add((tuple(row[0:-3])))
+			elif row['start_pos'] > 0 and not args.no_positive_n_terminus:
 				# Also store N-terminal peptide window in positives (and regex if relevant)
 				peptide_window = sf.get_peptide_window(
 													protein, row['start_pos'], None, 
@@ -177,7 +179,7 @@ if __name__ == '__main__':
 				)
 				unknowns[peptide_window].add(tuple(row[0:-3]))
 
-		elif row['start_pos'] != 0:
+		elif row['start_pos'] > 0:
 			# Also store N-terminal peptide window in positives (and regex if relevant)
 			peptide_window = sf.get_peptide_window(
 												protein, row['start_pos'], None, 
@@ -206,7 +208,7 @@ if __name__ == '__main__':
 		temp_negatives = set()
 		for i in range(int(row['start_pos'])+1, int(row['end_pos'])):
 			peptide_window = sf.get_peptide_window(
-											protein, None, i,
+											protein, None, i+1,
 											upstream=upstream_window, 
 											downstream=downstream_window,
 			)
