@@ -254,7 +254,7 @@ if __name__ == '__main__':
 					neg_count += 1
 				if row['start_pos'] != 0:
 					neg_count += 1
-				selected = random.sample(new_negatives, max(0, neg_count))
+				selected = random.sample(new_negatives, min(len(new_negatives), neg_count))
 				for peptide in selected:
 					negatives[peptide].add(tuple(row[0:-3]))
 			# Add info for redundant negatives
@@ -371,7 +371,7 @@ if __name__ == '__main__':
 					neg_count += 1
 				if args.trimming_window > len(row['fragment']) and row['start_pos'] != 0:
 					neg_count += 1
-				selected = random.sample(new_negatives, max(0, neg_count))
+				selected = random.sample(new_negatives, min(len(new_negatives), neg_count))
 				for peptide in selected:
 					negatives[peptide].add(tuple(row[0:-3]))
 			# Add info for redundant negatives
