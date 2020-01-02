@@ -1,5 +1,3 @@
-import os
-import re
 import pandas as pd
 
 # Later replace file_dir with -i argparse
@@ -8,12 +6,13 @@ file_dir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
 
 SYF_df = pd.read_csv(file_dir + "SYF_data_w_sequences.csv")
 IEDB_df = pd.read_csv(file_dir + "IEDB_data_w_sequences.csv")
+bc_df = pd.read_csv(file_dir + "breast_cancer_data_w_sequences.csv")
 antijen_df = pd.read_csv(file_dir + "AntiJen_Tcell_w_sequences.csv")
 digestion_df = pd.read_csv(file_dir + "edited_digestion.csv")
 IEDB_df['entry_source'] = "IEDB"
 
 new_col_names = ['IEDB_id', 'fragment', 'start_pos', 'end_pos',
-                 'UniProt_parent_id', 'origin_species', 'lit_reference',
+                 'UniProt_id', 'origin_species', 'lit_reference',
                  'full_sequence', 'entry_source']
 
 IEDB_df.columns = new_col_names
@@ -54,6 +53,8 @@ for i in range(len(IEDB_df)):
 
 # antijen
 antijen_df["IEDB_id"] = None
+antijen_df['UniProt_id'] = antijen_df["UniProt_parent_id"]
+
 
 for i in range(len(antijen_df)):
     entry = antijen_df.iloc[i]['origin_species']
@@ -64,8 +65,18 @@ for i in range(len(antijen_df)):
 
 antijen_df.drop(columns="MHC_types", inplace=True)
 
+
+# breast cancer data
+bc_df['IEDB_id'] = None
+bc_df['fragment'] = bc_df['Description']
+bc_df['UniProt_id'] = bc_df['Parent Protein IRI (Uniprot)']
+bc_df['lit_reference'] = bc_df['Source']
+bc_df.drop(columns=['Description', 'Parent Protein IRI (Uniprot)', 'Source'], inplace=True)
+
+
 out_df = IEDB_df.append(SYF_df, ignore_index=True, sort=True)
 out_df = out_df.append(antijen_df, ignore_index=True, sort=True)
 out_df = out_df.append(digestion_df, ignore_index=True, sort=True)
+out_df = out_df.append(bc_df, ignore_index=True, sort=True)
 
-out_df.to_csv(file_dir + "tmp_merged_v2.csv", index=False)
+out_df.to_csv(file_dir + "tmp_merged_v3.csv", index=False)
