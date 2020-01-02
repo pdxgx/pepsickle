@@ -1,15 +1,12 @@
-import pandas as pd
 import extraction_functions
+import pandas as pd
+import numpy as np
 
 indir = "/Users/weeder/PycharmProjects/proteasome/data_processing/un-merged_data/"
-iedb_df = pd.read_csv(indir + "IEDB.csv", low_memory=False)
+bc_df = pd.read_csv(indir + "Breast_cancer.csv", low_memory=False)
+bc_df['full_sequence'] = None
 
-iedb_df['full_sequence'] = None
-
-
-unique_iedb_ids = list(iedb_df['Parent Protein IRI (Uniprot)'].dropna().unique())
-unique_ncbi_ids = list(iedb_df['Parent Protein IRI (NCBI)'].dropna().unique())
-unique_protein_ids = unique_iedb_ids + unique_ncbi_ids
+unique_protein_ids = list(bc_df['Parent Protein IRI (Uniprot)'].dropna().unique())
 sequence_dict = {}
 error_index = []
 
@@ -19,7 +16,7 @@ for entry in unique_protein_ids:
         sequence_dict[entry] = retrieve_UniProt_seq(entry)
     except:
         error_index.append(progress)
-    progress +=1
+    progress += 1
     if progress % 100 == 0:
         print(round(progress/len(unique_protein_ids)*100, 3), "% done")
 
@@ -36,15 +33,16 @@ for e in error_index:
     if progress % 100 == 0:
         print(round(progress/len(error_index)*100, 3), "% done")
 
-for e in range(len(iedb_df)):
-    prot_id = str(iedb_df.at[e, 'Parent Protein IRI (Uniprot)'])
+for e in range(len(bc_df)):
+    prot_id = str(bc_df.at[e, 'Parent Protein IRI (Uniprot)'])
     if prot_id in sequence_dict.keys():
-        iedb_df.at[e, 'full_sequence'] = sequence_dict[prot_id]
+        bc_df.at[e, 'full_sequence'] = sequence_dict[prot_id]
 
 
-iedb_df.dropna(subset=['full_sequence'], inplace=True)
+bc_df.dropna(subset=['full_sequence'], inplace=True)
+bc_df['entry_source'] = "BC_study"
+bc_df['origin_species'] = "human"
+bc_df['start_pos'] = np.nan
+bc_df['end_pos'] = np.nan
 
-iedb_df = iedb_df[['Epitope IRI (IEDB)', 'Description', 'Starting Position',
-       'Ending Position', 'Parent Protein IRI (Uniprot)',
-         'Parent Species IRI (NCBITaxon)', 'Source', 'full_sequence']]
-iedb_df.to_csv(indir+"IEDB_data_w_sequences.csv", index=False)
+bc_df.to_csv(indir+"breast_cancer_data_w_sequences.csv", index=False)

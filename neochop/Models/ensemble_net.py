@@ -1,6 +1,5 @@
 from sequence_featurization_tools import *
 import pickle
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -96,10 +95,9 @@ motif_model = MotifNet()
 # conv_pre = nn.Conv1d(4, 4, 3, groups=4)
 
 # convert to cuda models if on GPU
-if dtype == torch.cuda.FloatTensor:
+if dtype is torch.cuda.FloatTensor:
     sequence_model = sequence_model.cuda()
     motif_model = motif_model.cuda()
-    # conv_pre = conv_pre.cuda()
 
 
 handle = open(indir + file, "rb")
