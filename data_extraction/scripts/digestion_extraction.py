@@ -29,8 +29,6 @@ Inputs:
         Uniprot Parent ID (if applicable)
         A list of the digested fragments (one per line)
 
-
-
 Outputs:
     A csv file containing the fragment information
 """
@@ -110,7 +108,13 @@ files_dict = {
     "Beta-2m 1-24.txt": "10.1074/jbc.M308816200",
     "OvaRFP.txt": "10.1016/j.molcel.2012.08.029",
     "p21RFP-20S.txt": "10.1016/j.molcel.2012.08.029",
-    "p21RFP-26S.txt": "10.1016/j.molcel.2012.08.029"
+    "p21RFP-26S.txt": "10.1016/j.molcel.2012.08.029",
+    "cGP100 204-222.txt": "10.4049/jimmunol.176.2.1053",
+    "iGP100 204-222.txt": "10.4049/jimmunol.176.2.1053",
+    "cTyrosinase 364-382.txt": "10.4049/jimmunol.176.2.1053",
+    "iTyrosinase 364-382.txt": "10.4049/jimmunol.176.2.1053",
+    "cMAGE-C2 331-349.txt": "10.4049/jimmunol.176.2.1053",
+    "iMAGE-C2 331-349.txt": "10.4049/jimmunol.176.2.1053"
 }
 
 sprot_files = ["26Sbeta-casein.txt", "20Sbeta-casein.txt", "HIV-1 Nef-2.txt",
