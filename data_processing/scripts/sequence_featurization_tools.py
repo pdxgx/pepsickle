@@ -137,7 +137,7 @@ def get_peptide_window(sequence, starting_position, ending_position, upstream=10
     if not c_terminal:
         cleave_index = int(starting_position) - 1
 
-    if cleave_index <= 0 or (cleave_index - 1) >= len(sequence):
+    if cleave_index < 0 or (cleave_index - 1) >= len(sequence):
         return None
 
     # if upstream window does not hit boundary
