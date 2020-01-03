@@ -14,7 +14,7 @@ options:
 from itertools import product
 import pandas as pd
 from optparse import OptionParser
-import extraction_functions as ef
+from extraction_functions import *
 
 
 # define command line parameters
@@ -31,7 +31,7 @@ AntiJen_tcell_summary_url = "http://www.ddg-pharmfac.net/antijen/scripts/" \
                             "Tcell=Search+AntiJen"
 
 # pull entire table of T-cell associated antigens
-tcell_epitope_table = ef.extract_AntiJen_table(AntiJen_tcell_summary_url,
+tcell_epitope_table = extract_AntiJen_table(AntiJen_tcell_summary_url,
                                                page_type="Summary")
 
 # extract list of epitopes from table
@@ -49,7 +49,7 @@ aa_base_queries = ["".join(t) for t in aa_tuples]
 query_list = []
 for q in aa_base_queries:
     query_list.append(
-        ef.compile_AntiJen_url(q, query_type="TAP_substring")
+        compile_AntiJen_url(q, query_type="TAP_substring")
     )
 
 # compile list of TAP peptide results
@@ -57,14 +57,14 @@ TAP_peptides = []
 for query in query_list:
     # return query results, skip if query has no results
     try:
-        tmp_df = ef.extract_AntiJen_table(query, page_type="Summary")
+        tmp_df = extract_AntiJen_table(query, page_type="Summary")
         tmp_epitopes = list(tmp_df['Epitope'])
         # append any novel entries onto TAP list
         for tmp_ep in tmp_epitopes:
             if tmp_ep not in TAP_peptides:
                 TAP_peptides.append(tmp_ep)
 
-    except ef.EmptyQueryError:
+    except EmptyQueryError:
         continue
 
 # define colunms to be pulled from epitope query
@@ -75,8 +75,8 @@ tcell_epitope_df = pd.DataFrame(columns=["Epitope", "MHC_types", "Species",
 # query relevant data for each epitope entry
 for epitope in tcell_epitope_list:
     # construct query and pull results into table
-    query = ef.compile_AntiJen_url(epitope, query_type="T_cell")
-    tmp_df = ef.extract_AntiJen_table(query, page_type="T_cell")
+    query = compile_AntiJen_url(epitope, query_type="T_cell")
+    tmp_df = extract_AntiJen_table(query, page_type="T_cell")
 
     # create lists to append multiple unique entries
     mhc_class = []
@@ -121,8 +121,8 @@ tap_epitope_df = pd.DataFrame(columns=["Epitope", "Species", "Categories",
 
 # pull relevant data for each TAP peptide
 for epitope in TAP_peptides:
-    query = ef.compile_AntiJen_url(epitope, query_type="TAP")
-    tmp_df = ef.extract_AntiJen_table(query, page_type="TAP")
+    query = compile_AntiJen_url(epitope, query_type="TAP")
+    tmp_df = extract_AntiJen_table(query, page_type="TAP")
 
     mhc_species = []
     category = []
