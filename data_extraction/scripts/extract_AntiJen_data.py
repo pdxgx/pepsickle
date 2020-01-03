@@ -4,7 +4,12 @@ extract_AntiJen_data.py
 
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
-[description]
+This script extracts epitope examples from the AntiJen database and outputs
+results as CSV files.
+(http://www.ddg-pharmfac.net/antijen/AntiJen/antijenhomepage.htm)
+
+options:
+-o, --out_dir: Directory where AntiJen CSV results are exported
 """
 from itertools import product
 import pandas as pd
@@ -17,7 +22,6 @@ parser = OptionParser()
 parser.add_option("-o", "--out_dir", dest="out_dir",
                   help="output directory where antigen csv's are exported")
 
-
 (options, args) = parser.parse_args()
 
 # set url for summary tcell assay table
@@ -26,24 +30,29 @@ AntiJen_tcell_summary_url = "http://www.ddg-pharmfac.net/antijen/scripts/" \
                             "allele=CLASS-1CL&CATEGORY=T+Cell&ic50MIN=&" \
                             "Tcell=Search+AntiJen"
 
+# pull entire table of T-cell associated antigens
 tcell_epitope_table = ef.extract_AntiJen_table(AntiJen_tcell_summary_url,
                                                page_type="Summary")
 
+# extract list of epitopes from table
 tcell_epitope_list = list(tcell_epitope_table["Epitope"])
 
-# may be worth pulling AA names from keys of feature matrix in future
+# define AA's (necessary for TAP transport queries
 amino_acids = ["A", "R", "N", "D", "C", "E", "Q", "G", "H", "O", "I", "L", "K",
                "M", "F", "P", "U", "S", "T", "W", "Y", "V"]
 
+# generate 2 AA base queries
 aa_tuples = list(product(amino_acids, repeat=2))
 aa_base_queries = ["".join(t) for t in aa_tuples]
 
+# compile list of web queries
 query_list = []
 for q in aa_base_queries:
     query_list.append(
         ef.compile_AntiJen_url(q, query_type="TAP_substring")
     )
 
+# compile list of TAP peptide results
 TAP_peptides = []
 for query in query_list:
     # return query results, skip if query has no results
@@ -58,11 +67,12 @@ for query in query_list:
     except ef.EmptyQueryError:
         continue
 
-# define colunms to be pulled
+# define colunms to be pulled from epitope query
 tcell_epitope_df = pd.DataFrame(columns=["Epitope", "MHC_types", "Species",
                                          "Categories", "Protein_refs",
                                          "Ref_type", "Journal_refs"])
 
+# query relevant data for each epitope entry
 for epitope in tcell_epitope_list:
     # construct query and pull results into table
     query = ef.compile_AntiJen_url(epitope, query_type="T_cell")
@@ -109,6 +119,7 @@ tap_epitope_df = pd.DataFrame(columns=["Epitope", "Species", "Categories",
                                        "Protein_ref", "Ref_type",
                                        "Journal_refs"])
 
+# pull relevant data for each TAP peptide
 for epitope in TAP_peptides:
     query = ef.compile_AntiJen_url(epitope, query_type="TAP")
     tmp_df = ef.extract_AntiJen_table(query, page_type="TAP")
@@ -139,7 +150,6 @@ for epitope in TAP_peptides:
     tap_epitope_df = tap_epitope_df.append(TAP_entry, ignore_index=True)
 
 
-# put write outs here
-
+# write out data
 tcell_epitope_df.to_csv(options.out_dir+"/AntiJen_Tcell_epitopes.csv", index=False)
 tap_epitope_df.to_csv(options.outdir+"/AntiJen_tap_epitopes.csv", index=False)
