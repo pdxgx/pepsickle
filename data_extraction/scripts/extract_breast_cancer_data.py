@@ -1,5 +1,5 @@
 #!/usr/bin/env Python3
-"""Breast_Cancer_extraction.py
+"""extract_breast_cancer_data.py
 
 Ellysia Li (lie@ohsu.edu)
 
