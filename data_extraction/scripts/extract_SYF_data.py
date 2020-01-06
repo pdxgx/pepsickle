@@ -1,25 +1,32 @@
 #!/usr/bin/env python3
 """
+extract_SYF_data.py
+
 This script extracts the epitope/ligand information from the SYFPEITHI
 database (http://www.syfpeithi.de) and converts it into a csv file
+
+options:
+--allele_file: a list of alleles to be queried in the SYFPEITHI database
+- o, --out_dir: destination for CSV with returned SYFPEITHI queries
 """
+from extraction_functions import *
 import pandas as pd
 import numpy as np
 import re
 from optparse import OptionParser
-from extraction_functions import *
 
 # define command line options
 parser = OptionParser()
 parser.add_option("--allele_file", dest="allele_file",
                   help="input csv of alleles to query")
-parser.add_option("-o", "--out_file", dest="out_file",
+parser.add_option("-o", "--out_dir", dest="out_dir",
                   help="output csv with SYFPEITHI entries")
 
 
 (options, args) = parser.parse_args()
 # NOTE: Pulls all epitopes, for class I & II and different organisms... need
 # to restrict this further to save time/downstream filtering issues...
+# TODO: restrict to human only or define manual annotations of alleles
 # raw_allele_list = ef.get_SYF_alleles()
 # allele_series = pd.Series(raw_allele_list)
 # allele_series.to_csv("../raw_allele_series.csv", index=False, header=False)
@@ -113,4 +120,4 @@ full_SYF_df.dropna(subset=["UniProt_id"], inplace=True)
 full_SYF_df['Human'] = ["HLA-" in a for a in full_SYF_df['allele']]
 full_SYF_df = full_SYF_df[['allele', 'epitope', 'UniProt_id', 'Position', 'Human', 'reference']]
 
-full_SYF_df.to_csv(options.out_file, index=False)
+full_SYF_df.to_csv(options.out_dir + "/SYFPEITHI_data.csv", index=False)

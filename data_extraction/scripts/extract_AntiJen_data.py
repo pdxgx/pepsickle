@@ -11,10 +11,10 @@ results as CSV files.
 options:
 -o, --out_dir: Directory where AntiJen CSV results are exported
 """
+from extraction_functions import *
 from itertools import product
 import pandas as pd
 from optparse import OptionParser
-from extraction_functions import *
 
 
 # define command line parameters
@@ -37,7 +37,7 @@ tcell_epitope_table = extract_AntiJen_table(AntiJen_tcell_summary_url,
 # extract list of epitopes from table
 tcell_epitope_list = list(tcell_epitope_table["Epitope"])
 
-# define AA's (necessary for TAP transport queries
+# define AA's (necessary for TAP transport queries)
 amino_acids = ["A", "R", "N", "D", "C", "E", "Q", "G", "H", "O", "I", "L", "K",
                "M", "F", "P", "U", "S", "T", "W", "Y", "V"]
 
