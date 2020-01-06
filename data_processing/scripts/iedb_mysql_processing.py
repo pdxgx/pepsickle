@@ -1,16 +1,54 @@
 #! usr/bin/env python3
 """
+iedb_mysql_processing.py
+
+For issues contact Ben Weeder (weeder@ohsu.edu)
+
+This script takes the full IEDB query table created by `iedb_mysql_query.sql`
+and returns a processed csv of results with the following columns:
+- curated_epitope_id: IEDB ID
+- linear_peptide_seq: fragment sequence
+- starting_position: start position of fragment within source protein
+- ending_position: end position of fragment within source protein
+- sequence: full source sequence
+- pubmed_id: Lit reference ID
+
+Results can be exported for either human epitopes only, or for all mammals in
+IEDB (including human).
+
+Options:
+-p, --password: mysql user password
+-u, --user: mysql user to run commands as, default is root
+-o, --out_dir: output directory where CSV is exported
+-h, --human_only: flag that allows for export of only human data. default is
+export of all mammal data (including human)
 
 """
 import mysql.connector
 import pandas as pd
 import re
+from optparse import OptionParser
+
+# define command line parameters
+parser = OptionParser()
+parser.add_option("-u", "--user", dest="user", default="root",
+                  help="user to run mysql query as, defaults to root.")
+parser.add_option("-p", "--password", dest="password",
+                  help="mysql password for user", default=None)
+parser.add_option("-o", "--out_dir", dest="out_dir",
+                  help="output directory where CSV is exported")
+parser.add_option("-h", "--human_only", action="store_true", dest="human_only",
+                  default=False, help="Flags export of only human based data. "
+                                      "Default is all mammal (including human)"
+                  )
+
+(options, args) = parser.parse_args()
 
 # connect to mysql database
 mydb = mysql.connector.connect(
   host="localhost",
-  user="root",
-  passwd="password",
+  user=options.user,
+  passwd=options.password,
   database="iedb_public",
   auth_plugin='mysql_native_password'
 )
@@ -33,33 +71,50 @@ results_pd = results_pd.drop_duplicates()
 results_pd = results_pd.dropna(subset=['linear_peptide_seq', 'sequence'])
 
 
-# !! Note: this is cursory filtering... will be replaced with more thorough
-# version in extra_code dir
+# !! Note: this is cursory check, filtering is performed downstream
+# downstream
 mismatch = 0
 no_pos = 0
 seq_not_in_string = 0
 for ind in range(len(results_pd)):
+    # pull each entry
     row = results_pd.iloc[ind]
+    # check if position info is missing
     if row['starting_position'] is None or row['ending_position'] is None:
+        # tally if missing position
         no_pos += 1
-        if str(row['linear_peptide_seq']) in str(row['sequence']):
-            search = re.search(str(row['linear_peptide_seq']), str(row['sequence']))
-            results_pd['starting_position'][ind] = search.span()[0]
-            results_pd['ending_position'][ind] = search.span()[1]
-        else:
-            seq_not_in_string += 1
-    else:
-        est_seq = row['sequence'][int(row['starting_position'])-1:int(row['ending_position'])]
-        true_seq = row['linear_peptide_seq']
-        if est_seq == true_seq:
+        # convert to comparable strings
+        fragment = str(row['linear_peptide_seq'])
+        ref = str(row['sequence'])
+
+        if fragment.upper() in ref.upper():
+            # if fragment contained in reference, pass
             pass
-        elif str(est_seq).upper() == str(true_seq).upper():
-            results_pd['linear_peptide_seq'][ind] = str(true_seq).upper()
-            results_pd['sequence'][ind] = str(est_seq).upper()
         else:
+            # if fragment not contained in reference, tally
+            seq_not_in_string += 1
+
+    # if position info is available
+    else:
+        # pull expected fragment sequence
+        est_seq = str(row['sequence'][int(row['starting_position'])-1:
+                                      int(row['ending_position'])])
+        # pull listed fragment sequence
+        true_seq = str(row['linear_peptide_seq'])
+
+        if est_seq.upper() == true_seq.upper():
+            # if sequences match, pass
+            pass
+        else:
+            # if sequences do not match, tally and pring mismatch
             mismatch += 1
-            print(str(row['linear_peptide_seq']))
-            print(str(row['sequence']))
+            print("Expected fragment sequence: ", est_seq)
+            print("Listed fragment sequence: ", true_seq)
+
+# print quality check
+print("Entries with missing position info: ", no_pos)
+print("Entries not in reference string: ", seq_not_in_string)
+print("Entries with mismatch in listed vs. reference fragment: ", mismatch)
 
 # subset human only sequences
 human_pd = results_pd[results_pd['h_organism_id'] == 9606]
@@ -74,7 +129,7 @@ unique_human_index = human_pd[['linear_peptide_seq',
 results_unique_seq = results_pd.loc[unique_seq_index]
 results_unique_human_seq = results_pd.loc[unique_human_index]
 
-# write out tables
+# define columns to export
 cols_to_export = ['curated_epitope_id',
                   'linear_peptide_seq',
                   'starting_position',
@@ -82,5 +137,12 @@ cols_to_export = ['curated_epitope_id',
                   'sequence',
                   'pubmed_id']
 
-results_unique_seq[cols_to_export].to_csv("/Users/weeder/Data/Proteasome/unique_mammal_epitopes.csv")
-results_unique_human_seq[cols_to_export].to_csv("/Users/weeder/Data/Proteasome/unique_human_epitopes.csv")
+# export csv based on command line parameters
+if options.human_only:
+    results_unique_human_seq[cols_to_export].to_csv(
+        options.outdir + "/unique_iedb_epitopes.csv"
+    )
+else:
+    results_unique_seq[cols_to_export].to_csv(
+        options.outdir + "/unique_iedb_epitopes.csv"
+    )
