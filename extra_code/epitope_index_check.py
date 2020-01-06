@@ -1,3 +1,4 @@
+import sequence_featurization_tools
 import re
 import pandas as pd
 # loop for checking all index cases and repairing indices when possible
@@ -5,7 +6,7 @@ import pandas as pd
 file_dir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
            "un-merged_data/"
 
-df = pd.read_csv(file_dir + 'tmp_merged_v2.csv', low_memory=False)
+df = pd.read_csv(file_dir + 'tmp_merged_v3.csv', low_memory=False)
 df = df.where(pd.notnull(df), None)
 df = df[df.full_sequence.notnull()]
 df = df.reset_index(drop=True)
@@ -81,7 +82,7 @@ for i in range(len(df)):
         else:
             failed_indices.append(i)
 
-len(failed_indices)
+print(len(failed_indices))
 df.drop(index=failed_indices, inplace=True)
 df = df.reset_index(drop=True)
 
@@ -98,7 +99,8 @@ for i in range(len(df)):
         mismatch_indices.append(i)
 
 # for now, drop few with errors:
+print(len(mismatch_indices))
 df.drop(index=mismatch_indices, inplace=True)
 df = df.reset_index(drop=True)
 
-df.to_csv(file_dir+"tmp_data_v2_indices_repaired.csv", index=False)
+df.to_csv(file_dir+"tmp_data_v3_indices_repaired.csv", index=False)
