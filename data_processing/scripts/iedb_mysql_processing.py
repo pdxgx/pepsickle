@@ -71,8 +71,7 @@ results_pd = results_pd.drop_duplicates()
 results_pd = results_pd.dropna(subset=['linear_peptide_seq', 'sequence'])
 
 
-# !! Note: this is cursory check, filtering is performed downstream
-# downstream
+# Note: this is cursory check, filtering is performed downstream downstream
 mismatch = 0
 no_pos = 0
 seq_not_in_string = 0

@@ -32,6 +32,7 @@ antijen_df = pd.read_csv(options.infile, low_memory=False)
 
 # pull only unique protein references
 unique_protein_ids = list(antijen_df['Protein_refs'].dropna().unique())
+
 # set up to store queried sequences, errors, and progress
 sequence_dict = {}
 error_index = []
@@ -88,6 +89,7 @@ for e in range(len(antijen_df)):
 
 # drop rows where no sequence was retrieved
 antijen_df.dropna(subset=['full_sequence'], inplace=True)
+
 # add columns needed in downstream processing
 antijen_df['entry_source'] = "AntiJen_data"
 antijen_df['start_pos'] = None
@@ -97,7 +99,6 @@ antijen_df['end_pos'] = None
 new_col_names = ['fragment', 'MHC_types', 'origin_species', 'category',
                  'UniProt_parent_id', 'ref_type', 'lit_reference',
                  'full_sequence', 'entry_source', 'start_pos', 'end_pos']
-
 antijen_df.columns = new_col_names
 
 # subset relevant columns for export

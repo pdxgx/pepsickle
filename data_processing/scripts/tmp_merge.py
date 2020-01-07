@@ -28,7 +28,7 @@ for pos in SYF_df['Position']:
 SYF_df['start_pos'] = syf_start
 SYF_df['end_pos'] = syf_end
 SYF_df['IEDB_id'] = None
-SYF_df = SYF_df[['IEDB_id','epitope', 'start_pos', 'end_pos', 'UniProt_id',
+SYF_df = SYF_df[['IEDB_id', 'epitope', 'start_pos', 'end_pos', 'UniProt_id',
                  'Human', 'reference', 'full_sequence', 'Origin']]
 
 
