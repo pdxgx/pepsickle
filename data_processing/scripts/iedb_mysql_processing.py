@@ -22,7 +22,6 @@ Options:
 -o, --out_dir: output directory where CSV is exported
 -h, --human_only: flag that allows for export of only human data. default is
 export of all mammal data (including human)
-
 """
 import mysql.connector
 import pandas as pd
