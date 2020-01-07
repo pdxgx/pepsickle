@@ -13,7 +13,7 @@ dtype = torch.FloatTensor
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 indir = "/Users/weeder/PycharmProjects/proteasome/data_processing/generated_training_sets/"
-file = "updated_cleavage_data.pickle"
+file = "proteasome_data_1.6.20.pickle"
 
 torch.manual_seed(123)
 
@@ -174,7 +174,7 @@ digestion_data = pos_digestion_labeled + neg_digestion_labeled
 digestion_loader = torch.utils.data.DataLoader(digestion_data, batch_size=2000, shuffle=True)
 
 test_data = pos_test_labeled + neg_test_labeled
-test_loader = torch.utils.data.DataLoader(test_data, batch_size=4000, shuffle=True)  # was len * 0.10
+test_loader = torch.utils.data.DataLoader(test_data, batch_size=2000, shuffle=True)  # was len * 0.10
 
 pos_test_loader = torch.utils.data.DataLoader(pos_test_labeled, batch_size=2000, shuffle=True)
 neg_test_loader = torch.utils.data.DataLoader(neg_test_labeled, batch_size=2000, shuffle=True)

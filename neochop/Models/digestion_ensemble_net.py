@@ -13,7 +13,7 @@ dtype = torch.FloatTensor
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 indir = "/Users/weeder/PycharmProjects/proteasome/data_processing/generated_training_sets/"
-file = "updated_cleavage_data.pickle"
+file = "proteasome_data_1.6.20.pickle"
 
 torch.manual_seed(123)
 
@@ -105,31 +105,25 @@ data = pickle.load(handle)
 
 # for human only...
 pos_windows = []
-pos_digestion_windows = []
 for key in data['positives'].keys():
     entry = data['positives'][key]
     if any('human' in i for i in entry):
-        pos_windows.append(key)
         if any('cleavage map' in i for i in entry):
-            pos_digestion_windows.append(key)
+            pos_windows.append(key)
 
 # for all mammals
 # pos_windows = list(data['positives'].keys())
 pos_feature_matrix = torch.from_numpy(generate_feature_array(pos_windows))
-pos_dig_feature_matrix = torch.from_numpy(generate_feature_array(pos_digestion_windows))
 
 neg_windows = []
-neg_digestion_windows = []
 for key in data['negatives'].keys():
     entry = data['negatives'][key]
     if any('human' in i for i in entry):
-        neg_windows.append(key)
         if any('cleavage map' in i for i in entry):
-            neg_digestion_windows.append(key)
+            neg_windows.append(key)
 
 # neg_windows = list(data['negatives'].keys())
 neg_feature_matrix = torch.from_numpy(generate_feature_array(neg_windows))
-neg_dig_feature_matrix = torch.from_numpy(generate_feature_array(neg_digestion_windows))
 
 test_holdout_p = .2
 pos_train_k = round((1-test_holdout_p) * pos_feature_matrix.size(0))
@@ -163,18 +157,8 @@ neg_test_labeled = []
 for i in range(len(neg_test)):
     neg_test_labeled.append([neg_test[i], torch.tensor(0)])
 
-pos_digestion_labeled = []
-for i in range(len(pos_dig_feature_matrix)):
-    pos_digestion_labeled.append([pos_dig_feature_matrix[i], torch.tensor(1)])
-neg_digestion_labeled = []
-for i in range(len(neg_dig_feature_matrix)):
-    neg_digestion_labeled.append([neg_dig_feature_matrix[i], torch.tensor(0)])
-
-digestion_data = pos_digestion_labeled + neg_digestion_labeled
-digestion_loader = torch.utils.data.DataLoader(digestion_data, batch_size=2000, shuffle=True)
-
 test_data = pos_test_labeled + neg_test_labeled
-test_loader = torch.utils.data.DataLoader(test_data, batch_size=4000, shuffle=True)  # was len * 0.10
+test_loader = torch.utils.data.DataLoader(test_data, batch_size=2000, shuffle=True)  # was len * 0.10
 
 pos_test_loader = torch.utils.data.DataLoader(pos_test_labeled, batch_size=2000, shuffle=True)
 neg_test_loader = torch.utils.data.DataLoader(neg_test_labeled, batch_size=2000, shuffle=True)
@@ -241,8 +225,7 @@ for epoch in range(n_epoch):
             # motif_dat = conv_pre(dat[:, :, 22:].transpose(1, 2))
             exp_motif_est = torch.exp(motif_model(dat[:, :, 22:]))[:, 1].cpu()  # not including side chains
             # take simple average
-            consensus_est = (exp_seq_est +
-                             exp_motif_est) / 2
+            consensus_est = (exp_seq_est + exp_motif_est) / 2
 
             # calculate AUC for each
             seq_auc = metrics.roc_auc_score(labels, exp_seq_est)
@@ -258,9 +241,3 @@ for epoch in range(n_epoch):
 
     sequence_model.train()
     motif_model.train()
-
-
-t_dat, t_labels = next(iter(digestion_loader))
-seq_est = torch.exp(sequence_model(t_dat.type(dtype)[:, :, :20]))[:, 1].cpu()
-seq_auc = metrics.roc_auc_score(t_labels.detach().numpy(), seq_est.detach().numpy())
-print(seq_auc)
