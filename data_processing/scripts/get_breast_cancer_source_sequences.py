@@ -32,7 +32,7 @@ bc_df['full_sequence'] = None
 
 # identify unique protein ID's
 unique_protein_ids = list(
-    bc_df['Parent Protein IRI (Uniprot)'].dropna().unique()
+    bc_df['Protein_ref'].dropna().unique()
 )
 
 # create variables to store data
@@ -72,7 +72,7 @@ for e in error_index:
 
 # if protein ID has associated sequence, enter in df
 for e in range(len(bc_df)):
-    prot_id = str(bc_df.at[e, 'Parent Protein IRI (Uniprot)'])
+    prot_id = str(bc_df.at[e, 'Protein_ref'])
     if prot_id in sequence_dict.keys():
         bc_df.at[e, 'full_sequence'] = sequence_dict[prot_id]
 

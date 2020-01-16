@@ -28,7 +28,7 @@ parser.add_option("-o", "--out_dir", dest="out_dir",
 (options, args) = parser.parse_args()
 
 # import DB data
-antijen_df = pd.read_csv(options.infile, low_memory=False)
+antijen_df = pd.read_csv(options.in_file, low_memory=False)
 
 # pull only unique protein references
 unique_protein_ids = list(antijen_df['Protein_refs'].dropna().unique())
@@ -96,17 +96,18 @@ antijen_df['start_pos'] = None
 antijen_df['end_pos'] = None
 
 # rename columns for downstream merging and consistency
-new_col_names = ['fragment', 'MHC_types', 'origin_species', 'category',
-                 'UniProt_parent_id', 'ref_type', 'lit_reference',
-                 'full_sequence', 'entry_source', 'start_pos', 'end_pos']
+new_col_names = ['fragment', 'MHC_classes', 'Serotype', 'MHC_alleles',
+                 'origin_species', 'category', 'UniProt_parent_id', 'ref_type',
+                 'lit_reference', 'full_sequence', 'entry_source',
+                 'start_pos', 'end_pos']
 antijen_df.columns = new_col_names
 
 # subset relevant columns for export
-antijen_df = antijen_df[['fragment', 'MHC_types', 'origin_species',
-                                     'UniProt_parent_id',  'lit_reference',
-                                     'full_sequence', 'entry_source',
-                                     'start_pos', 'end_pos']]
+antijen_df = antijen_df[['fragment', 'MHC_classes', 'Serotype', 'MHC_alleles',
+                         'origin_species', 'UniProt_parent_id',
+                         'lit_reference', 'full_sequence', 'entry_source',
+                         'start_pos', 'end_pos']]
 
 # write out new CSV
-antijen_df.to_csv(options.out_dir + "AntiJen_data_w_sequences.csv",
+antijen_df.to_csv(options.out_dir + "/AntiJen_data_w_sequences.csv",
                   index=False)

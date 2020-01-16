@@ -36,7 +36,7 @@ parser.add_option("-p", "--password", dest="password",
                   help="mysql password for user", default=None)
 parser.add_option("-o", "--out_dir", dest="out_dir",
                   help="output directory where CSV is exported")
-parser.add_option("-h", "--human_only", action="store_true", dest="human_only",
+parser.add_option("--human_only", action="store_true", dest="human_only",
                   default=False, help="Flags export of only human based data. "
                                       "Default is all mammal (including human)"
                   )
@@ -133,14 +133,20 @@ cols_to_export = ['curated_epitope_id',
                   'starting_position',
                   'ending_position',
                   'sequence',
+                  'database',
+                  'accession',
+                  'mhc_allele_name',
+                  'h_organism_id',
                   'pubmed_id']
 
 # export csv based on command line parameters
 if options.human_only:
     results_unique_human_seq[cols_to_export].to_csv(
-        options.outdir + "/unique_iedb_epitopes.csv"
+        options.out_dir + "/unique_iedb_epitopes.csv",
+        index=False
     )
 else:
     results_unique_seq[cols_to_export].to_csv(
-        options.outdir + "/unique_iedb_epitopes.csv"
+        options.out_dir + "/unique_iedb_epitopes.csv",
+        index=False
     )

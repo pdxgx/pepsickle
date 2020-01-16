@@ -41,8 +41,8 @@ for i in uniprot_ids:
         # split
         tmp = i.split(";")
         # store new ID's
-        if t[0] not in parsed_ids:
-            parsed_ids.append(t)
+        if tmp[0] not in parsed_ids:
+            parsed_ids.append(tmp)
     else:
         # if only one entry, store if new
         if i not in parsed_ids:
