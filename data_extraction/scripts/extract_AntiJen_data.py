@@ -68,7 +68,8 @@ for query in query_list:
         continue
 
 # define colunms to be pulled from epitope query
-tcell_epitope_df = pd.DataFrame(columns=["Epitope", "MHC_types", "Species",
+tcell_epitope_df = pd.DataFrame(columns=["Epitope", "MHC_classes", "Serotype",
+                                         "MHC_alleles", "Species",
                                          "Categories", "Protein_refs",
                                          "Ref_type", "Journal_refs"])
 
@@ -80,6 +81,8 @@ for epitope in tcell_epitope_list:
 
     # create lists to append multiple unique entries
     mhc_class = []
+    mhc_allele = []
+    serotype = []
     mhc_species = []
     category = []
     swissprot_refs = []
@@ -90,6 +93,10 @@ for epitope in tcell_epitope_list:
         entry = tmp_df.iloc[i]
         if entry['Class'] not in mhc_class:
             mhc_class.append(entry['Class'])
+        if entry['Allele'] not in mhc_allele and entry['Allele'] != "n/a":
+            mhc_allele.append(entry['Allele'])
+        if entry['Serotype'] not in mhc_allele and entry['Serotype'] != "n/a":
+            serotype.append(entry['Serotype'])
         if entry['MHC species'] not in mhc_species:
             mhc_species.append(entry['MHC species'])
         if entry['Category'] not in category:
@@ -100,15 +107,18 @@ for epitope in tcell_epitope_list:
             journal_refs.append(entry['Journal Ref'])
 
     # generate single entries separated with semicolons
-    MHC_types = "; ".join(mhc_class)
+    MHC_classes = "; ".join(mhc_class)
+    Serotype = "; ".join(serotype)
+    MHC_alleles = "; ".join(mhc_allele)
     MHC_species = "; ".join(mhc_species)
     Categories = "; ".join(category)
     Protein_ref = "; ".join(swissprot_refs)
     Ref_type = "Uniprot"  # define reference database used
     Journal_refs = "; ".join(journal_refs)
     # reformat
-    tcell_entry = pd.Series([epitope, MHC_types, MHC_species, Categories,
-                             Protein_ref, Ref_type, Journal_refs],
+    tcell_entry = pd.Series([epitope, MHC_classes, Serotype, MHC_alleles,
+                             MHC_species, Categories, Protein_ref, Ref_type,
+                             Journal_refs],
                             index=tcell_epitope_df.columns)
     # append
     tcell_epitope_df = tcell_epitope_df.append(tcell_entry, ignore_index=True)
@@ -152,4 +162,4 @@ for epitope in TAP_peptides:
 
 # write out data
 tcell_epitope_df.to_csv(options.out_dir+"/AntiJen_Tcell_epitopes.csv", index=False)
-tap_epitope_df.to_csv(options.outdir+"/AntiJen_tap_epitopes.csv", index=False)
+tap_epitope_df.to_csv(options.out_dir+"/AntiJen_tap_epitopes.csv", index=False)

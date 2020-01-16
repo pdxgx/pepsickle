@@ -76,7 +76,7 @@ files_dict = {
     "PRAME 415-441.txt": "10.1084/jem.193.1.73",
     "NS4B-Mu.txt": "10.1128/JVI.79.8.4870–4876.2005",
     "NS4B-WT.txt": "10.1128/JVI.79.8.4870–4876.2005",
-    "GP100 209-217.txt": "10.4049/jimmunol.1103213",
+    "GP100 209-217.txt": "10.4049/jimmunol.1103213",  # Issue... this study uses an intermediate constit/immuno proteasome
     "MAGE-A3 114-122.txt": "10.4049/jimmunol.1103213",
     "MAGE-A3 271-279.txt": "10.4049/jimmunol.1103213",
     "MAGE-A10 254-262.txt": "10.4049/jimmunol.1103213",
@@ -189,10 +189,11 @@ def load_data(file_name):
             buffer = f.readline().strip()
 
         df = pd.DataFrame()
-        df["IEDB_id"] = ids
-        df["UniProt_parent_id"] = protein_id
+        df["epitope_id"] = ids
+        df["full_seq_accession"] = protein_id
+        df['full_seq_database'] = "UniProt"
         df["end_pos"] = end_pos
-        df["entry_source"] = "cleavage map"
+        df["entry_source"] = "cleavage_map"
         df["fragment"] = peptides
         df["full_sequence"] = protein_seq
         df["lit_reference"] = files_dict[file_name]

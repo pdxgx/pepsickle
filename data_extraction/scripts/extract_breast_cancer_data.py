@@ -28,34 +28,36 @@ Outputs:
 import pandas as pd
 
 df = pd.DataFrame()
+in_dir = "/Users/weeder/PycharmProjects/proteasome/data_extraction/raw_data/" \
+         "Breast Cancer"
+
+out_dir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
+          "un-merged_data"
 
 """ Data Extraction """
 # the range(2, 24) corresponds to the different excel sheets which contain
 # epitope information
+base_file = pd.ExcelFile(in_dir + "/breast_cancer.xlsx")
 for i in range(2, 24):
-    df = df.append(pd.read_excel("/Users/weeder/PycharmProjects/proteasome/"
-                                 "data_extraction/raw_data/Breast Cancer/"
-                                 "breast_cancer.xlsx",
-                                 sheet_name=i, header=2)[["Sequence",
-                                                          "Protein Link",
-                                                          "Unique"]])
+    tmp_df = pd.read_excel(in_dir + "/breast_cancer.xlsx", sheet_name=i,
+                           header=2)[["Sequence", "Protein Link", "Unique"]]
+    tmp_df['cell_line'] = base_file.sheet_names[i]
+    df = df.append(tmp_df)
 
-key = pd.read_csv("breast_cancer_key.csv")
+key = pd.read_csv(in_dir + "/breast_cancer_key.csv")
 dict_key = {k: v for k, v in zip(key["Input"].to_list(),
                                  key["Entry"].tolist())}
 df["Protein_ref"] = df["Protein Link"].map(dict_key)
 df['Ref_type'] = "Uniprot"
 df.dropna(subset=["Sequence"], inplace=True)
+print("N entries: ", df.shape[0])
 
-df = df[df["Unique"] == 1]
-# print(df.shape)
+df.drop_duplicates(inplace=True)
+print("N unique entries: ", df.shape[0])
 
 df["Sequence"] = df["Sequence"].apply(lambda x: x.split(".")[1])
 
 df.drop(columns=["Protein Link", "Unique"], inplace=True)
-df.rename(columns={"Sequence": "Description"}, inplace=True)
+df.rename(columns={"Sequence": "fragment"}, inplace=True)
 
-# print(df.shape)
-
-df.to_csv("/Users/weeder/PycharmProjects/proteasome/data_processing/"
-          "un-merged_data/positives/breast_cancer.csv", index=False)
+df.to_csv(out_dir + "/breast_cancer.csv", index=False)
