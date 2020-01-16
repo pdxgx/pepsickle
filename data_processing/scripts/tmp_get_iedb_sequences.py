@@ -1,6 +1,7 @@
 #!usr/bin/env python3
 """
-
+this script may be uneccessary...
+IEDB data should already have source sequences and not need to be queried
 """
 
 import pandas as pd
