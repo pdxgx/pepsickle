@@ -113,9 +113,9 @@ def remove_positives(temp_negatives, positives, positive_regex, negatives, row,
 			selected = random.sample(
 							new_negatives, min(len(new_negatives), neg_count)
 						)
-		# Add info for redundant negatives
-		selected.extend([x for x in true_negatives if x in negatives])
-		return selected
+			# Add info for redundant negatives
+			selected.extend([x for x in true_negatives if x in negatives])
+			return selected
 	else:
 		# Store all negatives
 		return list(true_negatives)
