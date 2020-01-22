@@ -116,6 +116,8 @@ def remove_positives(temp_negatives, positives, positive_regex, negatives, row,
 			# Add info for redundant negatives
 			selected.extend([x for x in true_negatives if x in negatives])
 			return selected
+		else:
+			return []
 	else:
 		# Store all negatives
 		return list(true_negatives)
