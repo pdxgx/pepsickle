@@ -11,6 +11,7 @@ from __future__ import print_function
 from collections import defaultdict
 from datetime import datetime
 import argparse
+import copy
 import os
 import pickle
 import re
@@ -29,7 +30,13 @@ def generate_regex(peptide):
 
 		Return value: regex pattern
 	'''
-	return peptide.replace('B', '[BDN]').replace('Z', '[EQZ]').replace('J', '[IJL]').replace('X', '[ABCDEFGHIJKLMNPQRSTUVWYXZ]').replace('*', '[*]')
+	return peptide.replace(
+		'B', '[BDN]').replace(
+		'Z', '[EQZ]').replace(
+		'J', '[IJL]').replace(
+		'X', '[ABCDEFGHIJKLMNPQRSTUVWYXZ]').replace(
+		'*', '[*]'
+	)
 
 def get_context_window(user_window):
 	''' Gets upstream and downstream amino acid context window sizes from 
@@ -53,6 +60,66 @@ def get_context_window(user_window):
 	else:
 		return int(user_window), int(user_window)
 
+def remove_positives(temp_negatives, positives, positive_regex, negatives, row,
+					 full_negative=True):
+	''' Filters out peptides in a list of potential negatives that match 
+		positive peptides
+
+		temp_negatives: set of potential negative peptides
+		positives: set of positive peptides
+		positive_regex: set of compiled regular expressions for positive 
+						peptides with wildcard AAs
+		negatives: pre-existing negative peptides (dict)
+		row: row of dataframe describing the epitope
+		full_negative: whether to retain all negatives (bool)
+
+		Return values: set of peptides that don't match any positives
+	'''
+	true_negatives = set()
+	for peptide in temp_negatives:
+		# Create regex if relevant
+		wildcards = [x for x in peptide if x in wildcard_aas]
+		if wildcards:
+			if not args.exclude_ambiguous:
+				r = re.compile(generate_regex(peptide))
+				p_matches = [x for x in positives if r.match(x)]
+				if not p_matches:
+					# Peptide does not match a positive, is a true negative
+					true_negatives.add(peptide)
+		else:
+			# Compare peptide to positives
+			in_positives = False
+			if peptide in positives:
+				in_positives = True
+			else: 
+				for regex in positive_regex:
+					if regex.match(peptide):
+						in_positives = True
+						break
+			# Check if peptide matches unknowns if not in positives
+			if not in_positives:
+				true_negatives.add(peptide)
+	# Add negative(s) to negative set
+	if not args.full_negative_set:
+		# Add only one negative to final set
+		new_negatives = [x for x in true_negatives if x not in negatives]
+		if new_negatives:
+			# Determine how many negatives to select
+			neg_count = 0
+			if row['end_pos'] != len(row['full_sequence']):
+				neg_count += 1
+			if row['start_pos'] != 0:
+				neg_count += 1
+			selected = random.sample(
+							new_negatives, min(len(new_negatives), neg_count)
+						)
+		# Add info for redundant negatives
+		selected.extend([x for x in true_negatives if x in negatives])
+		return selected
+	else:
+		# Store all negatives
+		return list(true_negatives)
+
 if __name__ == '__main__':
 
 	# Set up command line parameters
@@ -70,7 +137,7 @@ if __name__ == '__main__':
 					help='size of upstream,downstream peptide context'
 	)
 	parser.add_argument(
-					'--trimming-window', '-t', type=int, default=24,
+					'--trimming-window', '-t', type=int, default=16,
 					help='size of window for proteasomal trimming'
 	)
 	parser.add_argument(
@@ -82,16 +149,14 @@ if __name__ == '__main__':
 					help='number of N terminal amino acids to exclude'
 	)
 	parser.add_argument(
-					'--exclude-ambiguous', '-a', required=False, action='store_true',
+					'--exclude-ambiguous', '-a', required=False, 
+					action='store_true',
 					help='whether to exclude ambiguous amino acids'
 	)
 	parser.add_argument(
-					'--full-negative-set', '-f', required=False, action='store_true',
+					'--full-negative-set', '-f', required=False, 
+					action='store_true',
 					help='whether to include all negative examples'
-	)
-	parser.add_argument(
-					'--no-positive-n-terminus', '-p', required=False, action='store_true',
-					help='do not treat N terminal cleavage site as positive if not trimmed'
 	)
 	args = parser.parse_args()
 
@@ -109,66 +174,72 @@ if __name__ == '__main__':
 	data['n_exclusion_end'] = data['start_pos'] + args.n_terminal_exclusion + 1
 	data['c_exclusion_start'] = data['end_pos'] - args.c_terminal_exclusion
 	
-	# Create sets to store positive, unknown and negative examples
-	positives = defaultdict(set)
-	unknowns = defaultdict(set)
-	negatives = defaultdict(set)
+	# Create dicts to store positive, unknown and negative examples
+	epitope_positives = defaultdict(set)
+	epitope_unknowns = defaultdict(set)
+	epitope_negatives = defaultdict(set)
+	proteasome_positives = defaultdict(set)
+	proteasome_negatives = defaultdict(set)
+	immunoproteasome_positives = defaultdict(set)
+	immunoproteasome_negatives = defaultdict(set)
 	# Create sets to hold regex patterns for positives/unknowns
-	positive_regex = set()
-	unknown_regex = set()
-	cleavage_negatives = set()
+	epitope_positive_regex = set()
+	epitope_unknown_regex = set()
+	proteasome_positive_regex = set()
+	immunoproteasome_positive_regex = set()
 
 	print(datetime.now(), 'Identifying positive cases...', file=sys.stderr)
 
 	# Iterate through epitopes to find positive/unknown cases
 	for index, row in data.iterrows():
+
 		# Extract protein sequence
 		protein = ''.join([row['full_sequence'][0:int(row['start_pos'])],
 						   row['fragment'],
 						   row['full_sequence'][int(row['end_pos']):]])
 
 		if row['end_pos'] != len(row['full_sequence']):
-			# Get positive peptide window and store regex
+			# Get positive peptide window and store regex if relevant
 			peptide_window = sf.get_peptide_window(
 												protein, None, row['end_pos'], 
 												upstream=upstream_window, 
 												downstream=downstream_window, 
 			)
 			wildcards = [x for x in peptide_window if x in wildcard_aas]
-			if wildcards:
-				if not args.exclude_ambiguous:
-					positives[peptide_window].add(tuple(row[0:-3]))
-					positive_regex.add(re.compile(generate_regex(peptide_window)))
-			else:
-				positives[peptide_window].add(tuple(row[0:-3]))
-
-		if row['entry_source'] != 'cleavage map':
+			if row['entry_source'] != 'cleavage_map':
+				epitope_positives[peptide_window].add(tuple(row[0:-3]))
+				if wildcards:
+					epitope_positive_regex.add(
+									re.compile(generate_regex(peptide_window))
+					)
+			elif row['immune_type'] == 'constitutive':
+				proteasome_positives[peptide_window].add(tuple(row[0:-3]))
+				if wildcards:
+					proteasome_positive_regex.add(
+									re.compile(generate_regex(peptide_window))
+					)
+			elif row['immune_type'] == 'immuno':
+				immunoproteasome_positives[peptide_window].add(tuple(row[0:-3]))
+				if wildcards:
+					immunoproteasome_positive_regex.add(
+									re.compile(generate_regex(peptide_window))
+					)
+		if row['entry_source'] != 'cleavage_map':
+			# Store unknowns for non-cleavage map data
 			if args.trimming_window > len(row['fragment']):
-				# Store unknowns due to trimming/N-terminal exclusion to final set
-				for i in range(int(row['trimming_start']), int(row['n_exclusion_end'])):
+				# Store unknowns due to trimming/N-terminal exclusion
+				for i in range(
+								int(row['trimming_start']), 
+								int(row['n_exclusion_end'])
+							  ):
 					peptide_window = sf.get_peptide_window(
-													protein, None, i,
-													upstream=upstream_window, 
-													downstream=downstream_window,
+												protein, None, i,
+												upstream=upstream_window, 
+												downstream=downstream_window,
 					)
 					if peptide_window is not None:
-						# Adds window to unknowns if center is in valid protein space
-						unknowns[peptide_window].add((tuple(row[0:-3])))
-			elif row['start_pos'] > 0 and not args.no_positive_n_terminus:
-				# Also store N-terminal peptide window in positives (and regex if relevant)
-				peptide_window = sf.get_peptide_window(
-													protein, row['start_pos'], None, 
-													upstream=upstream_window, 
-													downstream=downstream_window, 
-													c_terminal=False
-				)
-				wildcards = [x for x in peptide_window if x in wildcard_aas]
-				if wildcards:
-					if not args.exclude_ambiguous:
-						positives[peptide_window].add(tuple(row[0:-3]))
-						positive_regex.add(re.compile(generate_regex(peptide_window)))
-				else:
-					positives[peptide_window].add(tuple(row[0:-3]))
+						# Adds window to unknowns if valid
+						epitope_unknowns[peptide_window].add((tuple(row[0:-3])))
 
 			# Store unknowns due to C-terminal exclusion to final set
 			for i in range(int(row['c_exclusion_start']), int(row['end_pos'])):
@@ -177,99 +248,83 @@ if __name__ == '__main__':
 												upstream=upstream_window, 
 												downstream=downstream_window,
 				)
-				unknowns[peptide_window].add(tuple(row[0:-3]))
+				epitope_unknowns[peptide_window].add(tuple(row[0:-3]))
 
 		elif row['start_pos'] > 0:
-			# Also store N-terminal peptide window in positives (and regex if relevant)
+			# Also store N-terminal peptide window in positives
 			peptide_window = sf.get_peptide_window(
-												protein, row['start_pos'], None, 
-												upstream=upstream_window, 
-												downstream=downstream_window, 
-												c_terminal=False
+											protein, row['start_pos'], None, 
+											upstream=upstream_window, 
+											downstream=downstream_window, 
+											c_terminal=False
 			)
 			wildcards = [x for x in peptide_window if x in wildcard_aas]
-			if wildcards:
-				if not args.exclude_ambiguous:
-					positives[peptide_window].add(tuple(row[0:-3]))
-					positive_regex.add(re.compile(generate_regex(peptide_window)))
-			else:
-				positives[peptide_window].add(tuple(row[0:-3]))
+			if row['immune_type'] == 'constitutive':
+				proteasome_positives[peptide_window].add(tuple(row[0:-3]))
+				if wildcards:
+					proteasome_positive_regex.add(
+									re.compile(generate_regex(peptide_window))
+					)
+			elif row['immune_type'] == 'immuno':
+				immunoproteasome_positives[peptide_window].add(tuple(row[0:-3]))
+				if wildcards:
+					immunoproteasome_positive_regex.add(
+									re.compile(generate_regex(peptide_window))
+					)
 	
-	print(datetime.now(), 'Identifying negative cases from cleavage maps...', file=sys.stderr)
+	print(
+			datetime.now(), 'Identifying negative cases from cleavage maps...', 
+			file=sys.stderr
+	)
+
+	print(len(epitope_positives), len(proteasome_positives), len(immunoproteasome_positives))
 
 	# Determine cleavage map negative peptides
-	cleavage_peptides = data.loc[data['entry_source'] == 'cleavage map']
+	cleavage_peptides = data.loc[data['entry_source'] == 'cleavage_map']
 	for index, row in cleavage_peptides.iterrows():
+
 		# Extract protein sequence
 		protein = ''.join([row['full_sequence'][0:int(row['start_pos'])],
 						   row['fragment'],
 						   row['full_sequence'][int(row['end_pos']):]])
 		# Store all potential negatives for epitope temporarily
-		temp_negatives = set()
+		temp_proteasome_negatives = set()
+		temp_immunoproteasome_negatives = set()
 		for i in range(int(row['start_pos'])+1, int(row['end_pos'])):
 			peptide_window = sf.get_peptide_window(
 											protein, None, i+1,
 											upstream=upstream_window, 
 											downstream=downstream_window,
 			)
-			temp_negatives.add(peptide_window)
+			if row['immune_type'] == 'constitutive':
+				temp_proteasome_negatives.add(peptide_window)
+			elif row['immune_type'] == 'immuno':
+				temp_immunoproteasome_negatives.add(peptide_window)
 		# Process temp_negatives to find true negatives
-		true_negatives = set()
-		for peptide in temp_negatives:
-			# Create regex if relevant
-			wildcards = [x for x in peptide if x in wildcard_aas]
-			if wildcards:
-				if not args.exclude_ambiguous:
-					r = re.compile(generate_regex(peptide))
-					p_matches = [x for x in positives if r.match(x)]
-					if not p_matches:
-						# Peptide does not match a positive, is a true negative
-						true_negatives.add(peptide)
-						u_matches = [x for x in unknowns if r.match(x)]
-						for pep in u_matches:
-							# Remove any unknowns that match negative peptide regex
-							del unknowns[pep]
-			else:
-				# Compare peptide to positives
-				in_positives = False
-				if peptide in positives:
-					in_positives = True
-				else: 
-					for regex in positive_regex:
-						if regex.match(peptide):
-							in_positives = True
-							break
-				# Check if peptide matches unknowns if not in positives
-				if not in_positives:
-					true_negatives.add(peptide)
-					cleavage_negatives.add(peptide)
+		true_proteasome_negatives = remove_positives(
+												temp_proteasome_negatives, 
+												proteasome_positives, 
+												proteasome_positive_regex,
+												proteasome_negatives, row,
+												args.full_negative_set
+		)
+		true_immunoproteasome_negatives = remove_positives(
+											temp_immunoproteasome_negatives, 
+											immunoproteasome_positives, 
+											immunoproteasome_positive_regex,
+											immunoproteasome_negatives, row,
+											args.full_negative_set
+		)
 		# Add negative(s) to negative set
-		if not args.full_negative_set:
-			# Add only one negative to final set
-			new_negatives = [x for x in true_negatives if x not in negatives]
-			if new_negatives:
-				# Determine how many negatives to select
-				neg_count = 0
-				if row['end_pos'] != len(row['full_sequence']):
-					neg_count += 1
-				if row['start_pos'] != 0:
-					neg_count += 1
-				selected = random.sample(new_negatives, min(len(new_negatives), neg_count))
-				for peptide in selected:
-					negatives[peptide].add(tuple(row[0:-3]))
-			# Add info for redundant negatives
-			old_negatives = [x for x in true_negatives if x in negatives]
-			for neg in old_negatives:
-				negatives[neg].add(tuple(row[0:-3]))
-		else:
-			# Store all negatives
-			for neg in true_negatives:
-				negatives[neg].add(tuple(row[0:-3]))
+		for neg in true_proteasome_negatives:
+			proteasome_negatives[neg].add(tuple(row[0:-3]))
+		for neg in true_immunoproteasome_negatives:
+			immunoproteasome_negatives[neg].add(tuple(row[0:-3]))
 
 	print(datetime.now(), 'Filtering unknowns...', file=sys.stderr)
 
 	# Remove positive examples from unknowns and create unknown regexes
-	for peptide in list(unknowns.keys()):
+	for peptide in list(epitope_unknowns.keys()):
 		# Check for wildcards to search against	first
 		wildcards = [x for x in peptide if x in wildcard_aas]
 		if wildcards:
@@ -277,37 +332,34 @@ if __name__ == '__main__':
 				regex = generate_regex(peptide)
 				r = re.compile(regex)
 				# Compare to positives
-				for pep in positives:
+				for pep in epitope_positives:
 					if r.match(pep):
-						del unknowns[peptide]
-						break
-				# Compare to cleavage negatives w/o wildcards
-				for pep in cleavage_negatives:
-					if r.match(pep):
-						del unknowns[peptide]
+						del epitope_unknowns[peptide]
 						break
 				# Create regex for peptide if still in unknowns
-				if peptide in unknowns:
-					unknown_regex.add(re.compile(regex))
+				if peptide in epitope_unknowns:
+					epitope_unknown_regex.add(re.compile(regex))
 			else:
-				del unknowns[peptide]
+				del epitope_unknowns[peptide]
 		# Check for matches to positives and cleavage map negatives
-		elif peptide in positives:
-			del unknowns[peptide]
-		elif peptide in cleavage_negatives:
-			del unknowns[peptide]
-		elif positive_regex:
-			for r in positive_regex:
+		elif peptide in epitope_positives:
+			del epitope_unknowns[peptide]
+		elif epitope_positive_regex:
+			for r in epitope_positive_regex:
 				if r.match(peptide):
-					del unknowns[peptide]
+					del epitope_unknowns[peptide]
 					break
 
-	print(datetime.now(), 'Identifying remaining negative cases...', file=sys.stderr)
+	print(
+			datetime.now(), 'Identifying remaining negative cases...', 
+			file=sys.stderr
+	)
 
-	# Loop back through the data frame to get negative cases for non-cleavage map peptides
+	# Get negative cases for non-cleavage map peptides
 	for index, row in data.iterrows():
+		
 		# Skip cleavage map data
-		if row['entry_source'] == 'cleavage map':
+		if row['entry_source'] == 'cleavage_map':
 			continue
 
 		# Extract protein sequence
@@ -317,7 +369,10 @@ if __name__ == '__main__':
 
 		# Store all potential negatives for epitope temporarily
 		temp_negatives = set()
-		for i in range(int(row['n_exclusion_end']), int(row['c_exclusion_start'])):
+		for i in range(
+							int(row['n_exclusion_end']), 
+							int(row['c_exclusion_start'])
+					   ):
 			peptide_window = sf.get_peptide_window(
 											protein, None, i,
 											upstream=upstream_window, 
@@ -332,28 +387,28 @@ if __name__ == '__main__':
 			if wildcards:
 				if not args.exclude_ambiguous:
 					r = re.compile(generate_regex(peptide))
-					p_matches = [x for x in positives if r.match(x)]
+					p_matches = [x for x in epitope_positives if r.match(x)]
 					if not p_matches:
-						u_matches = [x for x in unknowns if r.match(x)]
+						u_matches = [x for x in epitope_unknowns if r.match(x)]
 						if not u_matches:
 							true_negatives.add(peptide)
 			else:
 				# Compare peptide to positives
 				in_positives = False
-				if peptide in positives:
+				if peptide in epitope_positives:
 					in_positives = True
 				else: 
-					for regex in positive_regex:
+					for regex in epitope_positive_regex:
 						if regex.match(peptide):
 							in_positives = True
 							break
 				# Check if peptide matches unknowns if not in positives
 				if not in_positives:
 					in_unknowns = False
-					if peptide in unknowns:
+					if peptide in epitope_unknowns:
 						in_unknowns = True
 					else:
-						for regex in unknown_regex:
+						for regex in epitope_unknown_regex:
 							if regex.match(peptide):
 								in_unknowns = True
 								break
@@ -363,35 +418,61 @@ if __name__ == '__main__':
 		# Add negative(s) to negative set
 		if not args.full_negative_set:
 			# Add only one negative to final set
-			new_negatives = [x for x in true_negatives if x not in negatives]
+			new_negatives = [
+						x for x in true_negatives if x not in epitope_negatives
+			]
 			if new_negatives:
 				# Determine how many negatives to select
 				neg_count = 0
 				if row['end_pos'] != len(row['full_sequence']):
 					neg_count += 1
-				if args.trimming_window > len(row['fragment']) and row['start_pos'] != 0:
-					neg_count += 1
-				selected = random.sample(new_negatives, min(len(new_negatives), neg_count))
+				if args.trimming_window > len(row['fragment']):
+					if row['start_pos'] != 0:
+						neg_count += 1
+				selected = random.sample(
+							new_negatives, min(len(new_negatives), neg_count)
+						   )
 				for peptide in selected:
-					negatives[peptide].add(tuple(row[0:-3]))
+					epitope_negatives[peptide].add(tuple(row[0:-3]))
 			# Add info for redundant negatives
-			old_negatives = [x for x in true_negatives if x in negatives]
+			old_negatives = [
+							x for x in true_negatives if x in epitope_negatives
+			]
 			for neg in old_negatives:
-				negatives[neg].add(tuple(row[0:-3]))
+				epitope_negatives[neg].add(tuple(row[0:-3]))
 		else:
 			# Store all negatives
 			for neg in true_negatives:
-				negatives[neg].add(tuple(row[0:-3]))
+				epitope_negatives[neg].add(tuple(row[0:-3]))
 
-	# Create feature arrays for positive and negative examples
-	data_set = {'positives': {}, 'negatives': {}}
-	for window in positives:
-		data_set['positives'][window] = positives[window]
-	for window in negatives:
-		data_set['negatives'][window] = negatives[window]
+	print(len(epitope_positives), len(proteasome_positives), len(immunoproteasome_positives))
+
+	# Create feature arrays for positive and negative examples for each set
+	data_set = {
+					'epitope': {'positives': {}, 'negatives': {}}, 
+					'constitutive_proteasome': {'positives': {}, 'negatives': {}}, 
+					'immunoproteasome': {'positives': {}, 'negatives': {}}
+			   }
+	# Store epitope positives/negatves
+	for window in epitope_positives:
+		data_set['epitope']['positives'][window] = epitope_positives[window]
+	for window in epitope_negatives:
+		data_set['epitope']['negatives'][window] = epitope_negatives[window]
+	# Store constitutive proteasome positives/negatives
+	for window in proteasome_positives:
+		data_set['constitutive_proteasome']['positives'][window] = proteasome_positives[window]
+	for window in proteasome_negatives:
+		data_set['constitutive_proteasome']['negatives'][window] = proteasome_negatives[window]
+	# Store immunoproteasome positives/negatives
+	for window in immunoproteasome_positives:
+		data_set['immunoproteasome']['positives'][window] = immunoproteasome_positives[window]
+	for window in immunoproteasome_negatives:
+		data_set['immunoproteasome']['negatives'][window] = immunoproteasome_negatives[window]
 	# Store dataset to pickled dictionary
 	with open(args.output_dict, 'wb') as p:
 		pickle.dump(data_set, p)
 
 	print(datetime.now(), 'Done!', file=sys.stderr)
+
+	print(len(data_set['epitope']['positives']), len(data_set['constitutive_proteasome']['positives']), len(data_set['immunoproteasome']['negatives']))
 
