@@ -32,16 +32,18 @@ parser.add_option("-o", "--out_dir", dest="out_dir",
 file_list = os.listdir(options.in_dir)
 
 # initiate data frame
-digestion_df = pd.DataFrame(columns=['Fragment', 'start_pos', 'source_seq',
-                                     'Name', 'DOI', 'Subunit', 'Proteasome',
-                                     'Organism', 'UniProt'])
+digestion_df = pd.DataFrame(columns=['fragment', 'start_pos', 'end_pos',
+                                     'full_sequence', 'Name', 'DOI', 'Subunit',
+                                     'Proteasome', 'Organism', 'UniProt'])
+
+digestion_df['entry_source'] = "cleavage_map"
 
 # iterate through and parse each file
 for file in file_list:
     print("parsing: ", file)
     file_path = options.in_dir + "/" + file
     tmp_df = parse_digestion_file(file_path)
-    digestion_df = digestion_df.append(tmp_df)
+    digestion_df = digestion_df.append(tmp_df, sort=True)
 
 # for now drop all non-20S and all missing proteasome type
 digestion_df = digestion_df[digestion_df['Subunit'] == "20S"]

@@ -370,6 +370,7 @@ def parse_cleavage_map(lines):
                     if len(re.findall(fragment, source_seq)) == 1:
                         # annotate start position
                         start_pos = re.search(fragment, source_seq).span()[0]
+                        end_pos = re.search(fragment, source_seq).span()[1]
                     # if ambiguity raise error
                     else:
                         print(fragment, "Occurs multiple times in: ",
@@ -377,7 +378,7 @@ def parse_cleavage_map(lines):
                         print("exact position not annotated with @")
                         raise NotImplementedError
                     # add fragment, start to list
-                    fragment_list.append((fragment, start_pos))
+                    fragment_list.append((fragment, start_pos, end_pos))
                 # if exact position is annotated
                 if "@" in line:
                     # split values
@@ -390,7 +391,8 @@ def parse_cleavage_map(lines):
                         "Warning: fragment does not match annotated " \
                         "position in source sequence"
                     # add fragment, start to list
-                    fragment_list.append((fragment, start_pos))
+                    end_pos = start_pos + len(fragment)
+                    fragment_list.append((fragment, start_pos, end_pos))
         line = next(line_iter, None)
     # add last source - fragment pairs to list
     fragment_dict[source_seq] = fragment_list
@@ -408,6 +410,7 @@ def generate_cleavage_df(meta_dict, seq_dict):
     """
     fragment = []
     start_pos = []
+    end_pos = []
     source_seq = []
     # for each source sequence
     for source in seq_dict.keys():
@@ -417,11 +420,14 @@ def generate_cleavage_df(meta_dict, seq_dict):
             fragment.append(entry[0])
             # append start pos
             start_pos.append(entry[1])
+            # append end pos
+            end_pos.append(entry[2])
             # append
             source_seq.append(source)
     # zip together to make row entries
-    out_df = pd.DataFrame(zip(fragment, start_pos, source_seq),
-                          columns=['Fragment', 'start_pos', "source_seq"])
+    out_df = pd.DataFrame(zip(fragment, start_pos, end_pos, source_seq),
+                          columns=['fragment', 'start_pos', 'end_pos',
+                                   'full_sequence'])
     # for each meta variable, populate across all rows
     for meta_key in meta_dict:
         out_df[meta_key] = meta_dict[meta_key]
