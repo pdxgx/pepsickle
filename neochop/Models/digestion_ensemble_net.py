@@ -13,7 +13,7 @@ dtype = torch.FloatTensor
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 indir = "/Users/weeder/PycharmProjects/proteasome/data_processing/generated_training_sets/"
-file = "proteasome_data_1.6.20.pickle"
+file = "merged_proteasome_data_dict.pickle"
 
 torch.manual_seed(123)
 
@@ -102,6 +102,7 @@ if dtype is torch.cuda.FloatTensor:
 
 handle = open(indir + file, "rb")
 data = pickle.load(handle)
+data = data[d]
 
 # for human only...
 pos_windows = []
