@@ -184,6 +184,7 @@ def parse_digestion_file(file):
     out_df = generate_pandas_df(meta_dict, seq_dict)
     return out_df
 
+
 # initiate data frame
 digestion_df = pd.DataFrame(columns=['Fragment', 'start_pos', 'source_seq',
                                      'Name', 'DOI', 'Subunit', 'Proteasome',
