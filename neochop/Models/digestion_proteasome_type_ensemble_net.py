@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn import metrics
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
 
 # set CPU or GPU
 dtype = torch.FloatTensor
@@ -21,7 +22,7 @@ class SeqNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.drop = nn.Dropout(p=0.3)
-        self.input = nn.Linear(420, 136)
+        self.input = nn.Linear(422, 136)
         self.bn1 = nn.BatchNorm1d(136)
         self.fc1 = nn.Linear(136, 68)
         self.bn2 = nn.BatchNorm1d(68)
@@ -29,9 +30,12 @@ class SeqNet(nn.Module):
         self.bn3 = nn.BatchNorm1d(34)
         self.out = nn.Linear(34, 2)
 
-    def forward(self, x):
+    def forward(self, x, c_prot, i_prot):
         # make sure input tensor is flattened
+
         x = x.reshape(x.shape[0], -1)
+        x = torch.cat((x, c_prot.reshape(c_prot.shape[0], -1)), 1)
+        x = torch.cat((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
 
         x = self.drop(F.relu(self.bn1(self.input(x))))
         x = self.drop(F.relu(self.bn2(self.fc1(x))))
@@ -45,41 +49,23 @@ class MotifNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.drop = nn.Dropout(p=0.3)
-        self.conv = nn.Conv1d(4, 4, 3, groups=4)
-        self.fc1 = nn.Linear(76, 38)
+        # self.conv = nn.Conv1d(4, 4, 3, groups=4)
+        # self.fc1 = nn.Linear(78, 38)
+        self.fc1 = nn.Linear(86, 38)
         self.bn1 = nn.BatchNorm1d(38)
         self.fc2 = nn.Linear(38, 20)
         self.bn2 = nn.BatchNorm1d(20)
         self.out = nn.Linear(20, 2)
 
-    def forward(self, x):
+    def forward(self, x, c_prot, i_prot):
         # perform convolution prior to flattening
-        x = x.transpose(1, 2)
-        x = self.conv(x)
+        # x = x.transpose(1, 2)
+        # x = self.conv(x)
 
         # make sure input tensor is flattened
         x = x.reshape(x.shape[0], -1)
-
-        x = self.drop(F.relu(self.bn1(self.fc1(x))))
-        x = self.drop(F.relu(self.bn2(self.fc2(x))))
-        x = F.log_softmax(self.out(x), dim=1)
-
-        return x
-
-
-class MotifNetNoConv(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.drop = nn.Dropout(p=0.3)
-        self.fc1 = nn.Linear(84, 38)
-        self.bn1 = nn.BatchNorm1d(38)
-        self.fc2 = nn.Linear(38, 20)
-        self.bn2 = nn.BatchNorm1d(20)
-        self.out = nn.Linear(20, 2)
-
-    def forward(self, x):
-        # make sure input tensor is flattened
-        x = x.reshape(x.shape[0], -1)
+        x = torch.cat((x, c_prot.reshape(c_prot.shape[0], -1)), 1)
+        x = torch.cat((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
 
         x = self.drop(F.relu(self.bn1(self.fc1(x))))
         x = self.drop(F.relu(self.bn2(self.fc2(x))))
@@ -102,42 +88,75 @@ if dtype is torch.cuda.FloatTensor:
 
 handle = open(indir + file, "rb")
 data = pickle.load(handle)
-data = data[d]
 
-# for human only...
+positive_dict = data['constitutive_proteasome']['positives']
+positive_dict.update(data['immunoproteasome']['positives'])
 pos_windows = []
-for key in data['positives'].keys():
-    entry = data['positives'][key]
-    if any('human' in i for i in entry):
-        if any('cleavage map' in i for i in entry):
-            pos_windows.append(key)
+for key in positive_dict.keys():
+    if key not in pos_windows:
+        pos_windows.append(key)
+
+negative_dict = data['constitutive_proteasome']['negatives']
+negative_dict.update(data['immunoproteasome']['negatives'])
+neg_windows = []
+for key in negative_dict.keys():
+    if key not in neg_windows:
+        neg_windows.append(key)
+
+
+pos_constitutive_proteasome = []
+pos_immuno_proteasome = []
+for key in pos_windows:
+    if key in data['constitutive_proteasome']['positives'].keys():
+        pos_constitutive_proteasome.append(1)
+    else:
+        pos_constitutive_proteasome.append(0)
+
+    if key in data['immunoproteasome']['positives'].keys():
+        pos_immuno_proteasome.append(1)
+    else:
+        pos_immuno_proteasome.append(0)
+
+
+neg_constitutive_proteasome = []
+neg_immuno_proteasome = []
+for key in neg_windows:
+    if key in data['constitutive_proteasome']['negatives'].keys():
+        neg_constitutive_proteasome.append(1)
+    else:
+        neg_constitutive_proteasome.append(0)
+
+    if key in data['immunoproteasome']['negatives'].keys():
+        neg_immuno_proteasome.append(1)
+    else:
+        neg_immuno_proteasome.append(0)
 
 # for all mammals
 # pos_windows = list(data['positives'].keys())
 pos_feature_matrix = torch.from_numpy(generate_feature_array(pos_windows))
-
-neg_windows = []
-for key in data['negatives'].keys():
-    entry = data['negatives'][key]
-    if any('human' in i for i in entry):
-        if any('cleavage map' in i for i in entry):
-            neg_windows.append(key)
+pos_feature_set = [f_set for f_set in zip(pos_feature_matrix,
+                                          pos_constitutive_proteasome,
+                                          pos_immuno_proteasome)]
 
 # neg_windows = list(data['negatives'].keys())
 neg_feature_matrix = torch.from_numpy(generate_feature_array(neg_windows))
+neg_feature_set = [f_set for f_set in zip(neg_feature_matrix,
+                                          neg_constitutive_proteasome,
+                                          neg_immuno_proteasome)]
 
 test_holdout_p = .2
-pos_train_k = round((1-test_holdout_p) * pos_feature_matrix.size(0))
-neg_train_k = round((1-test_holdout_p) * neg_feature_matrix.size(0))
+pos_train_k = torch.tensor(round((1-test_holdout_p) * len(pos_feature_set)))
+neg_train_k = torch.tensor(round((1-test_holdout_p) * len(pos_feature_set)))
 
 # permute and split data
-pos_perm = torch.randperm(pos_feature_matrix.size(0))
-pos_train = pos_feature_matrix[pos_perm[:pos_train_k]]
-pos_test = pos_feature_matrix[pos_perm[pos_train_k:]]
+pos_perm = torch.randperm(torch.tensor(len(pos_feature_set)))
+pos_train = [pos_feature_set[i] for i in pos_perm[:pos_train_k]]
+pos_test = [pos_feature_set[i] for i in pos_perm[pos_train_k:]]
 
-neg_perm = torch.randperm(neg_feature_matrix.size(0))
-neg_train = neg_feature_matrix[neg_perm[:neg_train_k]]
-neg_test = neg_feature_matrix[neg_perm[neg_train_k:(pos_test.size(0) + neg_train_k)]]  # for balanced testing set
+neg_perm = torch.randperm(torch.tensor(len(neg_feature_set)))
+neg_train = [neg_feature_set[i] for i in neg_perm[:neg_train_k]]
+neg_test = [neg_feature_set[i] for i in neg_perm[neg_train_k:(torch.tensor(len(pos_test)) + neg_train_k)]]
+
 
 # pair training data with labels
 pos_train_labeled = []
@@ -181,7 +200,9 @@ for epoch in range(n_epoch):
     # load data, convert if needed
     for dat, labels in train_loader:
         # convert to proper data type
-        dat = dat.type(dtype)
+        matrix_dat = dat[0].type(dtype)
+        c_proteasome_dat = dat[1].clone().detach().type(dtype)
+        i_proteasome_dat = dat[2].clone().detach().type(dtype)
         if dtype == torch.cuda.FloatTensor:
             labels = labels.cuda()
 
@@ -190,10 +211,14 @@ for epoch in range(n_epoch):
         motif_optimizer.zero_grad()
 
         # generate model predictions
-        seq_est = sequence_model(dat[:, :, :20])  # one hot encoded sequences
+        seq_est = sequence_model(matrix_dat[:, :, :20],
+                                 c_proteasome_dat,
+                                 i_proteasome_dat)  # one hot encoded sequences
         # with torch.no_grad():
         #     motif_dat = conv_pre(dat[:, :, 22:].transpose(1, 2))
-        motif_est = motif_model(dat[:, :, 22:])  # physical properties (not side chains)
+        motif_est = motif_model(matrix_dat[:, :, 22:],
+                                c_proteasome_dat,
+                                i_proteasome_dat)  # physical properties (not side chains)
 
         # calculate loss
         seq_loss = seq_criterion(seq_est, labels)
@@ -218,13 +243,24 @@ for epoch in range(n_epoch):
             sequence_model.eval()
             motif_model.eval()
             dat, labels = next(iter(test_loader))
+
             # convert to proper data type
-            dat = dat.type(dtype)
+            matrix_dat = dat[0].type(dtype)
+            c_proteasome_dat = dat[1].clone().detach().type(dtype)
+            i_proteasome_dat = dat[2].clone().detach().type(dtype)
+            if dtype == torch.cuda.FloatTensor:
+                labels = labels.cuda()
 
             # get est probability of cleavage event
-            exp_seq_est = torch.exp(sequence_model(dat[:, :, :20]))[:, 1].cpu()  # one hot encoded sequences
+            exp_seq_est = torch.exp(sequence_model(matrix_dat[:, :, :20],
+                                                   c_proteasome_dat,
+                                                   i_proteasome_dat)
+                                    )[:, 1].cpu()  # one hot encoded sequences
             # motif_dat = conv_pre(dat[:, :, 22:].transpose(1, 2))
-            exp_motif_est = torch.exp(motif_model(dat[:, :, 22:]))[:, 1].cpu()  # not including side chains
+            exp_motif_est = torch.exp(motif_model(matrix_dat[:, :, 22:],
+                                                  c_proteasome_dat,
+                                                  i_proteasome_dat)
+                                      )[:, 1].cpu()  # not incl.side chains
             # take simple average
             consensus_est = (exp_seq_est + exp_motif_est) / 2
 
@@ -242,3 +278,24 @@ for epoch in range(n_epoch):
 
     sequence_model.train()
     motif_model.train()
+
+
+# look at model weights
+in_layer_weights = sequence_model.input.weight
+# sum across all second layer connections
+in_layer_weights = in_layer_weights.abs().sum(dim=0)
+# reshape to match original input
+in_layer_weights = in_layer_weights[:420].reshape(21, -1)
+# sum across values per position
+input_sums = in_layer_weights.sum(dim=1).detach().numpy()
+
+# plot
+positions = range(-10, 11)
+y_pos = np.arange(len(positions))
+plt.bar(y_pos, input_sums, align='center', alpha=0.5)
+plt.xticks(y_pos, positions)
+plt.ylabel('weight')
+plt.xlabel('distance from cleavage point')
+plt.title('')
+
+plt.show()

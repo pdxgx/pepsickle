@@ -5,6 +5,8 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn import metrics
 import torch.nn.functional as F
+import numpy as np
+import matplotlib.pyplot as plt
 
 # set CPU or GPU
 dtype = torch.FloatTensor
@@ -13,7 +15,7 @@ dtype = torch.FloatTensor
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 indir = "/Users/weeder/PycharmProjects/proteasome/data_processing/generated_training_sets/"
-file = "proteasome_data_1.6.20.pickle"
+file = "merged_proteasome_data_dict.pickle"
 
 torch.manual_seed(123)
 
@@ -102,6 +104,7 @@ if dtype is torch.cuda.FloatTensor:
 
 handle = open(indir + file, "rb")
 data = pickle.load(handle)
+data = data['epitope']
 
 # for human only...
 pos_windows = []
@@ -110,8 +113,6 @@ for key in data['positives'].keys():
     entry = data['positives'][key]
     if any('human' in i for i in entry):
         pos_windows.append(key)
-        if not all('cleavage map' in i for i in entry):
-            pos_digestion_windows.append(key)
 
 # for all mammals
 # pos_windows = list(data['positives'].keys())
@@ -124,12 +125,10 @@ for key in data['negatives'].keys():
     entry = data['negatives'][key]
     if any('human' in i for i in entry):
         neg_windows.append(key)
-        if not all('cleavage map' in i for i in entry):
-            neg_digestion_windows.append(key)
+
 
 # neg_windows = list(data['negatives'].keys())
 neg_feature_matrix = torch.from_numpy(generate_feature_array(neg_windows))
-neg_dig_feature_matrix = torch.from_numpy(generate_feature_array(neg_digestion_windows))
 
 test_holdout_p = .2
 pos_train_k = round((1-test_holdout_p) * pos_feature_matrix.size(0))
@@ -142,7 +141,8 @@ pos_test = pos_feature_matrix[pos_perm[pos_train_k:]]
 
 neg_perm = torch.randperm(neg_feature_matrix.size(0))
 neg_train = neg_feature_matrix[neg_perm[:neg_train_k]]
-neg_test = neg_feature_matrix[neg_perm[neg_train_k:(pos_test.size(0) + neg_train_k)]]  # for balanced testing set
+neg_test = neg_feature_matrix[neg_perm[neg_train_k:(pos_test.size(0) +
+                                                    neg_train_k)]]  # for balanced testing set
 
 # pair training data with labels
 pos_train_labeled = []
@@ -162,16 +162,6 @@ for i in range(len(pos_test)):
 neg_test_labeled = []
 for i in range(len(neg_test)):
     neg_test_labeled.append([neg_test[i], torch.tensor(0)])
-
-pos_digestion_labeled = []
-for i in range(len(pos_dig_feature_matrix)):
-    pos_digestion_labeled.append([pos_dig_feature_matrix[i], torch.tensor(1)])
-neg_digestion_labeled = []
-for i in range(len(neg_dig_feature_matrix)):
-    neg_digestion_labeled.append([neg_dig_feature_matrix[i], torch.tensor(0)])
-
-digestion_data = pos_digestion_labeled + neg_digestion_labeled
-digestion_loader = torch.utils.data.DataLoader(digestion_data, batch_size=2000, shuffle=True)
 
 test_data = pos_test_labeled + neg_test_labeled
 test_loader = torch.utils.data.DataLoader(test_data, batch_size=2000, shuffle=True)  # was len * 0.10
@@ -260,7 +250,48 @@ for epoch in range(n_epoch):
     motif_model.train()
 
 
-t_dat, t_labels = next(iter(digestion_loader))
+t_dat, t_labels = next(iter(test_loader))
 seq_est = torch.exp(sequence_model(t_dat.type(dtype)[:, :, :20]))[:, 1].cpu()
-seq_auc = metrics.roc_auc_score(t_labels.detach().numpy(), seq_est.detach().numpy())
+seq_guess_class = []
+for est in seq_est:
+    if est >= .2:  # changing threshold alters se and sp
+        seq_guess_class.append(1)
+    else:
+        seq_guess_class.append(0)
+
+seq_auc = metrics.roc_auc_score(t_labels.detach().numpy(),
+                                seq_est.detach().numpy())
 print(seq_auc)
+
+seq_report = metrics.classification_report(t_labels.detach().numpy(),
+                                           seq_guess_class)
+print(seq_report)
+
+tn, fp, fn, tp = metrics.confusion_matrix(t_labels.detach().numpy(),
+                                          seq_guess_class).ravel()
+sensitivity = tp/(tp + fn)
+specificity = tn/(tn+fp)
+
+print("Sensitivity: ", sensitivity)
+print("Specificity: ", specificity)
+
+
+# look at position weights to see what areas are weighted most
+in_layer_weights = sequence_model.input.weight
+# sum across all second layer connections
+in_layer_weights = in_layer_weights.abs().sum(dim=0)
+# reshape to match original input
+in_layer_weights = in_layer_weights.reshape(21, -1)
+# sum across values per position
+input_sums = in_layer_weights.sum(dim=1).detach().numpy()
+
+# plot
+positions = range(-10, 11)
+y_pos = np.arange(len(positions))
+plt.bar(y_pos, input_sums, align='center', alpha=0.5)
+plt.xticks(y_pos, positions)
+plt.ylabel('weight')
+plt.xlabel('distance from cleavage point')
+plt.title('')
+
+plt.show()

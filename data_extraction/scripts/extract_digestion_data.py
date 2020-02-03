@@ -15,8 +15,8 @@ you are running this script in. The script includes user input when multiple
 different sites for a given digestion product are present in the corresponding
 protein sequence. In the case of current files being inputted,
 the corresponding positions are:
-0, 0, 37, 92, 37, 37, 8, 296, 296, 296, 295, 295, 294, 292, 291, 290, 290, 288,
-287, 286, 285, 118
+0, 0, 37, 92, 37, 37, 8, 296, 296, 296, 295, 295, 294, 292, 291, 290, 290,
+288, 287, 286, 285, 118
 
 Inputs:
     A list with all the locations of the text files containing the information
@@ -35,6 +35,7 @@ Outputs:
 import pandas as pd
 import numpy as np
 
+in_dir = "/Users/weeder/PycharmProjects/proteasome/data_extraction/raw_data/Digestion/txt/"
 files_dict = {
     "26Sbeta-casein.txt": "10.1074/jbc.M000740200",
     "20Sbeta-casein.txt": "10.1074/jbc.M000740200",
@@ -70,31 +71,31 @@ files_dict = {
     "HIV RT-1.txt": "10.1128/JVI.00968-06",
     "HIV RT-2.txt": "10.1128/JVI.00968-06",
     "HIV-1 Nef-2.txt": "10.1073/pnas.1232228100",
-    "PRAME 90-116.txt": "10.1084/jem.193.1.73",
-    "PRAME 133-159.txt": "10.1084/jem.193.1.73",
-    "PRAME 290-316.txt": "10.1084/jem.193.1.73",
-    "PRAME 415-441.txt": "10.1084/jem.193.1.73",
+    "PRAME 90–116.txt": "10.1084/jem.193.1.73",
+    "PRAME 133–159.txt": "10.1084/jem.193.1.73",
+    "PRAME 290–316.txt": "10.1084/jem.193.1.73",
+    "PRAME 415–441.txt": "10.1084/jem.193.1.73",
     "NS4B-Mu.txt": "10.1128/JVI.79.8.4870–4876.2005",
     "NS4B-WT.txt": "10.1128/JVI.79.8.4870–4876.2005",
     "GP100 209-217.txt": "10.4049/jimmunol.1103213",  # Issue... this study uses an intermediate constit/immuno proteasome
-    "MAGE-A3 114-122.txt": "10.4049/jimmunol.1103213",
-    "MAGE-A3 271-279.txt": "10.4049/jimmunol.1103213",
-    "MAGE-A10 254-262.txt": "10.4049/jimmunol.1103213",
-    "MAGE-C2 191-200.txt": "10.4049/jimmunol.1103213",
-    "MAGE-C2 336-344.txt": "10.4049/jimmunol.1103213",
-    "Melan-A 26-35.txt": "10.4049/jimmunol.1103213",
-    "Tyrosinase 369-377.txt": "10.4049/jimmunol.1103213",
-    "MV 438-446-1.txt": "10.1099/0022-1317-82-9-2131",
-    "MV 438-446-2.txt": "10.1099/0022-1317-82-9-2131",
-    "MV 438-446-3.txt": "10.1099/0022-1317-82-9-2131",
-    "MV 438-446-4.txt": "10.1099/0022-1317-82-9-2131",
+    "MAGE-A3 114-122.txt": "10.4049/jimmunol.1103213",  # Issue... this study uses an intermediate constit/immuno proteasome
+    "MAGE-A3 271-279.txt": "10.4049/jimmunol.1103213",  # Issue... this study uses an intermediate constit/immuno proteasome
+    "MAGE-A10 254-262.txt": "10.4049/jimmunol.1103213",  # Issue... this study uses an intermediate constit/immuno proteasome
+    "MAGE-C2 191-200.txt": "10.4049/jimmunol.1103213",  # Issue... this study uses an intermediate constit/immuno proteasome
+    "MAGE-C2 336-344.txt": "10.4049/jimmunol.1103213",  # Issue... this study uses an intermediate constit/immuno proteasome
+    "Melan-A 26-35.txt": "10.4049/jimmunol.1103213",  # Issue... this study uses an intermediate constit/immuno proteasome
+    "Tyrosinase 369-377.txt": "10.4049/jimmunol.1103213",  # Issue... this study uses an intermediate constit/immuno proteasome
+    "MV 438–446-1.txt": "10.1099/0022-1317-82-9-2131",
+    "MV 438–446-2.txt": "10.1099/0022-1317-82-9-2131",
+    "MV 438–446-3.txt": "10.1099/0022-1317-82-9-2131",
+    "MV 438–446-4.txt": "10.1099/0022-1317-82-9-2131",
     "Insulin B chain-2.txt": "10.1073/pnas.0508621102",
     "LLO 291-317.txt": "10.1182/blood-2010-12-325035",
     "TEL-AML1 319-348.txt": "10.1182/blood-2010-12-325035",
     "pLLO 91-99.txt": "10.1093/intimm/dxh352",
     "pLLO 99A.txt": "10.1093/intimm/dxh352",
     "Proinsulin.txt": "10.2337/diabetes.54.7.2053",
-    "Proteasome C5 120-146.txt": "10.4049/jimmunol.164.1.329",
+    "Proteasome C5 120–146.txt": "10.4049/jimmunol.164.1.329",
     "iWT1 313-336.txt": "10.1158/1078-0432.CCR-06-1337",
     "cWT1 313-336.txt": "10.1158/1078-0432.CCR-06-1337",
     "iEnolase.txt": "10.1084/jem.194.1.1",
@@ -102,10 +103,10 @@ files_dict = {
     "Snca.txt": "10.1016/j.bbamcr.2013.11.018",
     "PARK7.txt": "10.1016/j.bbamcr.2011.11.010",
     "ALB 1-24.txt": "10.1681/ASN.2007111233",
-    "HLA-B27 165-194.txt": "10.1074/jbc.M308816200",
-    "Histone 2A 77-105.txt": "10.1074/jbc.M308816200",
-    "Fatty Acid Synthase 1689-1718.txt": "10.1074/jbc.M308816200",
-    "Beta-2m 1-24.txt": "10.1074/jbc.M308816200",
+    "HLA-B27 165-194.txt": "10.1074/jbc.M308816200",  # mix of both proteasome and immunoproteasome, also mix of human/mouse in paper
+    "Histone 2A 77-105.txt": "10.1074/jbc.M308816200",  # mix of both proteasome and immunoproteasome, also mix of human/mouse in paper
+    "Fatty Acid Synthase 1689-1718.txt": "10.1074/jbc.M308816200",  # mix of both proteasome and immunoproteasome, also mix of human/mouse in paper
+    "Beta-2m 1-24.txt": "10.1074/jbc.M308816200",  # mix of both proteasome and immunoproteasome, also mix of human/mouse in paper
     "OvaRFP.txt": "10.1016/j.molcel.2012.08.029",
     "p21RFP-20S.txt": "10.1016/j.molcel.2012.08.029",
     "p21RFP-26S.txt": "10.1016/j.molcel.2012.08.029",
@@ -129,7 +130,8 @@ def load_data(file_name):
        Returns:
             pd.Dataframe: Dataframe created from text file
     """
-    with open("files/" + file_name) as f:
+    file_path = in_dir + file_name
+    with open(file_path) as f:
         e_comments = f.readline().strip()
         if "20S" in e_comments:
             complex_type = "20S"
@@ -234,7 +236,9 @@ def get_position(fragment, full_sequence):
 
 
 df = pd.DataFrame()
+
 for file in files_dict.keys():
+    print("in progress: ", file)
     df = df.append(load_data(file))
 
 df.to_csv("edited_digestion.csv", index=False)

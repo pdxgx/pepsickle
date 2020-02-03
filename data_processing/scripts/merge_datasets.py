@@ -107,9 +107,15 @@ bc_df['lit_reference'] = bc_df['entry_source']
 bc_df.drop(columns=['Protein_ref', 'Ref_type', 'entry_source'], inplace=True)
 
 
+# drop all non-human data from epitope entries
+IEDB_df = IEDB_df[IEDB_df['origin_species'] == 'human']
+SYF_df = SYF_df[SYF_df['origin_species'] == 'human']
+antijen_df = antijen_df[antijen_df['origin_species'] == 'human']
+
+
 out_df = IEDB_df.append(SYF_df, ignore_index=True, sort=True)
 out_df = out_df.append(antijen_df, ignore_index=True, sort=True)
 out_df = out_df.append(digestion_df, ignore_index=True, sort=True)
 out_df = out_df.append(bc_df, ignore_index=True, sort=True)
 
-out_df.to_csv(options.out_dir + "merged_proteasome_data.csv", index=False)
+out_df.to_csv(options.out_dir + "/merged_proteasome_data.csv", index=False)

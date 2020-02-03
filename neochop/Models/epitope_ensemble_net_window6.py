@@ -5,6 +5,8 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn import metrics
 import torch.nn.functional as F
+import numpy as np
+import matplotlib.pyplot as plt
 
 # set CPU or GPU
 dtype = torch.FloatTensor
@@ -13,7 +15,7 @@ dtype = torch.FloatTensor
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 indir = "/Users/weeder/PycharmProjects/proteasome/data_processing/generated_training_sets/"
-file = "merged_proteasome_data_dict.pickle"
+file = "proteasome_window_size_6.pickle"
 
 torch.manual_seed(123)
 
@@ -21,7 +23,7 @@ class SeqNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.drop = nn.Dropout(p=0.3)
-        self.input = nn.Linear(420, 136)
+        self.input = nn.Linear(260, 136)
         self.bn1 = nn.BatchNorm1d(136)
         self.fc1 = nn.Linear(136, 68)
         self.bn2 = nn.BatchNorm1d(68)
@@ -45,8 +47,8 @@ class MotifNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.drop = nn.Dropout(p=0.3)
-        self.conv = nn.Conv1d(4, 4, 3, groups=4)
-        self.fc1 = nn.Linear(76, 38)
+        self.conv = nn.Conv1d(6, 6, 3, groups=6)
+        self.fc1 = nn.Linear(66, 38)
         self.bn1 = nn.BatchNorm1d(38)
         self.fc2 = nn.Linear(38, 20)
         self.bn2 = nn.BatchNorm1d(20)
@@ -102,26 +104,28 @@ if dtype is torch.cuda.FloatTensor:
 
 handle = open(indir + file, "rb")
 data = pickle.load(handle)
-data = data[d]
+data = data['epitope']
 
 # for human only...
 pos_windows = []
+pos_digestion_windows = []
 for key in data['positives'].keys():
     entry = data['positives'][key]
     if any('human' in i for i in entry):
-        if any('cleavage map' in i for i in entry):
-            pos_windows.append(key)
+        pos_windows.append(key)
 
 # for all mammals
 # pos_windows = list(data['positives'].keys())
 pos_feature_matrix = torch.from_numpy(generate_feature_array(pos_windows))
+pos_dig_feature_matrix = torch.from_numpy(generate_feature_array(pos_digestion_windows))
 
 neg_windows = []
+neg_digestion_windows = []
 for key in data['negatives'].keys():
     entry = data['negatives'][key]
     if any('human' in i for i in entry):
-        if any('cleavage map' in i for i in entry):
-            neg_windows.append(key)
+        neg_windows.append(key)
+
 
 # neg_windows = list(data['negatives'].keys())
 neg_feature_matrix = torch.from_numpy(generate_feature_array(neg_windows))
@@ -137,7 +141,8 @@ pos_test = pos_feature_matrix[pos_perm[pos_train_k:]]
 
 neg_perm = torch.randperm(neg_feature_matrix.size(0))
 neg_train = neg_feature_matrix[neg_perm[:neg_train_k]]
-neg_test = neg_feature_matrix[neg_perm[neg_train_k:(pos_test.size(0) + neg_train_k)]]  # for balanced testing set
+neg_test = neg_feature_matrix[neg_perm[neg_train_k:(pos_test.size(0) +
+                                                    neg_train_k)]]  # for balanced testing set
 
 # pair training data with labels
 pos_train_labeled = []
@@ -193,7 +198,7 @@ for epoch in range(n_epoch):
         seq_est = sequence_model(dat[:, :, :20])  # one hot encoded sequences
         # with torch.no_grad():
         #     motif_dat = conv_pre(dat[:, :, 22:].transpose(1, 2))
-        motif_est = motif_model(dat[:, :, 22:])  # physical properties (not side chains)
+        motif_est = motif_model(dat[:, :, 20:])  # physical properties (not side chains)
 
         # calculate loss
         seq_loss = seq_criterion(seq_est, labels)
@@ -224,9 +229,10 @@ for epoch in range(n_epoch):
             # get est probability of cleavage event
             exp_seq_est = torch.exp(sequence_model(dat[:, :, :20]))[:, 1].cpu()  # one hot encoded sequences
             # motif_dat = conv_pre(dat[:, :, 22:].transpose(1, 2))
-            exp_motif_est = torch.exp(motif_model(dat[:, :, 22:]))[:, 1].cpu()  # not including side chains
+            exp_motif_est = torch.exp(motif_model(dat[:, :, 20:]))[:, 1].cpu()  # not including side chains
             # take simple average
-            consensus_est = (exp_seq_est + exp_motif_est) / 2
+            consensus_est = (exp_seq_est +
+                             exp_motif_est) / 2
 
             # calculate AUC for each
             seq_auc = metrics.roc_auc_score(labels, exp_seq_est)
@@ -242,3 +248,50 @@ for epoch in range(n_epoch):
 
     sequence_model.train()
     motif_model.train()
+
+
+t_dat, t_labels = next(iter(test_loader))
+seq_est = torch.exp(sequence_model(t_dat.type(dtype)[:, :, :20]))[:, 1].cpu()
+seq_guess_class = []
+for est in seq_est:
+    if est >= .2:  # changing threshold alters se and sp
+        seq_guess_class.append(1)
+    else:
+        seq_guess_class.append(0)
+
+seq_auc = metrics.roc_auc_score(t_labels.detach().numpy(),
+                                seq_est.detach().numpy())
+print(seq_auc)
+
+seq_report = metrics.classification_report(t_labels.detach().numpy(),
+                                           seq_guess_class)
+print(seq_report)
+
+tn, fp, fn, tp = metrics.confusion_matrix(t_labels.detach().numpy(),
+                                          seq_guess_class).ravel()
+sensitivity = tp/(tp + fn)
+specificity = tn/(tn+fp)
+
+print("Sensitivity: ", sensitivity)
+print("Specificity: ", specificity)
+
+
+# look at position weights to see what areas are weighted most
+in_layer_weights = sequence_model.input.weight
+# sum across all second layer connections
+in_layer_weights = in_layer_weights.abs().sum(dim=0)
+# reshape to match original input
+in_layer_weights = in_layer_weights.reshape(13, -1)
+# sum across values per position
+input_sums = in_layer_weights.sum(dim=1).detach().numpy()
+
+# plot
+positions = range(-6, 7)
+y_pos = np.arange(len(positions))
+plt.bar(y_pos, input_sums, align='center', alpha=0.5)
+plt.xticks(y_pos, positions)
+plt.ylabel('weight')
+plt.xlabel('distance from cleavage point')
+plt.title('')
+
+plt.show()

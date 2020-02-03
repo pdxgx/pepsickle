@@ -4,12 +4,14 @@ import pandas as pd
 # loop for checking all index cases and repairing indices when possible
 # replace df with the full df of positive epitope examples
 file_dir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
-           "un-merged_data/"
+           "merged_data/"
 
-df = pd.read_csv(file_dir + 'tmp_merged_v3.csv', low_memory=False)
+df = pd.read_csv(file_dir + 'merged_proteasome_data.csv', low_memory=False)
 df = df.where(pd.notnull(df), None)
 df = df[df.full_sequence.notnull()]
 df = df.reset_index(drop=True)
+print("Total unchecked entries: ", len(df))
+
 
 failed_indices = []
 for i in range(len(df)):
@@ -82,7 +84,7 @@ for i in range(len(df)):
         else:
             failed_indices.append(i)
 
-print(len(failed_indices))
+print("Number of failed indices: ", len(failed_indices))
 df.drop(index=failed_indices, inplace=True)
 df = df.reset_index(drop=True)
 
@@ -99,8 +101,10 @@ for i in range(len(df)):
         mismatch_indices.append(i)
 
 # for now, drop few with errors:
-print(len(mismatch_indices))
+print("Number of mismatch indices: ", len(mismatch_indices))
 df.drop(index=mismatch_indices, inplace=True)
 df = df.reset_index(drop=True)
 
-df.to_csv(file_dir+"tmp_data_v3_indices_repaired.csv", index=False)
+print("Total entries left: ", len(df))
+
+df.to_csv(file_dir+"merged_proteasome_data_indices_repaired.csv", index=False)
