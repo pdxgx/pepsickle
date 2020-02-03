@@ -135,7 +135,7 @@ if __name__ == '__main__':
 					help='path to output file for storing pickled dictionary'
 	)
 	parser.add_argument(
-					'--context-window', '-w', type=str, default="10,10",
+					'--context-window', '-w', type=str, default="6,6",
 					help='size of upstream,downstream peptide context'
 	)
 	parser.add_argument(
@@ -184,17 +184,19 @@ if __name__ == '__main__':
 	proteasome_negatives = defaultdict(set)
 	immunoproteasome_positives = defaultdict(set)
 	immunoproteasome_negatives = defaultdict(set)
+	mixed_positives = defaultdict(set)
+	mixed_negatives = defaultdict(set)
 	# Create sets to hold regex patterns for positives/unknowns
 	epitope_positive_regex = set()
 	epitope_unknown_regex = set()
 	proteasome_positive_regex = set()
 	immunoproteasome_positive_regex = set()
+	mixed_positive_regex = set()
 
 	print(datetime.now(), 'Identifying positive cases...', file=sys.stderr)
 
 	# Iterate through epitopes to find positive/unknown cases
 	for index, row in data.iterrows():
-
 		# Extract protein sequence
 		protein = ''.join([row['full_sequence'][0:int(row['start_pos'])],
 						   row['fragment'],
@@ -214,16 +216,22 @@ if __name__ == '__main__':
 					epitope_positive_regex.add(
 									re.compile(generate_regex(peptide_window))
 					)
-			elif row['immune_type'] == 'constitutive':
+			elif row['Proteasome'] == 'C':
 				proteasome_positives[peptide_window].add(tuple(row[0:-3]))
 				if wildcards:
 					proteasome_positive_regex.add(
 									re.compile(generate_regex(peptide_window))
 					)
-			elif row['immune_type'] == 'immuno':
+			elif row['Proteasome'] == 'I':
 				immunoproteasome_positives[peptide_window].add(tuple(row[0:-3]))
 				if wildcards:
 					immunoproteasome_positive_regex.add(
+									re.compile(generate_regex(peptide_window))
+					)
+			elif row['Proteasome'] == 'M':
+				mixed_positives[peptide_window].add(tuple(row[0:-3]))
+				if wildcards:
+					mixed_positive_regex.add(
 									re.compile(generate_regex(peptide_window))
 					)
 		if row['entry_source'] != 'cleavage_map':
@@ -251,7 +259,6 @@ if __name__ == '__main__':
 												downstream=downstream_window,
 				)
 				epitope_unknowns[peptide_window].add(tuple(row[0:-3]))
-
 		elif row['start_pos'] > 0:
 			# Also store N-terminal peptide window in positives
 			peptide_window = sf.get_peptide_window(
@@ -261,16 +268,22 @@ if __name__ == '__main__':
 											c_terminal=False
 			)
 			wildcards = [x for x in peptide_window if x in wildcard_aas]
-			if row['immune_type'] == 'constitutive':
+			if row['Proteasome'] == 'C':
 				proteasome_positives[peptide_window].add(tuple(row[0:-3]))
 				if wildcards:
 					proteasome_positive_regex.add(
 									re.compile(generate_regex(peptide_window))
 					)
-			elif row['immune_type'] == 'immuno':
+			elif row['Proteasome'] == 'I':
 				immunoproteasome_positives[peptide_window].add(tuple(row[0:-3]))
 				if wildcards:
 					immunoproteasome_positive_regex.add(
+									re.compile(generate_regex(peptide_window))
+					)
+			elif row['Proteasome'] == 'M':
+				mixed_positives[peptide_window].add(tuple(row[0:-3]))
+				if wildcards:
+					mixed_positive_regex.add(
 									re.compile(generate_regex(peptide_window))
 					)
 	
@@ -279,49 +292,62 @@ if __name__ == '__main__':
 			file=sys.stderr
 	)
 
-	print(len(epitope_positives), len(proteasome_positives), len(immunoproteasome_positives))
-
 	# Determine cleavage map negative peptides
 	cleavage_peptides = data.loc[data['entry_source'] == 'cleavage_map']
+	# Compile cleavage positives for filtering potential mixed negatives
+	all_cleavage_positives = copy.copy(proteasome_positives)
+	for peptide in immunoproteasome_positives:
+		all_cleavage_positives[peptide].update(immunoproteasome_positives[peptide])
+	for peptide in mixed_positives:
+		all_cleavage_positives[peptide].update(mixed_positives[peptide])
+	all_cleavage_regex = proteasome_positive_regex.copy()
+	all_cleavage_regex.update(immunoproteasome_positive_regex)
+	all_cleavage_regex.update(mixed_positive_regex)
 	for index, row in cleavage_peptides.iterrows():
-
 		# Extract protein sequence
 		protein = ''.join([row['full_sequence'][0:int(row['start_pos'])],
 						   row['fragment'],
 						   row['full_sequence'][int(row['end_pos']):]])
 		# Store all potential negatives for epitope temporarily
-		temp_proteasome_negatives = set()
-		temp_immunoproteasome_negatives = set()
+		temp_negatives = set()
 		for i in range(int(row['start_pos'])+1, int(row['end_pos'])):
 			peptide_window = sf.get_peptide_window(
 											protein, None, i+1,
 											upstream=upstream_window, 
 											downstream=downstream_window,
 			)
-			if row['immune_type'] == 'constitutive':
-				temp_proteasome_negatives.add(peptide_window)
-			elif row['immune_type'] == 'immuno':
-				temp_immunoproteasome_negatives.add(peptide_window)
-		# Process temp_negatives to find true negatives
-		true_proteasome_negatives = remove_positives(
-												temp_proteasome_negatives, 
+			temp_negatives.add(peptide_window)
+			# Process temp_negatives to find true negatives
+			if row['Proteasome'] == 'C':
+				true_negatives = remove_positives(
+												temp_negatives, 
 												proteasome_positives, 
 												proteasome_positive_regex,
 												proteasome_negatives, row,
 												args.full_negative_set
-		)
-		true_immunoproteasome_negatives = remove_positives(
-											temp_immunoproteasome_negatives, 
+				)
+				for neg in true_negatives:
+					proteasome_negatives[neg].add(tuple(row[0:-3]))
+			elif row['Proteasome'] == 'I':
+				true_negatives = remove_positives(
+											temp_negatives, 
 											immunoproteasome_positives, 
 											immunoproteasome_positive_regex,
 											immunoproteasome_negatives, row,
 											args.full_negative_set
-		)
-		# Add negative(s) to negative set
-		for neg in true_proteasome_negatives:
-			proteasome_negatives[neg].add(tuple(row[0:-3]))
-		for neg in true_immunoproteasome_negatives:
-			immunoproteasome_negatives[neg].add(tuple(row[0:-3]))
+				)
+				for neg in true_negatives:
+					immunoproteasome_negatives[neg].add(tuple(row[0:-3]))
+			elif row['Proteasome'] == 'M':
+				true_negatives = remove_positives(
+											temp_negatives, 
+											all_cleavage_positives, 
+											all_cleavage_regex,
+											mixed_negatives, row,
+											args.full_negative_set
+				)
+				for neg in true_negatives:
+					mixed_negatives[neg].add(tuple(row[0:-3]))
 
 	print(datetime.now(), 'Filtering unknowns...', file=sys.stderr)
 
@@ -359,7 +385,6 @@ if __name__ == '__main__':
 
 	# Get negative cases for non-cleavage map peptides
 	for index, row in data.iterrows():
-		
 		# Skip cleavage map data
 		if row['entry_source'] == 'cleavage_map':
 			continue
@@ -447,13 +472,10 @@ if __name__ == '__main__':
 			for neg in true_negatives:
 				epitope_negatives[neg].add(tuple(row[0:-3]))
 
-	print(len(epitope_positives), len(proteasome_positives), len(immunoproteasome_positives))
-
 	# Create feature arrays for positive and negative examples for each set
 	data_set = {
 					'epitope': {'positives': {}, 'negatives': {}}, 
-					'constitutive_proteasome': {'positives': {}, 'negatives': {}}, 
-					'immunoproteasome': {'positives': {}, 'negatives': {}}
+					'proteasome': {'positives': {}, 'negatives': {}}, 
 			   }
 	# Store epitope positives/negatves
 	for window in epitope_positives:
@@ -462,19 +484,27 @@ if __name__ == '__main__':
 		data_set['epitope']['negatives'][window] = epitope_negatives[window]
 	# Store constitutive proteasome positives/negatives
 	for window in proteasome_positives:
-		data_set['constitutive_proteasome']['positives'][window] = proteasome_positives[window]
+		data_set['proteasome']['positives'][window] = proteasome_positives[window]
 	for window in proteasome_negatives:
-		data_set['constitutive_proteasome']['negatives'][window] = proteasome_negatives[window]
+		data_set['proteasome']['negatives'][window] = proteasome_negatives[window]
 	# Store immunoproteasome positives/negatives
 	for window in immunoproteasome_positives:
-		data_set['immunoproteasome']['positives'][window] = immunoproteasome_positives[window]
+		if window in data_set['proteasome']['positives']:
+			data_set['proteasome']['positives'][window].update(immunoproteasome_positives[window])
+		else:
+			data_set['proteasome']['positives'][window] = immunoproteasome_positives[window]
 	for window in immunoproteasome_negatives:
-		data_set['immunoproteasome']['negatives'][window] = immunoproteasome_negatives[window]
+		if window in data_set['proteasome']['negatives']:
+			data_set['proteasome']['negatives'][window].update(immunoproteasome_negatives[window])
+		else:
+			data_set['proteasome']['negatives'][window] = immunoproteasome_negatives[window]
+	for window in mixed_negatives:
+		if window in data_set['proteasome']['negatives']:
+			data_set['proteasome']['negatives'][window].update(mixed_negatives[window])
+		else:
+			data_set['proteasome']['negatives'][window] = mixed_negatives[window]
 	# Store dataset to pickled dictionary
 	with open(args.output_dict, 'wb') as p:
 		pickle.dump(data_set, p)
 
 	print(datetime.now(), 'Done!', file=sys.stderr)
-
-	print(len(data_set['epitope']['positives']), len(data_set['constitutive_proteasome']['positives']), len(data_set['immunoproteasome']['negatives']))
-
