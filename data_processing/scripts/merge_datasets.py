@@ -34,7 +34,7 @@ SYF_df = pd.read_csv(options.in_dir + "/SYF_data_w_sequences.csv")
 IEDB_df = pd.read_csv(options.in_dir + "/unique_iedb_epitopes.csv")
 bc_df = pd.read_csv(options.in_dir + "/breast_cancer_data_w_sequences.csv")
 antijen_df = pd.read_csv(options.in_dir + "/AntiJen_Tcell_w_sequences.csv")
-digestion_df = pd.read_csv(options.in_dir + "/edited_digestion.csv")  # change file name
+digestion_df = pd.read_csv(options.in_dir + "/compiled_digestion_df.csv")
 
 # identify names for IEDB to match others... this may need to be moved to
 # previous script
@@ -111,6 +111,17 @@ bc_df.drop(columns=['Protein_ref', 'Ref_type', 'entry_source'], inplace=True)
 IEDB_df = IEDB_df[IEDB_df['origin_species'] == 'human']
 SYF_df = SYF_df[SYF_df['origin_species'] == 'human']
 antijen_df = antijen_df[antijen_df['origin_species'] == 'human']
+
+
+# rename digestion_df columns for consistency
+new_digestion_cols = ['lit_reference', 'protein_name', 'origin_species',
+                      'Proteasome', "Subunit", 'full_seq_accession', 'end_pos',
+                      'entry_source', 'fragment', 'full_sequence', 'start_pos']
+digestion_df.columns = new_digestion_cols
+digestion_df['epitope_id'] = None
+digestion_df['full_seq_database'] = "UniProt"
+digestion_df['mhc_allele_name'] = None
+digestion_df.drop(columns=['protein_name'], inplace=True)
 
 
 out_df = IEDB_df.append(SYF_df, ignore_index=True, sort=True)
