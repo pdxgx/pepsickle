@@ -36,8 +36,6 @@ digestion_df = pd.DataFrame(columns=['fragment', 'start_pos', 'end_pos',
                                      'full_sequence', 'Name', 'DOI', 'Subunit',
                                      'Proteasome', 'Organism', 'UniProt'])
 
-digestion_df['entry_source'] = "cleavage_map"
-
 # iterate through and parse each file
 for file in file_list:
     print("parsing: ", file)
@@ -45,9 +43,12 @@ for file in file_list:
     tmp_df = parse_digestion_file(file_path)
     digestion_df = digestion_df.append(tmp_df, sort=True)
 
+digestion_df['entry_source'] = "cleavage_map"
+
 # for now drop all non-20S and all missing proteasome type
-digestion_df = digestion_df[digestion_df['Subunit'] == "20S"]
+digestion_df = digestion_df[digestion_df['Subunit'] == "20s"]
 digestion_df = digestion_df[digestion_df['Proteasome'] != "?"]
+
 
 # export
 digestion_df.to_csv(options.out_dir + "/compiled_digestion_df.csv",
