@@ -391,7 +391,7 @@ def parse_cleavage_map(lines):
                         "Warning: fragment does not match annotated " \
                         "position in source sequence"
                     # add fragment, start to list
-                    end_pos = start_pos + len(fragment)
+                    end_pos = int(start_pos + len(fragment))
                     fragment_list.append((fragment, start_pos, end_pos))
         line = next(line_iter, None)
     # add last source - fragment pairs to list
@@ -449,7 +449,7 @@ def parse_digestion_file(file):
             # while in header, add to meta dict
             if "#" in lines[i]:
                 key, entry = parse_cleavage_header(lines[i])
-                meta_dict[key] = entry
+                meta_dict[key] = entry.lower()
             # after header, pass to seq_lines
             if "#" not in lines[i]:
                 seq_lines = lines[i:]
@@ -457,5 +457,8 @@ def parse_digestion_file(file):
     # parse seq lines
     seq_dict = parse_cleavage_map(seq_lines)
     # generate df
+    if meta_dict['Organism']:
+        if meta_dict['Organism'] != "human":
+            meta_dict['Organism'] = "mammal_other"
     out_df = generate_cleavage_df(meta_dict, seq_dict)
     return out_df

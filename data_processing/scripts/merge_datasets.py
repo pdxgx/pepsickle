@@ -116,7 +116,7 @@ antijen_df = antijen_df[antijen_df['origin_species'] == 'human']
 # rename digestion_df columns for consistency
 new_digestion_cols = ['lit_reference', 'protein_name', 'origin_species',
                       'Proteasome', "Subunit", 'full_seq_accession', 'end_pos',
-                      'entry_source', 'fragment', 'full_sequence', 'start_pos']
+                      'fragment', 'full_sequence', 'start_pos', 'entry_source']
 digestion_df.columns = new_digestion_cols
 digestion_df['epitope_id'] = None
 digestion_df['full_seq_database'] = "UniProt"
