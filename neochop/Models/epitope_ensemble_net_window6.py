@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from sklearn import metrics
+import pandas as pd
 import torch.nn.functional as F
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,8 +15,10 @@ dtype = torch.FloatTensor
 
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
-indir = "/Users/weeder/PycharmProjects/proteasome/data_processing/generated_training_sets/"
-file = "proteasome_window_size_6.pickle"
+in_dir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
+        "generated_training_sets"
+out_dir = '/Users/weeder/PycharmProjects/proteasome/neochop/results'
+file = "/proteasome_window_size_6_all_mammal.pickle"
 
 torch.manual_seed(123)
 
@@ -73,7 +76,8 @@ class MotifNetNoConv(nn.Module):
     def __init__(self):
         super().__init__()
         self.drop = nn.Dropout(p=0.3)
-        self.fc1 = nn.Linear(84, 38)
+        self.bn0 = nn.BatchNorm1d(78)
+        self.fc1 = nn.Linear(78, 38)
         self.bn1 = nn.BatchNorm1d(38)
         self.fc2 = nn.Linear(38, 20)
         self.bn2 = nn.BatchNorm1d(20)
@@ -83,7 +87,7 @@ class MotifNetNoConv(nn.Module):
         # make sure input tensor is flattened
         x = x.reshape(x.shape[0], -1)
 
-        x = self.drop(F.relu(self.bn1(self.fc1(x))))
+        x = self.drop(F.relu(self.bn1(self.fc1(self.bn0(x)))))
         x = self.drop(F.relu(self.bn2(self.fc2(x))))
         x = F.log_softmax(self.out(x), dim=1)
 
@@ -92,7 +96,7 @@ class MotifNetNoConv(nn.Module):
 
 # initialize networks
 sequence_model = SeqNet()
-motif_model = MotifNet()
+motif_model = MotifNetNoConv()
 # motif_model = MotifNetNoConv()
 # conv_pre = nn.Conv1d(4, 4, 3, groups=4)
 
@@ -102,7 +106,7 @@ if dtype is torch.cuda.FloatTensor:
     motif_model = motif_model.cuda()
 
 
-handle = open(indir + file, "rb")
+handle = open(in_dir + file, "rb")
 data = pickle.load(handle)
 data = data['epitope']
 
@@ -110,9 +114,9 @@ data = data['epitope']
 pos_windows = []
 pos_digestion_windows = []
 for key in data['positives'].keys():
-    entry = data['positives'][key]
-    if any('human' in i for i in entry):
-        pos_windows.append(key)
+    # entry = data['positives'][key]
+    # if any('human' in i for i in entry):
+    pos_windows.append(key)
 
 # for all mammals
 # pos_windows = list(data['positives'].keys())
@@ -122,9 +126,9 @@ pos_dig_feature_matrix = torch.from_numpy(generate_feature_array(pos_digestion_w
 neg_windows = []
 neg_digestion_windows = []
 for key in data['negatives'].keys():
-    entry = data['negatives'][key]
-    if any('human' in i for i in entry):
-        neg_windows.append(key)
+    # entry = data['negatives'][key]
+    # if any('human' in i for i in entry):
+    neg_windows.append(key)
 
 
 # neg_windows = list(data['negatives'].keys())
@@ -295,3 +299,24 @@ plt.xlabel('distance from cleavage point')
 plt.title('')
 
 plt.show()
+
+
+physical_mod_weights = motif_model.fc1.weight.abs().sum(dim=0)
+physical_mod_weights = physical_mod_weights.reshape(13, -1)
+test = physical_mod_weights[:, 2].detach().numpy()
+
+pos_list = []
+weights = []
+grouping = []
+for i in range(2,6):
+    tmp = physical_mod_weights[:, i].detach().numpy()
+    for val in tmp:
+        weights.append(val)
+        grouping.append(i)
+    for pos in positions:
+        pos_list.append(pos)
+
+out_df = pd.DataFrame(zip(pos_list, weights, grouping),
+                      columns=['position', 'weight', 'group'])
+
+out_df.to_csv(out_dir + "/physical_property_weights.csv", index=False)

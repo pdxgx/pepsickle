@@ -43,3 +43,4 @@ rsconnect/
 /data_processing/generated_training_sets/
 /data_extraction/raw_data/
 /data_processing/merged_data/
+/neochop/results/
