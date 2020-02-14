@@ -49,6 +49,11 @@ digestion_df['entry_source'] = "cleavage_map"
 digestion_df = digestion_df[digestion_df['Subunit'] == "20s"]
 digestion_df = digestion_df[digestion_df['Proteasome'] != "?"]
 
+# print out summary info
+# print(len(digestion_df['DOI'].unique()))
+# print(len(digestion_df))
+# print(digestion_df['Proteasome'].value_counts())
+# print(digestion_df['DOI'].unique())
 
 # export
 digestion_df.to_csv(options.out_dir + "/compiled_digestion_df.csv",
