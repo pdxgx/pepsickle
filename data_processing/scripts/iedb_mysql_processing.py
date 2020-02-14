@@ -26,6 +26,7 @@ export of all mammal data (including human)
 import mysql.connector
 import pandas as pd
 import re
+import numpy as np
 from optparse import OptionParser
 
 # define command line parameters
@@ -114,18 +115,19 @@ print("Entries with missing position info: ", no_pos)
 print("Entries not in reference string: ", seq_not_in_string)
 print("Entries with mismatch in listed vs. reference fragment: ", mismatch)
 
-# subset human only sequences
-human_pd = results_pd[results_pd['h_organism_id'] == 9606]
+results_pd = results_pd.reset_index()
+agg_cols = results_pd.columns.drop(['linear_peptide_seq', 'sequence',
+                                    'starting_position', 'ending_position',
+                                    'h_organism_id'])
+agg_dict = {}
+for col in agg_cols:
+    agg_dict[col] = ";".join
 
-# get unique indices (unique epitope, protein combos) to prevent redundancy
-unique_seq_index = results_pd[['linear_peptide_seq',
-                               'sequence']].drop_duplicates().index
-unique_human_index = human_pd[['linear_peptide_seq',
-                               'sequence', ]].drop_duplicates().index
-
-# use indices to create output tables
-results_unique_seq = results_pd.loc[unique_seq_index]
-results_unique_human_seq = results_pd.loc[unique_human_index]
+# convert all data to
+results_pd[agg_cols] = results_pd[agg_cols].astype("str")
+results_pd = results_pd.groupby(['linear_peptide_seq', 'sequence',
+                                 'starting_position', 'ending_position',
+                                 'h_organism_id']).agg(agg_dict).reset_index()
 
 # define columns to export
 cols_to_export = ['curated_epitope_id',
@@ -141,12 +143,13 @@ cols_to_export = ['curated_epitope_id',
 
 # export csv based on command line parameters
 if options.human_only:
-    results_unique_human_seq[cols_to_export].to_csv(
+    human_pd = results_pd[results_pd['h_organism_id'] == 9606]
+    human_pd[cols_to_export].to_csv(
         options.out_dir + "/unique_iedb_epitopes.csv",
         index=False
     )
 else:
-    results_unique_seq[cols_to_export].to_csv(
+    results_pd[cols_to_export].to_csv(
         options.out_dir + "/unique_iedb_epitopes.csv",
         index=False
     )
