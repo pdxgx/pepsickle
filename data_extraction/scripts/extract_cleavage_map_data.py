@@ -38,10 +38,11 @@ digestion_df = pd.DataFrame(columns=['fragment', 'start_pos', 'end_pos',
 
 # iterate through and parse each file
 for file in file_list:
-    print("parsing: ", file)
-    file_path = options.in_dir + "/" + file
-    tmp_df = parse_digestion_file(file_path)
-    digestion_df = digestion_df.append(tmp_df, sort=True)
+    if not file.startswith("."):
+        print("parsing: ", file)
+        file_path = options.in_dir + "/" + file
+        tmp_df = parse_digestion_file(file_path)
+        digestion_df = digestion_df.append(tmp_df, sort=True)
 
 digestion_df['entry_source'] = "cleavage_map"
 
