@@ -449,7 +449,7 @@ def parse_digestion_file(file):
             # while in header, add to meta dict
             if "#" in lines[i]:
                 key, entry = parse_cleavage_header(lines[i])
-                meta_dict[key] = entry.lower()
+                meta_dict[key] = entry.upper()
             # after header, pass to seq_lines
             if "#" not in lines[i]:
                 seq_lines = lines[i:]
@@ -458,7 +458,9 @@ def parse_digestion_file(file):
     seq_dict = parse_cleavage_map(seq_lines)
     # generate df
     if meta_dict['Organism']:
-        if meta_dict['Organism'] != "human":
+        if meta_dict['Organism'] == "HUMAN":
+            meta_dict['Organism'] = "human"
+        else:
             meta_dict['Organism'] = "mammal_other"
     out_df = generate_cleavage_df(meta_dict, seq_dict)
     return out_df

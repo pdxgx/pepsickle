@@ -17,7 +17,7 @@ from optparse import OptionParser
 
 # define command line options
 parser = OptionParser()
-parser.add_option("--allele_file", dest="allele_file",
+parser.add_option("-a", "--allele_file", dest="allele_file",
                   help="input csv of alleles to query")
 parser.add_option("-o", "--out_dir", dest="out_dir",
                   help="output csv with SYFPEITHI entries")
@@ -120,4 +120,4 @@ full_SYF_df.dropna(subset=["UniProt_id"], inplace=True)
 full_SYF_df['Human'] = ["HLA-" in a for a in full_SYF_df['allele']]
 full_SYF_df = full_SYF_df[['allele', 'epitope', 'UniProt_id', 'Position', 'Human', 'reference']]
 
-full_SYF_df.to_csv(options.out_dir + "/SYFPEITHI_data.csv", index=False)
+full_SYF_df.to_csv(options.out_dir + "/SYFPEITHI_epitopes.csv", index=False)

@@ -15,10 +15,10 @@ dtype = torch.FloatTensor
 
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
-in_dir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
-        "generated_training_sets"
-out_dir = '/Users/weeder/PycharmProjects/proteasome/neochop/results'
-file = "/proteasome_window_size_6_all_mammal.pickle"
+in_dir = "/data_modeling/" \
+         "generated_training_sets"
+out_dir = '/neochop/results'
+file = "/proteasome_sets_human_only.pickle"
 
 torch.manual_seed(123)
 
@@ -50,8 +50,8 @@ class MotifNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.drop = nn.Dropout(p=0.3)
-        self.conv = nn.Conv1d(6, 6, 3, groups=6)
-        self.fc1 = nn.Linear(66, 38)
+        self.conv = nn.Conv1d(4, 4, 3, groups=4)
+        self.fc1 = nn.Linear(44, 38)
         self.bn1 = nn.BatchNorm1d(38)
         self.fc2 = nn.Linear(38, 20)
         self.bn2 = nn.BatchNorm1d(20)
@@ -76,8 +76,8 @@ class MotifNetNoConv(nn.Module):
     def __init__(self):
         super().__init__()
         self.drop = nn.Dropout(p=0.3)
-        self.bn0 = nn.BatchNorm1d(78)
-        self.fc1 = nn.Linear(78, 38)
+        self.bn0 = nn.BatchNorm1d(52)
+        self.fc1 = nn.Linear(52, 38)
         self.bn1 = nn.BatchNorm1d(38)
         self.fc2 = nn.Linear(38, 20)
         self.bn2 = nn.BatchNorm1d(20)
@@ -96,7 +96,7 @@ class MotifNetNoConv(nn.Module):
 
 # initialize networks
 sequence_model = SeqNet()
-motif_model = MotifNetNoConv()
+motif_model = MotifNet()
 # motif_model = MotifNetNoConv()
 # conv_pre = nn.Conv1d(4, 4, 3, groups=4)
 
@@ -202,7 +202,7 @@ for epoch in range(n_epoch):
         seq_est = sequence_model(dat[:, :, :20])  # one hot encoded sequences
         # with torch.no_grad():
         #     motif_dat = conv_pre(dat[:, :, 22:].transpose(1, 2))
-        motif_est = motif_model(dat[:, :, 20:])  # physical properties (not side chains)
+        motif_est = motif_model(dat[:, :, 22:])  # physical properties (not side chains)
 
         # calculate loss
         seq_loss = seq_criterion(seq_est, labels)
@@ -233,7 +233,7 @@ for epoch in range(n_epoch):
             # get est probability of cleavage event
             exp_seq_est = torch.exp(sequence_model(dat[:, :, :20]))[:, 1].cpu()  # one hot encoded sequences
             # motif_dat = conv_pre(dat[:, :, 22:].transpose(1, 2))
-            exp_motif_est = torch.exp(motif_model(dat[:, :, 20:]))[:, 1].cpu()  # not including side chains
+            exp_motif_est = torch.exp(motif_model(dat[:, :, 22:]))[:, 1].cpu()  # not including side chains
             # take simple average
             consensus_est = (exp_seq_est +
                              exp_motif_est) / 2
@@ -308,7 +308,7 @@ test = physical_mod_weights[:, 2].detach().numpy()
 pos_list = []
 weights = []
 grouping = []
-for i in range(2,6):
+for i in range(2, 6):
     tmp = physical_mod_weights[:, i].detach().numpy()
     for val in tmp:
         weights.append(val)
@@ -319,4 +319,4 @@ for i in range(2,6):
 out_df = pd.DataFrame(zip(pos_list, weights, grouping),
                       columns=['position', 'weight', 'group'])
 
-out_df.to_csv(out_dir + "/physical_property_weights.csv", index=False)
+# out_df.to_csv(out_dir + "/physical_property_weights.csv", index=False)

@@ -24,13 +24,15 @@ parser.add_option("-i", "--in_dir", dest="in_dir",
                   help="directory holding database csv's with source sequence"
                        "information")
 parser.add_option("-o", "--out_dir", dest="out_dir",
-                  help="output directory where merged CSV is exported")
-
+                  help="output directory/name for merged CSV")
+parser.add_option("--human_only", dest="human_only", action="store_true",
+                  default=False,
+                  help="restricts to only human epitope exmaples")
 (options, args) = parser.parse_args()
 
 # import each database
 # TODO: make assertion that all datasets are present?
-SYF_df = pd.read_csv(options.in_dir + "/SYF_data_w_sequences.csv")
+SYF_df = pd.read_csv(options.in_dir + "/SYFPEITHI_epitopes_w_source.csv")
 IEDB_df = pd.read_csv(options.in_dir + "/unique_iedb_epitopes.csv")
 bc_df = pd.read_csv(options.in_dir + "/breast_cancer_data_w_sequences.csv")
 antijen_df = pd.read_csv(options.in_dir + "/AntiJen_Tcell_w_sequences.csv")
@@ -86,7 +88,7 @@ for i in range(len(SYF_df)):
 antijen_df["epitope_id"] = None
 antijen_df['full_seq_database'] = "UniProt"
 antijen_df['full_seq_accession'] = antijen_df["UniProt_parent_id"]
-antijen_df['mhc_allele_name'] = antijen_df['MHC_types']
+antijen_df['mhc_allele_name'] = antijen_df['MHC_alleles']
 
 
 for i in range(len(antijen_df)):
@@ -96,7 +98,7 @@ for i in range(len(antijen_df)):
     else:
         antijen_df.at[i, 'origin_species'] = "mammal_other"
 
-antijen_df.drop(columns=["MHC_types", 'UniProt_parent_id'], inplace=True)
+antijen_df.drop(columns=["MHC_alleles", 'UniProt_parent_id'], inplace=True)
 
 
 # breast cancer data, this will likely stay
@@ -105,12 +107,6 @@ bc_df['full_seq_accession'] = bc_df['Protein_ref']
 bc_df['full_seq_database'] = bc_df['Ref_type']
 bc_df['lit_reference'] = "10.1016/j.jprot.2018.01.004"
 bc_df.drop(columns=['Protein_ref', 'Ref_type'], inplace=True)
-
-
-# drop all non-human data from epitope entries
-# IEDB_df = IEDB_df[IEDB_df['origin_species'] == 'human']
-# SYF_df = SYF_df[SYF_df['origin_species'] == 'human']
-# antijen_df = antijen_df[antijen_df['origin_species'] == 'human']
 
 
 # rename digestion_df columns for consistency
@@ -123,15 +119,16 @@ digestion_df['full_seq_database'] = "UniProt"
 digestion_df['mhc_allele_name'] = None
 digestion_df.drop(columns=['protein_name'], inplace=True)
 
-
 out_df = IEDB_df.append(SYF_df, ignore_index=True, sort=True)
 out_df = out_df.append(antijen_df, ignore_index=True, sort=True)
 out_df = out_df.append(digestion_df, ignore_index=True, sort=True)
 out_df = out_df.append(bc_df, ignore_index=True, sort=True)
 
-
+if options.human_only:
+    out_df = out_df[out_df['origin_species'] == 'human']
+    out_df.to_csv(options.out_dir + "/merged_data_human_only.csv", index=False)
+else:
+    out_df.to_csv(options.out_dir + "/merged_data_all_mammal.csv", index=False)
 # print summary info
 print(out_df['entry_source'].value_counts())
 print(out_df['origin_species'].value_counts())
-
-out_df.to_csv(options.out_dir + "/merged_proteasome_data.csv", index=False)

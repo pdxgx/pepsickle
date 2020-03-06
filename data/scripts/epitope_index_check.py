@@ -1,12 +1,18 @@
-import sequence_featurization_tools
+from sequence_featurization_tools import *
 import re
 import pandas as pd
-# loop for checking all index cases and repairing indices when possible
-# replace df with the full df of positive epitope examples
-file_dir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
-           "merged_data/"
+from optparse import OptionParser
 
-df = pd.read_csv(file_dir + 'merged_proteasome_data.csv', low_memory=False)
+# define command line parameters
+parser = OptionParser()
+parser.add_option("-i", "--in_file", dest="in_file",
+                  help="pandas data frame of fully merged proteasome info")
+parser.add_option("-o", "--out_dict", dest="out_dict",
+                  help="output directory where vetted CSV is exported")
+
+(options, args) = parser.parse_args()
+
+df = pd.read_csv(options.in_file, low_memory=False)
 df = df.where(pd.notnull(df), None)
 df = df[df.full_sequence.notnull()]
 df = df.reset_index(drop=True)
@@ -107,4 +113,4 @@ df = df.reset_index(drop=True)
 
 print("Total entries left: ", len(df))
 
-df.to_csv(file_dir+"merged_proteasome_data_indices_repaired.csv", index=False)
+df.to_csv(options.out_dict, index=False)

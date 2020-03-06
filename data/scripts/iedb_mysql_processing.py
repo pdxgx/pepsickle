@@ -145,7 +145,7 @@ cols_to_export = ['curated_epitope_id',
 if options.human_only:
     human_pd = results_pd[results_pd['h_organism_id'] == 9606]
     human_pd[cols_to_export].to_csv(
-        options.out_dir + "/unique_iedb_epitopes.csv",
+        options.out_dir + "/unique_iedb_epitopes_human_only.csv",
         index=False
     )
 else:

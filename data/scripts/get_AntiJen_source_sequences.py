@@ -109,5 +109,5 @@ antijen_df = antijen_df[['fragment', 'MHC_classes', 'Serotype', 'MHC_alleles',
                          'start_pos', 'end_pos']]
 
 # write out new CSV
-antijen_df.to_csv(options.out_dir + "/AntiJen_data_w_sequences.csv",
+antijen_df.to_csv(options.out_dir + "/AntiJen_Tcell_w_sequences.csv",
                   index=False)

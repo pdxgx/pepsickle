@@ -28,11 +28,11 @@ Outputs:
 import pandas as pd
 
 df = pd.DataFrame()
-in_dir = "/Users/weeder/PycharmProjects/proteasome/data_extraction/raw_data/" \
+in_dir = "/data/raw_data/" \
          "Breast Cancer"
 
-out_dir = "/Users/weeder/PycharmProjects/proteasome/data_processing/" \
-          "un-merged_data"
+out_dir = "/data/" \
+          "raw_data"
 
 """ Data Extraction """
 # the range(2, 24) corresponds to the different excel sheets which contain
@@ -60,4 +60,4 @@ df["Sequence"] = df["Sequence"].apply(lambda x: x.split(".")[1])
 df.drop(columns=["Protein Link", "Unique"], inplace=True)
 df.rename(columns={"Sequence": "fragment"}, inplace=True)
 
-df.to_csv(out_dir + "/breast_cancer.csv", index=False)
+df.to_csv(out_dir + "/breast_cancer_table.csv", index=False)

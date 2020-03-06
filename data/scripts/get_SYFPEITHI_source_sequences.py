@@ -98,4 +98,4 @@ SYF_df.dropna(subset=['full_sequence'], inplace=True)
 SYF_df['Origin'] = "SYFPEITHI_database"
 
 # export data
-SYF_df.to_csv(options.out_dir + "/SYF_data_w_sequences.csv", index=False)
+SYF_df.to_csv(options.out_dir + "/SYFPEITHI_epitopes_w_source.csv", index=False)

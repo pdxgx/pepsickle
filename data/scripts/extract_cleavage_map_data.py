@@ -47,15 +47,37 @@ for file in file_list:
 digestion_df['entry_source'] = "cleavage_map"
 
 # for now drop all non-20S and all missing proteasome type
-digestion_df = digestion_df[digestion_df['Subunit'] == "20s"]
+digestion_df = digestion_df[digestion_df['Subunit'] == "20S"]
+
+un_annotated = digestion_df[digestion_df['Proteasome'] == "?"]
+print("Un-annotated entries: ", len(un_annotated['DOI'].unique()))
+print('DOI: ', un_annotated['DOI'].unique())
+
 digestion_df = digestion_df[digestion_df['Proteasome'] != "?"]
 
+
+doi_entries = digestion_df['DOI'].unique()
+summary_df = pd.DataFrame(columns=['DOI', 'Fragments Represented',
+                                   'Source Proteins', 'Proteasome types'])
+
+for doi in doi_entries:
+    subset_df = digestion_df[digestion_df['DOI'] == doi]
+
+    num_prots = len(subset_df['Name'].unique())
+    num_entries = len(subset_df)
+    proteasome_representation = set(subset_df['Proteasome'])
+    entry = pd.Series([doi, num_entries, num_prots, proteasome_representation],
+                      index=summary_df.columns)
+    summary_df = summary_df.append(entry, ignore_index=True)
+
+
 # print out summary info
-# print(len(digestion_df['DOI'].unique()))
-# print(len(digestion_df))
-# print(digestion_df['Proteasome'].value_counts())
-# print(digestion_df['DOI'].unique())
+print(len(digestion_df['DOI'].unique()))
+print(len(digestion_df))
+print(digestion_df['Proteasome'].value_counts())
 
 # export
 digestion_df.to_csv(options.out_dir + "/compiled_digestion_df.csv",
                     index=False)
+summary_df.to_csv(options.out_dir + "/summary_digestion_df.csv",
+                  index=False)

@@ -161,5 +161,6 @@ for epitope in TAP_peptides:
 
 
 # write out data
-tcell_epitope_df.to_csv(options.out_dir+"/AntiJen_Tcell_epitopes.csv", index=False)
-tap_epitope_df.to_csv(options.out_dir+"/AntiJen_tap_epitopes.csv", index=False)
+tcell_epitope_df.to_csv(options.out_dir+"/AntiJen_Tcell_epitopes.csv",
+                        index=False)
+tap_epitope_df.to_csv(options.out_dir+"/AntiJen_TAP_epitopes.csv", index=False)
