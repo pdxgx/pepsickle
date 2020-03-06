@@ -12,7 +12,7 @@ dtype = torch.FloatTensor
 
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
-indir = "/Users/weeder/PycharmProjects/proteasome/data_processing/generated_training_sets/"
+indir = "/Users/weeder/PycharmProjects/proteasome/data_modeling/generated_training_sets/"
 file = "merged_proteasome_data_dict.pickle"
 
 torch.manual_seed(123)

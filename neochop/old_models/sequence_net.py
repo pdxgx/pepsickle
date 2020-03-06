@@ -13,7 +13,7 @@ dtype = torch.FloatTensor
 # dtype = torch.cuda.FloatTensor # Uncomment this to run on GPU
 
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
-indir = "/Users/weeder/PycharmProjects/proteasome/data_processing/merged_data/"
+indir = "/Users/weeder/PycharmProjects/proteasome/data_modeling/merged_data/"
 file = "tmp_data_full_negative.pickle"
 
 handle = open(indir + file, "rb")
