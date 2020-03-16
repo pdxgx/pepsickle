@@ -6,8 +6,7 @@ For issues contact Ben Weeder (weeder@ohsu.edu)
 
 This script contains trains neural networks based on both the sequence identity
 and physical property motifs of cleavage and non-cleavage examples. Exports
-trained model wieghts and (optionally) aggregated weights for the first input
-layer of the sequence based model.
+trained model wieghts.
 """
 from sequence_featurization_tools import *
 import pickle
@@ -317,26 +316,3 @@ plt.xlabel('distance from cleavage point')
 plt.title('')
 
 plt.show()
-
-
-physical_mod_weights = motif_model.fc1.weight.abs().sum(dim=0)
-physical_mod_weights = physical_mod_weights.reshape(13, -1)
-test = physical_mod_weights[:, 2].detach().numpy()
-
-# generate weight table for export and plotting
-pos_list = []
-weights = []
-grouping = []
-for i in range(2, 6):
-    tmp = physical_mod_weights[:, i].detach().numpy()
-    for val in tmp:
-        weights.append(val)
-        grouping.append(i)
-    for pos in positions:
-        pos_list.append(pos)
-
-out_df = pd.DataFrame(zip(pos_list, weights, grouping),
-                      columns=['position', 'weight', 'group'])
-
-# uncomment to export aggregate weights for first layer
-# out_df.to_csv(out_dir + "/physical_property_weights.csv", index=False)
