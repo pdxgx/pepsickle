@@ -25,8 +25,6 @@ export of all mammal data (including human)
 """
 import mysql.connector
 import pandas as pd
-import re
-import numpy as np
 from optparse import OptionParser
 
 # define command line parameters
