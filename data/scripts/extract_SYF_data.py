@@ -18,27 +18,23 @@ from optparse import OptionParser
 # define command line options
 parser = OptionParser()
 parser.add_option("-a", "--allele_file", dest="allele_file",
-                  help="input csv of alleles to query")
+                  help="input csv of alleles to query.")
 parser.add_option("-o", "--out_dir", dest="out_dir",
                   help="output csv with SYFPEITHI entries")
 
 
 (options, args) = parser.parse_args()
-# NOTE: Pulls all epitopes, for class I & II and different organisms... need
-# to restrict this further to save time/downstream filtering issues...
-# TODO: restrict to human only or define manual annotations of alleles
-# raw_allele_list = ef.get_SYF_alleles()
-# allele_series = pd.Series(raw_allele_list)
-# allele_series.to_csv("../raw_allele_series.csv", index=False, header=False)
 
+# load in alleles
 mammal_allele_df = pd.read_csv(options.allele_file)
 mammal_allele_df = mammal_allele_df[mammal_allele_df.Class != "II"]
-
 allele_list = mammal_allele_df.Allele
 
+# set up column headers
 full_SYF_df = pd.DataFrame(columns=['epitope', 'prot_name', 'ebi_id',
                                     'reference', 'allele'])
 
+# loop through alleles and query epitopes for each
 for a in allele_list:
     print(a)
     allele_query = compile_SYF_url(a)
@@ -46,13 +42,17 @@ for a in allele_list:
         tmp_df = extract_SYF_table(allele_query)
     except EmptyQueryError:
         continue
+    # if entry exists, append
     if len(tmp_df) > 0:
         tmp_df['allele'] = a
         full_SYF_df = full_SYF_df.append(tmp_df, ignore_index=True, sort=True)
 
+# fill in columns to stay consistent with other databases
 full_SYF_df['UniProt_id'] = None
 full_SYF_df['UniProt_reviewed'] = None
 full_SYF_df['Position'] = None
+
+# set up tracking vars
 n_entries = []
 flags = []
 
@@ -101,10 +101,12 @@ for e in range(len(full_SYF_df)):
             flags.append(e)
     print(e, "/", len(full_SYF_df), " complete", sep="")
 
+# print tracking vars
 print(flags)
 print("Total entries: ", len(full_SYF_df))
 print("Queried ID's: ", full_SYF_df['UniProt_id'].count())
 
+# identify missing ID's
 missing_id = []
 for entry in full_SYF_df['UniProt_id']:
     if str(entry) == "":
@@ -116,8 +118,10 @@ missing_id_index = [i for i, val in enumerate(missing_id) if val]
 print("Missing: ",len(missing_id_index))
 print(missing_id_index)
 
+# export compiled data
 full_SYF_df.dropna(subset=["UniProt_id"], inplace=True)
 full_SYF_df['Human'] = ["HLA-" in a for a in full_SYF_df['allele']]
-full_SYF_df = full_SYF_df[['allele', 'epitope', 'UniProt_id', 'Position', 'Human', 'reference']]
+full_SYF_df = full_SYF_df[['allele', 'epitope', 'UniProt_id', 'Position',
+                           'Human', 'reference']]
 
 full_SYF_df.to_csv(options.out_dir + "/SYFPEITHI_epitopes.csv", index=False)
