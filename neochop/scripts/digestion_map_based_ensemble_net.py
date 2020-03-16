@@ -1,3 +1,13 @@
+#!/usr/bin/env python3
+"""
+digestion_map_based_ensemble_net.py
+
+For issues contact Ben Weeder (weeder@ohsu.edu)
+
+This script contains trains neural networks based on both the sequence identity
+and physical property motifs of cleavage and non-cleavage examples from
+digestion map data. Exports trained model wieghts.
+"""
 from sequence_featurization_tools import *
 import pickle
 import torch
@@ -11,14 +21,19 @@ import matplotlib.pyplot as plt
 dtype = torch.FloatTensor
 # dtype = torch.cuda.FloatTensor # Uncomment this to run on GPU
 
-# prep data
+# load in data and set output directory
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 indir = "/Users/weeder/PycharmProjects/proteasome/data/generated_training_sets/"
 file = "/cleavage_windows_all_mammal_13aa.pickle"
 out_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/results"
+test_holdout_p = .2
+n_epoch = 26
 
+# set seed for consistency
 torch.manual_seed(123)
 
+
+# define network structures
 class SeqNet(nn.Module):
     def __init__(self):
         super().__init__()
@@ -77,44 +92,48 @@ class MotifNet(nn.Module):
 # initialize networks
 sequence_model = SeqNet()
 motif_model = MotifNet()
-# motif_model = MotifNetNoConv()
-# conv_pre = nn.Conv1d(4, 4, 3, groups=4)
 
 # convert to cuda scripts if on GPU
 if dtype is torch.cuda.FloatTensor:
     sequence_model = sequence_model.cuda()
     motif_model = motif_model.cuda()
 
-
+# load in data from pickled dictionary
 handle = open(indir + file, "rb")
 data = pickle.load(handle)
 
+# create list of cleavage windows
 positive_dict = data['proteasome']['positives']
 pos_windows = []
 for key in positive_dict.keys():
     if key not in pos_windows:
         pos_windows.append(key)
 
+# create list of non-cleavage windows
 negative_dict = data['proteasome']['negatives']
 neg_windows = []
 for key in negative_dict.keys():
     if key not in neg_windows:
         neg_windows.append(key)
 
-
+# generate lists of proteasome type for each positive example
 pos_constitutive_proteasome = []
 pos_immuno_proteasome = []
 for key in pos_windows:
     proteasome_type = []
+    # by default neither proteasome
     c_flag = False
     i_flag = False
+    # create list of all associated data entries
     tmp_entry = list(positive_dict[key])
 
     for entry in tmp_entry:
+        # create list of all unique proteasome types recorded for given window
         p_type = entry[0]
         if p_type not in proteasome_type:
             proteasome_type.append(p_type)
 
+    # swap flags were relevant
     if "C" in proteasome_type:
         c_flag = True
     if "I" in proteasome_type:
@@ -123,6 +142,7 @@ for key in pos_windows:
         c_flag = True
         i_flag = True
 
+    # based on flags, append binary indicator
     if c_flag:
         pos_constitutive_proteasome.append(1)
     if not c_flag:
@@ -134,6 +154,7 @@ for key in pos_windows:
         pos_immuno_proteasome.append(0)
 
 
+# repeat above for non-cleavage windows
 neg_constitutive_proteasome = []
 neg_immuno_proteasome = []
 for key in neg_windows:
@@ -165,20 +186,20 @@ for key in neg_windows:
     if not i_flag:
         neg_immuno_proteasome.append(0)
 
-# for all mammals
-# pos_windows = list(data['positives'].keys())
+# generate feature set for cleavage windows
 pos_feature_matrix = torch.from_numpy(generate_feature_array(pos_windows))
+# append proteasome type indicators
 pos_feature_set = [f_set for f_set in zip(pos_feature_matrix,
                                           pos_constitutive_proteasome,
                                           pos_immuno_proteasome)]
 
-# neg_windows = list(data['negatives'].keys())
+# generate feature set for non-cleavage windows
 neg_feature_matrix = torch.from_numpy(generate_feature_array(neg_windows))
 neg_feature_set = [f_set for f_set in zip(neg_feature_matrix,
                                           neg_constitutive_proteasome,
                                           neg_immuno_proteasome)]
 
-test_holdout_p = .2
+# set number of positive and negative examples based on test proportion
 pos_train_k = torch.tensor(round((1-test_holdout_p) * len(pos_feature_set)))
 neg_train_k = torch.tensor(round((1-test_holdout_p) * len(pos_feature_set)))
 
@@ -189,7 +210,9 @@ pos_test = [pos_feature_set[i] for i in pos_perm[pos_train_k:]]
 
 neg_perm = torch.randperm(torch.tensor(len(neg_feature_set)))
 neg_train = [neg_feature_set[i] for i in neg_perm[:neg_train_k]]
-neg_test = [neg_feature_set[i] for i in neg_perm[neg_train_k:(torch.tensor(len(pos_test)) + neg_train_k)]]
+# force balanced testing set
+neg_test = [neg_feature_set[i] for i in neg_perm[neg_train_k:(torch.tensor(
+    len(pos_test)) + neg_train_k)]]
 
 
 # pair training data with labels
@@ -201,7 +224,8 @@ for i in range(len(neg_train)):
     neg_train_labeled.append([neg_train[i], torch.tensor(0)])
 
 train_data = pos_train_labeled + neg_train_labeled
-train_loader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=True)  # was 20, then 64
+train_loader = torch.utils.data.DataLoader(train_data,
+                                           batch_size=64, shuffle=True)
 
 # pair test data with labels
 pos_test_labeled = []
@@ -212,21 +236,20 @@ for i in range(len(neg_test)):
     neg_test_labeled.append([neg_test[i], torch.tensor(0)])
 
 test_data = pos_test_labeled + neg_test_labeled
-test_loader = torch.utils.data.DataLoader(test_data, batch_size=2000, shuffle=True)  # was len * 0.10
-
-pos_test_loader = torch.utils.data.DataLoader(pos_test_labeled, batch_size=2000, shuffle=True)
-neg_test_loader = torch.utils.data.DataLoader(neg_test_labeled, batch_size=2000, shuffle=True)
+test_loader = torch.utils.data.DataLoader(
+    test_data, batch_size=int(len(test_data)/n_epoch), shuffle=True)
 
 # establish training parameters
 # inverse weighting for class imbalance in training set
-seq_criterion = nn.NLLLoss(weight=torch.tensor([1, len(neg_train)/len(pos_train)]).type(dtype))
+seq_criterion = nn.NLLLoss(
+    weight=torch.tensor([1, len(neg_train)/len(pos_train)]).type(dtype))
 seq_optimizer = optim.Adam(sequence_model.parameters(), lr=.001)
 
-motif_criterion = nn.NLLLoss(weight=torch.tensor([1, len(neg_train)/len(pos_train)]).type(dtype))
+motif_criterion = nn.NLLLoss(
+    weight=torch.tensor([1, len(neg_train)/len(pos_train)]).type(dtype))
 motif_optimizer = optim.Adam(motif_model.parameters(), lr=.001)
 
 # train
-n_epoch = 30
 prev_seq_auc = 0
 prev_motif_auc = 0
 for epoch in range(n_epoch):
@@ -250,11 +273,10 @@ for epoch in range(n_epoch):
         seq_est = sequence_model(matrix_dat[:, :, :20],
                                  c_proteasome_dat,
                                  i_proteasome_dat)  # one hot encoded sequences
-        # with torch.no_grad():
-        #     motif_dat = conv_pre(dat[:, :, 22:].transpose(1, 2))
+        # physical properties (not side chains)
         motif_est = motif_model(matrix_dat[:, :, 22:],
                                 c_proteasome_dat,
-                                i_proteasome_dat)  # physical properties (not side chains)
+                                i_proteasome_dat)
 
         # calculate loss
         seq_loss = seq_criterion(seq_est, labels)
@@ -276,27 +298,27 @@ for epoch in range(n_epoch):
 
         # test with no grad to speed up
         with torch.no_grad():
+            # set to eval mode
             sequence_model.eval()
             motif_model.eval()
             dat, labels = next(iter(test_loader))
 
             # convert to proper data type
             matrix_dat = dat[0].type(dtype)
+            # extract proteasome type parameters
             c_proteasome_dat = dat[1].clone().detach().type(dtype)
             i_proteasome_dat = dat[2].clone().detach().type(dtype)
+            # convert labels if on GPU
             if dtype == torch.cuda.FloatTensor:
                 labels = labels.cuda()
 
             # get est probability of cleavage event
-            exp_seq_est = torch.exp(sequence_model(matrix_dat[:, :, :20],
-                                                   c_proteasome_dat,
-                                                   i_proteasome_dat)
-                                    )[:, 1].cpu()  # one hot encoded sequences
-            # motif_dat = conv_pre(dat[:, :, 22:].transpose(1, 2))
-            exp_motif_est = torch.exp(motif_model(matrix_dat[:, :, 22:],
-                                                  c_proteasome_dat,
-                                                  i_proteasome_dat)
-                                      )[:, 1].cpu()  # not incl.side chains
+            exp_seq_est = torch.exp(sequence_model(
+                matrix_dat[:, :, :20], c_proteasome_dat,
+                i_proteasome_dat))[:, 1].cpu()  # one hot encoded sequences
+            exp_motif_est = torch.exp(motif_model(
+                matrix_dat[:, :, 22:], c_proteasome_dat,
+                i_proteasome_dat))[:, 1].cpu()  # not including side chains
             # take simple average
             consensus_est = (exp_seq_est + exp_motif_est) / 2
 
@@ -305,6 +327,7 @@ for epoch in range(n_epoch):
             motif_auc = metrics.roc_auc_score(labels, exp_motif_est)
             consensus_auc = metrics.roc_auc_score(labels, consensus_est)
 
+            # store if most performant model so far
             if seq_auc > prev_seq_auc:
                 seq_state = sequence_model.state_dict()
                 prev_seq_auc = seq_auc
@@ -320,14 +343,17 @@ for epoch in range(n_epoch):
             print(f'Consensus Model AUC: {consensus_auc}')
             print("\n")
 
+    # return to training mode
     sequence_model.train()
     motif_model.train()
 
+# re-set model states to best performing model
 sequence_model.load_state_dict(seq_state)
 sequence_model.eval()
 motif_model.load_state_dict(motif_state)
 motif_model.eval()
 
+# save model states to file
 torch.save(seq_state, out_dir + "/all_mammal_cleavage_map_sequence_mod.pt")
 torch.save(motif_state, out_dir + "/all_mammal_cleavage_map_motif_mod.pt")
 
@@ -337,7 +363,7 @@ in_layer_weights = sequence_model.input.weight
 # sum across all second layer connections
 in_layer_weights = in_layer_weights.abs().sum(dim=0)
 # reshape to match original input
-in_layer_weights = in_layer_weights[:262].reshape(13, -1)
+in_layer_weights = in_layer_weights[:260].reshape(13, -1)
 # sum across values per position
 input_sums = in_layer_weights.sum(dim=1).detach().numpy()
 
