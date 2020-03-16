@@ -89,19 +89,6 @@ def generate_feature_array(seq_list):
     return feature_array
 
 
-def generate_sparse_feature_matrix(seq_list):
-    """
-    generates 2D array of (sequence, features) in condensed sparse row format
-    from a given sequence list
-    :param seq_list: list of amino acid strings of the same length to featurize
-    :return feature_matrix: 2D array of features for each sequence given
-    """
-    feature_matrix = csr_matrix(
-        [featurize_sequence(s).flatten() for s in seq_list]
-    )
-    return feature_matrix
-
-
 def create_sequence_regex(epitope_sequence):
     """
     creates a regular expression from a possibly ambiguous AA sequence
