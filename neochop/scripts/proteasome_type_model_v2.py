@@ -13,8 +13,9 @@ dtype = torch.FloatTensor
 
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
-indir = "/Users/weeder/PycharmProjects/proteasome/data_modeling/generated_training_sets/"
-file = "proteasome_sets.pickle"
+indir = "/Users/weeder/PycharmProjects/proteasome/data/generated_training_sets/"
+file = "/cleavage_windows_all_mammal_13aa.pickle"
+out_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/results"
 
 torch.manual_seed(123)
 
@@ -79,7 +80,7 @@ motif_model = MotifNet()
 # motif_model = MotifNetNoConv()
 # conv_pre = nn.Conv1d(4, 4, 3, groups=4)
 
-# convert to cuda models if on GPU
+# convert to cuda scripts if on GPU
 if dtype is torch.cuda.FloatTensor:
     sequence_model = sequence_model.cuda()
     motif_model = motif_model.cuda()
@@ -225,7 +226,9 @@ motif_criterion = nn.NLLLoss(weight=torch.tensor([1, len(neg_train)/len(pos_trai
 motif_optimizer = optim.Adam(motif_model.parameters(), lr=.001)
 
 # train
-n_epoch = 20
+n_epoch = 30
+prev_seq_auc = 0
+prev_motif_auc = 0
 for epoch in range(n_epoch):
     # reset running loss for each epoch
     seq_running_loss = 0
@@ -302,6 +305,14 @@ for epoch in range(n_epoch):
             motif_auc = metrics.roc_auc_score(labels, exp_motif_est)
             consensus_auc = metrics.roc_auc_score(labels, consensus_est)
 
+            if seq_auc > prev_seq_auc:
+                seq_state = sequence_model.state_dict()
+                prev_seq_auc = seq_auc
+
+            if motif_auc > prev_motif_auc:
+                motif_state = motif_model.state_dict()
+                prev_motif_auc = motif_auc
+
             # print out performance
             print("Test Set Results:")
             print(f'Sequence Model AUC: {seq_auc}')
@@ -311,6 +322,14 @@ for epoch in range(n_epoch):
 
     sequence_model.train()
     motif_model.train()
+
+sequence_model.load_state_dict(seq_state)
+sequence_model.eval()
+motif_model.load_state_dict(motif_state)
+motif_model.eval()
+
+torch.save(seq_state, out_dir + "/all_mammal_cleavage_map_sequence_mod.pt")
+torch.save(motif_state, out_dir + "/all_mammal_cleavage_map_motif_mod.pt")
 
 
 # look at model weights

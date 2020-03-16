@@ -15,13 +15,16 @@ dtype = torch.FloatTensor
 
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
-in_dir = "/data_modeling/" \
-         "generated_training_sets"
-out_dir = '/neochop/results'
-file = "/proteasome_sets_human_only.pickle"
+in_dir = "/Users/weeder/PycharmProjects/proteasome/data/generated_training_sets"
+out_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/results"
+file = "/cleavage_windows_human_only_13aa.pickle"
+test_holdout_p = .2  # proportion of data held out for testing set
+n_epoch = 26
 
+# set seed for consistency
 torch.manual_seed(123)
 
+# define model structures
 class SeqNet(nn.Module):
     def __init__(self):
         super().__init__()
@@ -72,69 +75,39 @@ class MotifNet(nn.Module):
         return x
 
 
-class MotifNetNoConv(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.drop = nn.Dropout(p=0.3)
-        self.bn0 = nn.BatchNorm1d(52)
-        self.fc1 = nn.Linear(52, 38)
-        self.bn1 = nn.BatchNorm1d(38)
-        self.fc2 = nn.Linear(38, 20)
-        self.bn2 = nn.BatchNorm1d(20)
-        self.out = nn.Linear(20, 2)
-
-    def forward(self, x):
-        # make sure input tensor is flattened
-        x = x.reshape(x.shape[0], -1)
-
-        x = self.drop(F.relu(self.bn1(self.fc1(self.bn0(x)))))
-        x = self.drop(F.relu(self.bn2(self.fc2(x))))
-        x = F.log_softmax(self.out(x), dim=1)
-
-        return x
-
-
 # initialize networks
 sequence_model = SeqNet()
 motif_model = MotifNet()
-# motif_model = MotifNetNoConv()
-# conv_pre = nn.Conv1d(4, 4, 3, groups=4)
 
-# convert to cuda models if on GPU
+# convert models to cuda if on GPU
 if dtype is torch.cuda.FloatTensor:
     sequence_model = sequence_model.cuda()
     motif_model = motif_model.cuda()
 
-
+#  open pickled dictionary and load in data
 handle = open(in_dir + file, "rb")
 data = pickle.load(handle)
+# subset to epitope data for this model
 data = data['epitope']
 
-# for human only...
+# create list of cleavage windows
 pos_windows = []
-pos_digestion_windows = []
 for key in data['positives'].keys():
-    # entry = data['positives'][key]
-    # if any('human' in i for i in entry):
     pos_windows.append(key)
 
-# for all mammals
-# pos_windows = list(data['positives'].keys())
+# generate features
 pos_feature_matrix = torch.from_numpy(generate_feature_array(pos_windows))
-pos_dig_feature_matrix = torch.from_numpy(generate_feature_array(pos_digestion_windows))
 
+# create list of non cleavage windows
 neg_windows = []
 neg_digestion_windows = []
 for key in data['negatives'].keys():
-    # entry = data['negatives'][key]
-    # if any('human' in i for i in entry):
     neg_windows.append(key)
 
-
-# neg_windows = list(data['negatives'].keys())
+# generate features
 neg_feature_matrix = torch.from_numpy(generate_feature_array(neg_windows))
 
-test_holdout_p = .2
+# define number of training cases based on holdout (unbalanced)
 pos_train_k = round((1-test_holdout_p) * pos_feature_matrix.size(0))
 neg_train_k = round((1-test_holdout_p) * neg_feature_matrix.size(0))
 
@@ -145,8 +118,9 @@ pos_test = pos_feature_matrix[pos_perm[pos_train_k:]]
 
 neg_perm = torch.randperm(neg_feature_matrix.size(0))
 neg_train = neg_feature_matrix[neg_perm[:neg_train_k]]
+# use same number of negative test examples as positives for balanced set
 neg_test = neg_feature_matrix[neg_perm[neg_train_k:(pos_test.size(0) +
-                                                    neg_train_k)]]  # for balanced testing set
+                                                    neg_train_k)]]
 
 # pair training data with labels
 pos_train_labeled = []
@@ -156,8 +130,10 @@ neg_train_labeled = []
 for i in range(len(neg_train)):
     neg_train_labeled.append([neg_train[i], torch.tensor(0)])
 
+# combine cleavage and non-cleavage train examples
 train_data = pos_train_labeled + neg_train_labeled
-train_loader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=True)  # was 20, then 64
+train_loader = torch.utils.data.DataLoader(train_data, batch_size=64,
+                                           shuffle=True)
 
 # pair test data with labels
 pos_test_labeled = []
@@ -167,22 +143,26 @@ neg_test_labeled = []
 for i in range(len(neg_test)):
     neg_test_labeled.append([neg_test[i], torch.tensor(0)])
 
+# combine cleavage and non-cleavage test examples
 test_data = pos_test_labeled + neg_test_labeled
-test_loader = torch.utils.data.DataLoader(test_data, batch_size=2000, shuffle=True)  # was len * 0.10
-
-pos_test_loader = torch.utils.data.DataLoader(pos_test_labeled, batch_size=2000, shuffle=True)
-neg_test_loader = torch.utils.data.DataLoader(neg_test_labeled, batch_size=2000, shuffle=True)
+# set batch size to give unique set with no re-use
+test_loader = torch.utils.data.DataLoader(
+    test_data, batch_size=int(len(test_data)/n_epoch), shuffle=True)
 
 # establish training parameters
 # inverse weighting for class imbalance in training set
-seq_criterion = nn.NLLLoss(weight=torch.tensor([1, len(neg_train)/len(pos_train)]).type(dtype))
+seq_criterion = nn.NLLLoss(
+    weight=torch.tensor([1, len(neg_train)/len(pos_train)]).type(dtype))
 seq_optimizer = optim.Adam(sequence_model.parameters(), lr=.001)
 
-motif_criterion = nn.NLLLoss(weight=torch.tensor([1, len(neg_train)/len(pos_train)]).type(dtype))
+motif_criterion = nn.NLLLoss\
+    (weight=torch.tensor([1, len(neg_train)/len(pos_train)]).type(dtype))
 motif_optimizer = optim.Adam(motif_model.parameters(), lr=.001)
 
-# train
-n_epoch = 12
+# initialize tracking of optimal models and train
+prev_seq_auc = 0
+prev_motif_auc = 0
+
 for epoch in range(n_epoch):
     # reset running loss for each epoch
     seq_running_loss = 0
@@ -231,9 +211,9 @@ for epoch in range(n_epoch):
             dat = dat.type(dtype)
 
             # get est probability of cleavage event
-            exp_seq_est = torch.exp(sequence_model(dat[:, :, :20]))[:, 1].cpu()  # one hot encoded sequences
+            exp_seq_est = torch.exp(sequence_model(dat[:, :, :20]))[:, 1].cpu()
             # motif_dat = conv_pre(dat[:, :, 22:].transpose(1, 2))
-            exp_motif_est = torch.exp(motif_model(dat[:, :, 22:]))[:, 1].cpu()  # not including side chains
+            exp_motif_est = torch.exp(motif_model(dat[:, :, 22:]))[:, 1].cpu()
             # take simple average
             consensus_est = (exp_seq_est +
                              exp_motif_est) / 2
@@ -243,6 +223,15 @@ for epoch in range(n_epoch):
             motif_auc = metrics.roc_auc_score(labels, exp_motif_est)
             consensus_auc = metrics.roc_auc_score(labels, consensus_est)
 
+            # store model if perfomance is better than current best
+            if seq_auc > prev_seq_auc:
+                seq_state = sequence_model.state_dict()
+                prev_seq_auc = seq_auc
+
+            if motif_auc > prev_motif_auc:
+                motif_state = motif_model.state_dict()
+                prev_motif_auc = motif_auc
+
             # print out performance
             print("Test Set Results:")
             print(f'Sequence Model AUC: {seq_auc}')
@@ -250,27 +239,40 @@ for epoch in range(n_epoch):
             print(f'Consensus Model AUC: {consensus_auc}')
             print("\n")
 
+    # return to train mode for next iteration
     sequence_model.train()
     motif_model.train()
 
 
+# look at ultimate performance
 t_dat, t_labels = next(iter(test_loader))
+# reset model states to best performance
+sequence_model.load_state_dict(seq_state)
+sequence_model.eval()
+motif_model.load_state_dict(motif_state)
+motif_model.eval()
+
+# performance with seq only was best so use to determine performance
 seq_est = torch.exp(sequence_model(t_dat.type(dtype)[:, :, :20]))[:, 1].cpu()
+# call classes so that sensitivity and specificity can be calculated
 seq_guess_class = []
 for est in seq_est:
-    if est >= .2:  # changing threshold alters se and sp
+    if est >= .5:  # changing threshold alters se and sp, .5 = default
         seq_guess_class.append(1)
     else:
         seq_guess_class.append(0)
 
+# print AUC
 seq_auc = metrics.roc_auc_score(t_labels.detach().numpy(),
                                 seq_est.detach().numpy())
 print(seq_auc)
 
+# Print classification report
 seq_report = metrics.classification_report(t_labels.detach().numpy(),
                                            seq_guess_class)
 print(seq_report)
 
+# calculate and print se and sp
 tn, fp, fn, tp = metrics.confusion_matrix(t_labels.detach().numpy(),
                                           seq_guess_class).ravel()
 sensitivity = tp/(tp + fn)
@@ -279,7 +281,12 @@ specificity = tn/(tn+fp)
 print("Sensitivity: ", sensitivity)
 print("Specificity: ", specificity)
 
+# save model states to file
+torch.save(seq_state, out_dir + "/human_only_epitope_sequence_mod.pt")
+torch.save(motif_state, out_dir + "/human_only_epitope_motif_mod.pt")
 
+
+# generate plot of weights
 # look at position weights to see what areas are weighted most
 in_layer_weights = sequence_model.input.weight
 # sum across all second layer connections
@@ -305,6 +312,7 @@ physical_mod_weights = motif_model.fc1.weight.abs().sum(dim=0)
 physical_mod_weights = physical_mod_weights.reshape(13, -1)
 test = physical_mod_weights[:, 2].detach().numpy()
 
+# generate weight table for export and plotting
 pos_list = []
 weights = []
 grouping = []
@@ -319,4 +327,5 @@ for i in range(2, 6):
 out_df = pd.DataFrame(zip(pos_list, weights, grouping),
                       columns=['position', 'weight', 'group'])
 
+# uncomment to export aggregate weights for first layer
 # out_df.to_csv(out_dir + "/physical_property_weights.csv", index=False)

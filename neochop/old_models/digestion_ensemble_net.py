@@ -94,7 +94,7 @@ motif_model = MotifNet()
 # motif_model = MotifNetNoConv()
 # conv_pre = nn.Conv1d(4, 4, 3, groups=4)
 
-# convert to cuda models if on GPU
+# convert to cuda scripts if on GPU
 if dtype is torch.cuda.FloatTensor:
     sequence_model = sequence_model.cuda()
     motif_model = motif_model.cuda()
