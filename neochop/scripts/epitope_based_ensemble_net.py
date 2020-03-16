@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+"""
+epitope_based_ensemble_net.py
+
+For issues contact Ben Weeder (weeder@ohsu.edu)
+
+This script contains trains neural networks based on both the sequence identity
+and physical property motifs of cleavage and non-cleavage examples. Exports
+trained model wieghts and (optionally) aggregated weights for the first input
+layer of the sequence based model.
+"""
 from sequence_featurization_tools import *
 import pickle
 import torch
