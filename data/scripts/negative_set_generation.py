@@ -474,7 +474,7 @@ if __name__ == '__main__':
 
 	# Create feature arrays for positive and negative examples for each set
 	data_set = {
-					'epitope': {'positives': {}, 'negatives': {}}, 
+					'epitope': {'positives': {}, 'negatives': {}, 'unknowns': {}}, 
 					'proteasome': {'positives': {}, 'negatives': {}}, 
 			   }
 	# Store epitope positives/negatves
@@ -482,6 +482,8 @@ if __name__ == '__main__':
 		data_set['epitope']['positives'][window] = epitope_positives[window]
 	for window in epitope_negatives:
 		data_set['epitope']['negatives'][window] = epitope_negatives[window]
+	for window in epitope_unknowns:
+		data_set['epitope']['unknowns'][window] = epitope_unknowns[window]
 	# Store constitutive proteasome positives/negatives
 	for window in proteasome_positives:
 		data_set['proteasome']['positives'][window] = proteasome_positives[window]
