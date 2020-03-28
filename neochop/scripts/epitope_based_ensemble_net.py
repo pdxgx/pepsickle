@@ -25,7 +25,7 @@ dtype = torch.FloatTensor
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 in_dir = "/Users/weeder/PycharmProjects/proteasome/data/generated_training_sets"
-out_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/results"
+out_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/model_weights"
 file = "/cleavage_windows_human_only_13aa.pickle"
 test_holdout_p = .2  # proportion of data held out for testing set
 n_epoch = 26

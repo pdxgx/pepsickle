@@ -2,7 +2,7 @@ import torch
 import os
 import pickle
 
-in_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/results"
+in_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/model_weights"
 out_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/deployed_models"
 model_dict = {}
 for f in os.listdir(in_dir):

@@ -28,11 +28,10 @@ Outputs:
 import pandas as pd
 
 df = pd.DataFrame()
-in_dir = "/data/raw_data/" \
-         "Breast Cancer"
+in_dir = "/Users/weeder/PycharmProjects/proteasome/data/raw_data/" \
+         "breast_cancer_data"
 
-out_dir = "/data/" \
-          "raw_data"
+out_dir = "/Users/weeder/PycharmProjects/proteasome/data/raw_data"
 
 """ Data Extraction """
 # the range(2, 24) corresponds to the different excel sheets which contain

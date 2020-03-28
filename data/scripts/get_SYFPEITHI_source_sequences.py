@@ -4,7 +4,7 @@ get_SYFPEITHI_source_sequences.py
 
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
-This script takes data from a CSV of Breast Cancer epitopes results and returns
+This script takes data from a CSV of breast_cancer_data epitopes results and returns
 an updated CSV that includes source protein sequences. Column names are also
 updated for consistency with other databases and easier downstream merging
 
