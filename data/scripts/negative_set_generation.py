@@ -17,6 +17,7 @@ import pickle
 import re
 import random
 import sys
+import numpy as np
 import pandas as pd
 import sequence_featurization_tools as sf
 
@@ -201,7 +202,10 @@ if __name__ == '__main__':
 		protein = ''.join([row['full_sequence'][0:int(row['start_pos'])],
 						   row['fragment'],
 						   row['full_sequence'][int(row['end_pos']):]])
-
+		try:
+			exclusions = row['exclusions'].split(';')
+		except:
+			exclusions = []
 		if row['end_pos'] != len(row['full_sequence']):
 			# Get positive peptide window and store regex if relevant
 			peptide_window = sf.get_peptide_window(
@@ -216,19 +220,19 @@ if __name__ == '__main__':
 					epitope_positive_regex.add(
 									re.compile(generate_regex(peptide_window))
 					)
-			elif row['Proteasome'] == 'C':
+			elif row['Proteasome'] == 'C' and str(row['end_pos']-1) not in exclusions:
 				proteasome_positives[peptide_window].add(tuple(row[0:-3]))
 				if wildcards:
 					proteasome_positive_regex.add(
 									re.compile(generate_regex(peptide_window))
 					)
-			elif row['Proteasome'] == 'I':
+			elif row['Proteasome'] == 'I' and str(row['end_pos']-1) not in exclusions:
 				immunoproteasome_positives[peptide_window].add(tuple(row[0:-3]))
 				if wildcards:
 					immunoproteasome_positive_regex.add(
 									re.compile(generate_regex(peptide_window))
 					)
-			elif row['Proteasome'] == 'M':
+			elif row['Proteasome'] == 'M' and str(row['end_pos']-1) not in exclusions:
 				mixed_positives[peptide_window].add(tuple(row[0:-3]))
 				if wildcards:
 					mixed_positive_regex.add(
@@ -259,7 +263,7 @@ if __name__ == '__main__':
 												downstream=downstream_window,
 				)
 				epitope_unknowns[peptide_window].add(tuple(row[0:-3]))
-		elif row['start_pos'] > 0:
+		elif row['start_pos'] > 0 and str(row['start_pos']) not in exclusions:
 			# Also store N-terminal peptide window in positives
 			peptide_window = sf.get_peptide_window(
 											protein, row['start_pos'], None, 
@@ -304,50 +308,55 @@ if __name__ == '__main__':
 	all_cleavage_regex.update(immunoproteasome_positive_regex)
 	all_cleavage_regex.update(mixed_positive_regex)
 	for index, row in cleavage_peptides.iterrows():
+		try:
+			exclusions = row['exclusions'].split(';')
+		except:
+			exclusions = []
 		# Extract protein sequence
 		protein = ''.join([row['full_sequence'][0:int(row['start_pos'])],
 						   row['fragment'],
 						   row['full_sequence'][int(row['end_pos']):]])
 		# Store all potential negatives for epitope temporarily
 		temp_negatives = set()
-		for i in range(int(row['start_pos'])+1, int(row['end_pos'])):
-			peptide_window = sf.get_peptide_window(
-											protein, None, i+1,
-											upstream=upstream_window, 
-											downstream=downstream_window,
+		for i in range(int(row['start_pos']), int(row['end_pos'])):
+			if str(i) not in exclusions:
+				peptide_window = sf.get_peptide_window(
+												protein, None, i+1,
+												upstream=upstream_window, 
+												downstream=downstream_window,
+				)
+				temp_negatives.add(peptide_window)
+		# Process temp_negatives to find true negatives
+		if row['Proteasome'] == 'C':
+			true_negatives = remove_positives(
+											temp_negatives, 
+											proteasome_positives, 
+											proteasome_positive_regex,
+											proteasome_negatives, row,
+											args.full_negative_set
 			)
-			temp_negatives.add(peptide_window)
-			# Process temp_negatives to find true negatives
-			if row['Proteasome'] == 'C':
-				true_negatives = remove_positives(
-												temp_negatives, 
-												proteasome_positives, 
-												proteasome_positive_regex,
-												proteasome_negatives, row,
-												args.full_negative_set
-				)
-				for neg in true_negatives:
-					proteasome_negatives[neg].add(tuple(row[0:-3]))
-			elif row['Proteasome'] == 'I':
-				true_negatives = remove_positives(
-											temp_negatives, 
-											immunoproteasome_positives, 
-											immunoproteasome_positive_regex,
-											immunoproteasome_negatives, row,
-											args.full_negative_set
-				)
-				for neg in true_negatives:
-					immunoproteasome_negatives[neg].add(tuple(row[0:-3]))
-			elif row['Proteasome'] == 'M':
-				true_negatives = remove_positives(
-											temp_negatives, 
-											all_cleavage_positives, 
-											all_cleavage_regex,
-											mixed_negatives, row,
-											args.full_negative_set
-				)
-				for neg in true_negatives:
-					mixed_negatives[neg].add(tuple(row[0:-3]))
+			for neg in true_negatives:
+				proteasome_negatives[neg].add(tuple(row[0:-3]))
+		elif row['Proteasome'] == 'I':
+			true_negatives = remove_positives(
+										temp_negatives, 
+										immunoproteasome_positives, 
+										immunoproteasome_positive_regex,
+										immunoproteasome_negatives, row,
+										args.full_negative_set
+			)
+			for neg in true_negatives:
+				immunoproteasome_negatives[neg].add(tuple(row[0:-3]))
+		elif row['Proteasome'] == 'M':
+			true_negatives = remove_positives(
+										temp_negatives, 
+										all_cleavage_positives, 
+										all_cleavage_regex,
+										mixed_negatives, row,
+										args.full_negative_set
+			)
+			for neg in true_negatives:
+				mixed_negatives[neg].add(tuple(row[0:-3]))
 
 	print(datetime.now(), 'Filtering unknowns...', file=sys.stderr)
 
@@ -388,7 +397,6 @@ if __name__ == '__main__':
 		# Skip cleavage map data
 		if row['entry_source'] == 'cleavage_map':
 			continue
-
 		# Extract protein sequence
 		protein = ''.join([row['full_sequence'][0:int(row['start_pos'])],
 						   row['fragment'],
@@ -500,6 +508,11 @@ if __name__ == '__main__':
 			data_set['proteasome']['negatives'][window].update(immunoproteasome_negatives[window])
 		else:
 			data_set['proteasome']['negatives'][window] = immunoproteasome_negatives[window]
+	for window in mixed_positives:
+		if window in data_set['proteasome']['positives']:
+			data_set['proteasome']['positives'][window].update(mixed_positives[window])
+		else:
+			data_set['proteasome']['positives'][window] = mixed_positives[window]
 	for window in mixed_negatives:
 		if window in data_set['proteasome']['negatives']:
 			data_set['proteasome']['negatives'][window].update(mixed_negatives[window])
