@@ -26,7 +26,7 @@ dtype = torch.FloatTensor
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 in_dir = "/Users/weeder/PycharmProjects/proteasome/data/generated_training_sets"
 out_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/model_weights"
-file = "/cleavage_windows_human_only_13aa.pickle"
+file = "/cleavage_windows_all_mammal_13aa.pickle"
 test_holdout_p = .2  # proportion of data held out for testing set
 n_epoch = 26
 
@@ -291,8 +291,8 @@ print("Sensitivity: ", sensitivity)
 print("Specificity: ", specificity)
 
 # save model states to file
-torch.save(seq_state, out_dir + "/human_only_epitope_sequence_mod.pt")
-torch.save(motif_state, out_dir + "/human_only_epitope_motif_mod.pt")
+torch.save(seq_state, out_dir + "/all_mammal_epitope_sequence_mod.pt")
+torch.save(motif_state, out_dir + "/all_mammal_epitope_motif_mod.pt")
 
 
 # generate plot of weights

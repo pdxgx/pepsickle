@@ -24,7 +24,7 @@ dtype = torch.FloatTensor
 # load in data and set output directory
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 indir = "/Users/weeder/PycharmProjects/proteasome/data/generated_training_sets/"
-file = "/cleavage_windows_human_only_13aa.pickle"
+file = "/cleavage_windows_all_mammal_13aa.pickle"
 out_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/model_weights"
 test_holdout_p = .2
 n_epoch = 26
@@ -354,8 +354,8 @@ motif_model.load_state_dict(motif_state)
 motif_model.eval()
 
 # save model states to file
-torch.save(seq_state, out_dir + "/human_only_cleavage_map_sequence_mod.pt")
-torch.save(motif_state, out_dir + "/human_only_cleavage_map_motif_mod.pt")
+torch.save(seq_state, out_dir + "/all_mammal_cleavage_map_sequence_mod.pt")
+torch.save(motif_state, out_dir + "/all_mammal_cleavage_map_motif_mod.pt")
 
 
 # look at model weights

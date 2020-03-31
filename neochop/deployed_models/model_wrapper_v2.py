@@ -133,7 +133,7 @@ def initialize_epitope_model(all_mammal=False):
     return mod
 
 
-def initialize_proteasome_model(mod_dir):
+def initialize_proteasome_model():
     # set file paths
     mod1_file = _model_dict['all_mammal_proteasome_sequence_mod']
     mod2_file = _model_dict['all_mammal_proteasome_motif_mod']
@@ -201,3 +201,37 @@ def create_windows_from_protein(protein_seq):
 
 
 # create output function that generates table...
+
+
+
+
+
+
+
+
+handle = "/Users/weeder/PycharmProjects/proteasome/data/validation_data/" \
+         "epitope_val_filtered.pickle"
+epitope_val_dict = pickle.load(open(handle, "rb"))
+epitope_positives = list(epitope_val_dict['positives'].keys())
+epitope_positive_features = generate_feature_array(epitope_positives)
+epitope_negatives = list(epitope_val_dict['negatives'].keys())
+epitope_negative_features =generate_feature_array(epitope_negatives)
+
+epitope_model = initialize_epitope_model(all_mammal=False)
+pos_preds = predict_epitope_mod(epitope_model, epitope_positive_features)
+neg_preds = predict_epitope_mod(epitope_model, epitope_negative_features)
+
+true_labels = [1] * len(pos_preds) + [0] * len(neg_preds)
+true_prob = pos_preds + neg_preds
+predicted_label = [p > .5 for p in true_prob]
+
+report = metrics.classification_report(true_labels, predicted_label)
+epitope_auc = metrics.roc_auc_score(true_labels, true_prob)
+tn, fp, fn, tp = metrics.confusion_matrix(true_labels,
+                                          predicted_label).ravel()
+sensitivity = tp/(tp + fn)
+specificity = tn/(tn+fp)
+
+print("Sensitivity: ", sensitivity)
+print("Specificity: ", specificity)
+print("AUC: ", epitope_auc)
