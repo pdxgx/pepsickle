@@ -35,6 +35,7 @@ IEDB_df = pd.read_csv(options.in_dir + "/unique_iedb_epitopes.csv")
 bc_df = pd.read_csv(options.in_dir + "/breast_cancer_data_w_sequences.csv")
 antijen_df = pd.read_csv(options.in_dir + "/AntiJen_Tcell_w_sequences.csv")
 digestion_df = pd.read_csv(options.in_dir + "/compiled_digestion_df.csv")
+winter_df = pd.read_csv(options.in_dir + "/winter_et_al_cleavage_fragments.csv")
 
 # identify names for IEDB to match others...
 IEDB_df['entry_source'] = "IEDB"
@@ -105,10 +106,14 @@ bc_df['full_seq_database'] = bc_df['Ref_type']
 bc_df['lit_reference'] = "10.1016/j.jprot.2018.01.004"
 bc_df.drop(columns=['Protein_ref', 'Ref_type'], inplace=True)
 
+# append winter data to rest of digestion data
+digestion_df = digestion_df.append(winter_df, sort=True)
+
 # remap digestion_df columns for consistency
 new_digestion_cols = ['lit_reference', 'protein_name', 'origin_species',
-                      'Proteasome', "Subunit", 'full_seq_accession', 'end_pos',
-                      'fragment', 'full_sequence', 'start_pos', 'entry_source']
+                      'Proteasome', 'Subunit', 'full_seq_accession', 'end_pos',
+                      'entry_source', 'exclusions', 'fragment',
+                      'full_sequence', 'start_pos']
 digestion_df.columns = new_digestion_cols
 digestion_df['epitope_id'] = None
 digestion_df['full_seq_database'] = "UniProt"

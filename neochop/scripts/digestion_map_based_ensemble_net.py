@@ -23,7 +23,7 @@ dtype = torch.FloatTensor
 
 # load in data and set output directory
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
-indir = "/Users/weeder/PycharmProjects/proteasome/data/generated_training_sets/"
+indir = "/Users/weeder/PycharmProjects/proteasome/data/test/generated_training_sets/"
 file = "/cleavage_windows_all_mammal_13aa.pickle"
 out_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/model_weights"
 test_holdout_p = .2
@@ -225,7 +225,7 @@ for i in range(len(neg_train)):
 
 train_data = pos_train_labeled + neg_train_labeled
 train_loader = torch.utils.data.DataLoader(train_data,
-                                           batch_size=64, shuffle=True)
+                                           batch_size=100, shuffle=True)
 
 # pair test data with labels
 pos_test_labeled = []

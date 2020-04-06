@@ -1,6 +1,6 @@
 #!usr/bin/env python3
 """
-extract_cleavage_map_data.py
+extract_digestion_data.py
 
 For issues contact Ben Weeder (weeder@ohsu.edu)
 

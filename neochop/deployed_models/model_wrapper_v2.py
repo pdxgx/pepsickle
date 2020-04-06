@@ -133,19 +133,41 @@ def initialize_epitope_model(all_mammal=False):
     return mod
 
 
-def initialize_proteasome_model():
+def initialize_epitope_consensus_model(all_mammal=False):
     # set file paths
-    mod1_file = _model_dict['all_mammal_proteasome_sequence_mod']
-    mod2_file = _model_dict['all_mammal_proteasome_motif_mod']
+    if all_mammal:
+        mod1_state = _model_dict['all_mammal_epitope_sequence_mod']
+        mod2_state = _model_dict['all_mammal_epitope_motif_mod']
+    else:
+        mod1_state = _model_dict['human_only_epitope_sequence_mod']
+        mod2_state = _model_dict['human_only_epitope_motif_mod']
+
+    # initialize 1st mod
+    mod1 = epitope_SeqNet()
+    mod1.load_state_dict(mod1_state)
+    mod1.eval()
+
+    # initialize 2nd mod
+    mod2 = epitope_MotifNet()
+    mod2.load_state_dict(mod2_state)
+    mod2.eval()
+
+    return [mod1, mod2]
+
+
+def initialize_digestion_model():
+    # set file paths
+    mod1_state = _model_dict['all_mammal_cleavage_map_sequence_mod']
+    mod2_state = _model_dict['all_mammal_cleavage_map_motif_mod']
 
     # initialize 1st mod
     mod1 = proteasome_SeqNet()
-    mod1.load_state_dict(torch.load(mod1_file))
+    mod1.load_state_dict(mod1_state)
     mod1.eval()
 
     # initialize 2nd mod
     mod2 = proteasome_MotifNet()
-    mod2.load_state_dict(torch.load(mod2_file))
+    mod2.load_state_dict(mod2_state)
     mod2.eval()
 
     return [mod1, mod2]
@@ -162,7 +184,7 @@ def predict_epitope_mod(model, features):
     return output_p
 
 
-def predict_proteasome_mod(model_list, features, proteasome_type="C"):
+def predict_digestion_mod(model_list, features, proteasome_type="C"):
     # assert features.shape[2] == 24
     features = torch.from_numpy(features)
     mod1 = model_list[0]
@@ -171,6 +193,9 @@ def predict_proteasome_mod(model_list, features, proteasome_type="C"):
     if proteasome_type == "C":
         c_prot = torch.tensor([1] * features.shape[0]).type(torch.FloatTensor)
         i_prot = torch.tensor([0] * features.shape[0]).type(torch.FloatTensor)
+    if proteasome_type == "I":
+        c_prot = torch.tensor([0] * features.shape[0]).type(torch.FloatTensor)
+        i_prot = torch.tensor([1] * features.shape[0]).type(torch.FloatTensor)
 
     with torch.no_grad():
         log_p1 = mod1(features[:, :, :20].type(torch.FloatTensor),
@@ -178,6 +203,23 @@ def predict_proteasome_mod(model_list, features, proteasome_type="C"):
         # NOTE: change if feature matrix is updated
         log_p2 = mod2(features[:, :, 22:].type(torch.FloatTensor),
                       c_prot, i_prot)[:, 1]
+        log_avg = (log_p1 + log_p2)/2
+        p_cleavage = torch.exp(log_avg)
+
+    output_p = [float(x) for x in p_cleavage]
+    return output_p
+
+
+def predict_epitope_consensus_mod(model_list, features):
+    # assert features.shape[2] == 24
+    features = torch.from_numpy(features)
+    mod1 = model_list[0]
+    mod2 = model_list[1]
+
+    with torch.no_grad():
+        log_p1 = mod1(features[:, :, :20].type(torch.FloatTensor))[:, 1]
+        # NOTE: change if feature matrix is updated
+        log_p2 = mod2(features[:, :, 22:].type(torch.FloatTensor))[:, 1]
         log_avg = (log_p1 + log_p2)/2
         p_cleavage = torch.exp(log_avg)
 
@@ -235,3 +277,64 @@ specificity = tn/(tn+fp)
 print("Sensitivity: ", sensitivity)
 print("Specificity: ", specificity)
 print("AUC: ", epitope_auc)
+
+# repeat with digestion val data
+constit_digestion_handle = "/Users/weeder/PycharmProjects/proteasome/data/validation_data/" \
+         "digestion_constitutive_validation_filtered.pickle"
+constit_digestion_val_dict = pickle.load(open(constit_digestion_handle, "rb"))
+
+immuno_digestion_handle = "/Users/weeder/PycharmProjects/proteasome/data/validation_data/" \
+         "digestion_immuno_validation_filtered.pickle"
+immuno_digestion_val_dict = pickle.load(open(immuno_digestion_handle, "rb"))
+
+constit_digestion_positives = list(constit_digestion_val_dict['positives'].keys())
+immuno_digestion_positives = list(immuno_digestion_val_dict['positives'].keys())
+
+digestion_constit_positive_features = generate_feature_array(constit_digestion_positives)
+digestion_immuno_positive_features = generate_feature_array(immuno_digestion_positives)
+
+constit_digestion_negatives = list(constit_digestion_val_dict['negatives'].keys())
+immuno_digestion_negatives = list(immuno_digestion_val_dict['negatives'].keys())
+
+digestion_constit_negative_features = generate_feature_array(constit_digestion_negatives)
+digestion_immuno_negative_features = generate_feature_array(immuno_digestion_negatives)
+
+
+digestion_model = initialize_digestion_model()
+constitutive_pos_preds = predict_digestion_mod(digestion_model, digestion_constit_positive_features, proteasome_type="C")
+immuno_pos_preds = predict_digestion_mod(digestion_model, digestion_immuno_positive_features, proteasome_type="I")
+
+constitutive_neg_preds = predict_digestion_mod(digestion_model, digestion_constit_negative_features, proteasome_type="C")
+immuno_neg_preds = predict_digestion_mod(digestion_model, digestion_immuno_negative_features, proteasome_type="I")
+
+
+true_contitutive_labels = [1] * len(constitutive_pos_preds) + [0] * len(constitutive_neg_preds)
+true_constit_prob = constitutive_pos_preds + constitutive_neg_preds
+predicted_constit_label = [p > .5 for p in true_constit_prob]
+
+constitutive_report = metrics.classification_report(true_contitutive_labels, predicted_constit_label)
+constitutive_auc = metrics.roc_auc_score(true_contitutive_labels, true_constit_prob)
+tn, fp, fn, tp = metrics.confusion_matrix(true_contitutive_labels,
+                                          predicted_constit_label).ravel()
+constitutive_sensitivity = tp/(tp + fn)
+constitutive_specificity = tn/(tn+fp)
+
+print("Sensitivity: ", constitutive_sensitivity)
+print("Specificity: ", constitutive_specificity)
+print("AUC: ", constitutive_auc)
+
+
+true_immuno_labels = [1] * len(immuno_pos_preds) + [0] * len(immuno_neg_preds)
+true_immuno_prob = immuno_pos_preds + immuno_neg_preds
+predicted_immuno_label = [p > .5 for p in true_immuno_prob]
+
+immuno_report = metrics.classification_report(true_immuno_labels, predicted_immuno_label)
+immuno_auc = metrics.roc_auc_score(true_immuno_labels, true_immuno_prob)
+tn, fp, fn, tp = metrics.confusion_matrix(true_immuno_labels,
+                                          predicted_immuno_label).ravel()
+immuno_sensitivity = tp/(tp + fn)
+immuno_specificity = tn/(tn+fp)
+
+print("Sensitivity: ", immuno_sensitivity)
+print("Specificity: ", immuno_specificity)
+print("AUC: ", immuno_auc)

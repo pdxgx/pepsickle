@@ -51,3 +51,4 @@ rsconnect/
 /neochop/model_weights/
 /data/validation_data/
 /neochop/deployed_models/trained_model_dict.pickle
+/data/test/
