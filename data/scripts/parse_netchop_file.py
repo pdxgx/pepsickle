@@ -1,11 +1,14 @@
 import pandas as pd
 from sklearn import metrics
+from optparse import OptionParser
 
-handle = "/Users/weeder/PycharmProjects/proteasome/data/validation_data/" \
-         "netchop_immuno_digestion_validation_preds.txt"
+parser = OptionParser()
+parser.add_option("-i", "--in_file", dest="in_file",
+                  help="input file...")
 
+(options, args) = parser.parse_args()
 
-with open(handle, 'r') as netchop_file:
+with open(options.in_file, 'r') as netchop_file:
         line = netchop_file.readline()
         table_start = False
         table_list = []

@@ -15,19 +15,39 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn import metrics
 import torch.nn.functional as F
+
+# visualization tools
 import matplotlib.pyplot as plt
+import numpy as np
+import torchvision
+import torchvision.transforms as transforms
+import torchvision.transforms.functional as TF
+
+from torchvision import models
+from captum.attr import IntegratedGradients
+from captum.attr import Saliency
+from captum.attr import DeepLift
+from captum.attr import NoiseTunnel
+from captum.attr import visualization as viz
+
+
+def attribute_features(model, algo, input, label, **kwargs):
+    model.zero_grad
+    tensor_attributions = algo.attribure(input, label, **kwargs)
+    return tensor_attributions
 
 # set CPU or GPU
 dtype = torch.FloatTensor
 # dtype = torch.cuda.FloatTensor # Uncomment this to run on GPU
 
+
 # load in data and set output directory
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
-indir = "/Users/weeder/PycharmProjects/proteasome/data/test/generated_training_sets/"
+indir = "/Users/weeder/PycharmProjects/proteasome/data/generated_training_sets/"
 file = "/cleavage_windows_all_mammal_13aa.pickle"
-out_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/model_weights"
-test_holdout_p = .2
-n_epoch = 26
+out_dir = "/pepsickle/model_weights"
+test_holdout_p = .1
+n_epoch = 42
 
 # set seed for consistency
 torch.manual_seed(123)
@@ -37,12 +57,10 @@ torch.manual_seed(123)
 class SeqNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.drop = nn.Dropout(p=0.4)
+        self.drop = nn.Dropout(p=0.2)
         self.input = nn.Linear(262, 136)
         self.bn1 = nn.BatchNorm1d(136)
-        self.fc1 = nn.Linear(136, 68)
-        self.bn2 = nn.BatchNorm1d(68)
-        self.fc2 = nn.Linear(68, 34)
+        self.fc2 = nn.Linear(136, 34)
         self.bn3 = nn.BatchNorm1d(34)
         self.out = nn.Linear(34, 2)
 
@@ -54,7 +72,6 @@ class SeqNet(nn.Module):
         x = torch.cat((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
 
         x = self.drop(F.relu(self.bn1(self.input(x))))
-        x = self.drop(F.relu(self.bn2(self.fc1(x))))
         x = self.drop(F.relu(self.bn3(self.fc2(x))))
         x = F.log_softmax(self.out(x), dim=1)
 
@@ -64,12 +81,10 @@ class SeqNet(nn.Module):
 class MotifNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.drop = nn.Dropout(p=0.4)
+        self.drop = nn.Dropout(p=.2)
         self.conv = nn.Conv1d(4, 4, 3, groups=4)
         # self.fc1 = nn.Linear(78, 38)
-        self.fc1 = nn.Linear(46, 38)
-        self.bn1 = nn.BatchNorm1d(38)
-        self.fc2 = nn.Linear(38, 20)
+        self.fc1 = nn.Linear(46, 20)
         self.bn2 = nn.BatchNorm1d(20)
         self.out = nn.Linear(20, 2)
 
@@ -83,8 +98,7 @@ class MotifNet(nn.Module):
         x = torch.cat((x, c_prot.reshape(c_prot.shape[0], -1)), 1)
         x = torch.cat((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
 
-        x = self.drop(F.relu(self.bn1(self.fc1(x))))
-        x = self.drop(F.relu(self.bn2(self.fc2(x))))
+        x = self.drop(F.relu(self.bn2(self.fc1(x))))
         x = F.log_softmax(self.out(x), dim=1)
 
         return x
@@ -119,6 +133,7 @@ for key in negative_dict.keys():
 # generate lists of proteasome type for each positive example
 pos_constitutive_proteasome = []
 pos_immuno_proteasome = []
+pos_type_list = []
 for key in pos_windows:
     proteasome_type = []
     # by default neither proteasome
@@ -129,18 +144,20 @@ for key in pos_windows:
 
     for entry in tmp_entry:
         # create list of all unique proteasome types recorded for given window
-        p_type = entry[0]
+        p_type = entry[1]
         if p_type not in proteasome_type:
             proteasome_type.append(p_type)
-
     # swap flags were relevant
     if "C" in proteasome_type:
         c_flag = True
+        pos_type_list.append("C")
     if "I" in proteasome_type:
         i_flag = True
+        pos_type_list.append("I")
     if "M" in proteasome_type:
         c_flag = True
         i_flag = True
+        pos_type_list.append("M")
 
     # based on flags, append binary indicator
     if c_flag:
@@ -157,6 +174,7 @@ for key in pos_windows:
 # repeat above for non-cleavage windows
 neg_constitutive_proteasome = []
 neg_immuno_proteasome = []
+neg_type_list = []
 for key in neg_windows:
     proteasome_type = []
     c_flag = False
@@ -164,17 +182,20 @@ for key in neg_windows:
     tmp_entry = list(negative_dict[key])
 
     for entry in tmp_entry:
-        p_type = entry[0]
+        p_type = entry[1]
         if p_type not in proteasome_type:
             proteasome_type.append(p_type)
 
     if "C" in proteasome_type:
         c_flag = True
+        neg_type_list.append("C")
     if "I" in proteasome_type:
         i_flag = True
+        neg_type_list.append("I")
     if "M" in proteasome_type:
         c_flag = True
         i_flag = True
+        neg_type_list.append("M")
 
     if c_flag:
         neg_constitutive_proteasome.append(1)
@@ -225,7 +246,7 @@ for i in range(len(neg_train)):
 
 train_data = pos_train_labeled + neg_train_labeled
 train_loader = torch.utils.data.DataLoader(train_data,
-                                           batch_size=100, shuffle=True)
+                                           batch_size=64, shuffle=True)
 
 # pair test data with labels
 pos_test_labeled = []
@@ -357,23 +378,12 @@ motif_model.eval()
 torch.save(seq_state, out_dir + "/all_mammal_cleavage_map_sequence_mod.pt")
 torch.save(motif_state, out_dir + "/all_mammal_cleavage_map_motif_mod.pt")
 
+## identify feature improtance
 
-# look at model weights
-in_layer_weights = sequence_model.input.weight
-# sum across all second layer connections
-in_layer_weights = in_layer_weights.abs().sum(dim=0)
-# reshape to match original input
-in_layer_weights = in_layer_weights[:260].reshape(13, -1)
-# sum across values per position
-input_sums = in_layer_weights.sum(dim=1).detach().numpy()
+# define also
+"""
+saliency = Saliency(motif_model)
+grads = saliency.attribute((dat[0][:, :, 22:], dat[1].float(), dat[2].float()), target=labels)
+grads = np.transpose(grads.squeeze().cpu)
+"""
 
-# plot
-positions = range(-6, 7)
-y_pos = np.arange(len(positions))
-plt.bar(y_pos, input_sums, align='center', alpha=0.5)
-plt.xticks(y_pos, positions)
-plt.ylabel('weight')
-plt.xlabel('distance from cleavage point')
-plt.title('')
-
-plt.show()

@@ -25,10 +25,10 @@ dtype = torch.FloatTensor
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 in_dir = "/Users/weeder/PycharmProjects/proteasome/data/generated_training_sets"
-out_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/model_weights"
-file = "/cleavage_windows_all_mammal_13aa.pickle"
+out_dir = "/pepsickle/model_weights"
+file = "/cleavage_windows_human_only_13aa.pickle"
 test_holdout_p = .2  # proportion of data held out for testing set
-n_epoch = 26
+n_epoch = 42
 
 # set seed for consistency
 torch.manual_seed(123)
@@ -37,7 +37,7 @@ torch.manual_seed(123)
 class SeqNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.drop = nn.Dropout(p=0.3)
+        self.drop = nn.Dropout(p=0.2)
         self.input = nn.Linear(260, 136)
         self.bn1 = nn.BatchNorm1d(136)
         self.fc1 = nn.Linear(136, 68)
@@ -61,7 +61,7 @@ class SeqNet(nn.Module):
 class MotifNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.drop = nn.Dropout(p=0.3)
+        self.drop = nn.Dropout(p=0.2)
         self.conv = nn.Conv1d(4, 4, 3, groups=4)
         self.fc1 = nn.Linear(44, 38)
         self.bn1 = nn.BatchNorm1d(38)
@@ -291,8 +291,8 @@ print("Sensitivity: ", sensitivity)
 print("Specificity: ", specificity)
 
 # save model states to file
-torch.save(seq_state, out_dir + "/all_mammal_epitope_sequence_mod.pt")
-torch.save(motif_state, out_dir + "/all_mammal_epitope_motif_mod.pt")
+torch.save(seq_state, out_dir + "/human_only_epitope_sequence_mod.pt")
+torch.save(motif_state, out_dir + "/human_only_epitope_motif_mod.pt")
 
 
 # generate plot of weights

@@ -43,12 +43,12 @@ rsconnect/
 /data/generated_training_sets/
 /data/raw_data/
 /data/merged_data/
-/neochop/results/
+/pepsickle/results/
 /data/generated_training_sets/
 /data/merged_data/
 /data/raw_data/
 /data/merged_data/
-/neochop/model_weights/
+/pepsickle/model_weights/
 /data/validation_data/
-/neochop/deployed_models/trained_model_dict.pickle
+/pepsickle/deployed_models/trained_model_dict.pickle
 /data/test/

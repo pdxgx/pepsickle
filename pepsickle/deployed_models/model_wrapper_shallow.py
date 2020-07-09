@@ -1,13 +1,10 @@
-from sequence_featurization_tools import *
 import pickle
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from sklearn import metrics
-import pandas as pd
 import torch.nn.functional as F
 
-model_dir = "/Users/weeder/PycharmProjects/proteasome/neochop/deployed_models"
+model_dir = "/pepsickle/deployed_models"
 handle = model_dir + '/trained_model_dict.pickle'
 all_mammal = False
 _model_dict = pickle.load(open(handle, "rb"))
@@ -66,12 +63,10 @@ class epitope_MotifNet(nn.Module):
 class proteasome_SeqNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.drop = nn.Dropout(p=0.4)
+        self.drop = nn.Dropout(p=0.2)
         self.input = nn.Linear(262, 136)
         self.bn1 = nn.BatchNorm1d(136)
-        self.fc1 = nn.Linear(136, 68)
-        self.bn2 = nn.BatchNorm1d(68)
-        self.fc2 = nn.Linear(68, 34)
+        self.fc2 = nn.Linear(136, 34)
         self.bn3 = nn.BatchNorm1d(34)
         self.out = nn.Linear(34, 2)
 
@@ -83,7 +78,6 @@ class proteasome_SeqNet(nn.Module):
         x = torch.cat((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
 
         x = self.drop(F.relu(self.bn1(self.input(x))))
-        x = self.drop(F.relu(self.bn2(self.fc1(x))))
         x = self.drop(F.relu(self.bn3(self.fc2(x))))
         x = F.log_softmax(self.out(x), dim=1)
 
@@ -93,12 +87,10 @@ class proteasome_SeqNet(nn.Module):
 class proteasome_MotifNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.drop = nn.Dropout(p=0.4)
+        self.drop = nn.Dropout(p=.2)
         self.conv = nn.Conv1d(4, 4, 3, groups=4)
         # self.fc1 = nn.Linear(78, 38)
-        self.fc1 = nn.Linear(46, 38)
-        self.bn1 = nn.BatchNorm1d(38)
-        self.fc2 = nn.Linear(38, 20)
+        self.fc1 = nn.Linear(46, 20)
         self.bn2 = nn.BatchNorm1d(20)
         self.out = nn.Linear(20, 2)
 
@@ -112,8 +104,7 @@ class proteasome_MotifNet(nn.Module):
         x = torch.cat((x, c_prot.reshape(c_prot.shape[0], -1)), 1)
         x = torch.cat((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
 
-        x = self.drop(F.relu(self.bn1(self.fc1(x))))
-        x = self.drop(F.relu(self.bn2(self.fc2(x))))
+        x = self.drop(F.relu(self.bn2(self.fc1(x))))
         x = F.log_softmax(self.out(x), dim=1)
 
         return x
@@ -154,6 +145,20 @@ def initialize_epitope_consensus_model(all_mammal=False):
 
     return [mod1, mod2]
 
+'''
+def initialize_digestion_model(all_mammal=True):
+    # set proper model file
+    if all_mammal:
+        mod_state = _model_dict['all_mammal_cleavage_map_sequence_mod']
+    else:
+        mod_state = _model_dict['human_only_cleavage_map_sequence_mod']
+
+    # initialize model
+    mod = proteasome_SeqNet()
+    mod.load_state_dict(mod_state)
+    mod.eval()
+    return mod
+'''
 
 def initialize_digestion_model():
     # set file paths
@@ -210,6 +215,28 @@ def predict_digestion_mod(model_list, features, proteasome_type="C"):
     return output_p
 
 
+'''
+def predict_digestion_mod(model, features, proteasome_type="C"):
+    # assert features.shape[2] == 24
+    features = torch.from_numpy(features)
+    mod1 = model
+
+    if proteasome_type == "C":
+        c_prot = torch.tensor([1] * features.shape[0]).type(torch.FloatTensor)
+        i_prot = torch.tensor([0] * features.shape[0]).type(torch.FloatTensor)
+    if proteasome_type == "I":
+        c_prot = torch.tensor([0] * features.shape[0]).type(torch.FloatTensor)
+        i_prot = torch.tensor([1] * features.shape[0]).type(torch.FloatTensor)
+
+    with torch.no_grad():
+        log_p1 = mod1(features[:, :, :20].type(torch.FloatTensor),
+                      c_prot, i_prot)[:, 1]
+        p_cleavage = torch.exp(log_p1)
+
+    output_p = [float(x) for x in p_cleavage]
+    return(output_p)
+'''
+
 def predict_epitope_consensus_mod(model_list, features):
     # assert features.shape[2] == 24
     features = torch.from_numpy(features)
@@ -252,6 +279,7 @@ def create_windows_from_protein(protein_seq):
 
 
 handle = "/Users/weeder/PycharmProjects/proteasome/data/validation_data/" \
+         "completed_validation_sets/window_dictionaries/" \
          "epitope_val_filtered.pickle"
 epitope_val_dict = pickle.load(open(handle, "rb"))
 epitope_positives = list(epitope_val_dict['positives'].keys())
@@ -274,17 +302,22 @@ tn, fp, fn, tp = metrics.confusion_matrix(true_labels,
 sensitivity = tp/(tp + fn)
 specificity = tn/(tn+fp)
 
+print("Epitope Model Performance - ")
 print("Sensitivity: ", sensitivity)
 print("Specificity: ", specificity)
 print("AUC: ", epitope_auc)
 
 # repeat with digestion val data
-constit_digestion_handle = "/Users/weeder/PycharmProjects/proteasome/data/validation_data/" \
-         "digestion_constitutive_validation_filtered.pickle"
+constit_digestion_handle = "/Users/weeder/PycharmProjects/proteasome/data/" \
+                           "validation_data/completed_validation_sets/" \
+                           "window_dictionaries/" \
+                           "digestion_constitutive_validation_filtered.pickle"
 constit_digestion_val_dict = pickle.load(open(constit_digestion_handle, "rb"))
 
-immuno_digestion_handle = "/Users/weeder/PycharmProjects/proteasome/data/validation_data/" \
-         "digestion_immuno_validation_filtered.pickle"
+immuno_digestion_handle ="/Users/weeder/PycharmProjects/proteasome/data/" \
+                         "validation_data/completed_validation_sets/" \
+                         "window_dictionaries/" \
+                         "digestion_immuno_validation_filtered.pickle"
 immuno_digestion_val_dict = pickle.load(open(immuno_digestion_handle, "rb"))
 
 constit_digestion_positives = list(constit_digestion_val_dict['positives'].keys())
@@ -319,6 +352,7 @@ tn, fp, fn, tp = metrics.confusion_matrix(true_contitutive_labels,
 constitutive_sensitivity = tp/(tp + fn)
 constitutive_specificity = tn/(tn+fp)
 
+print("Constitutive Digestion Model Performance - ")
 print("Sensitivity: ", constitutive_sensitivity)
 print("Specificity: ", constitutive_specificity)
 print("AUC: ", constitutive_auc)
@@ -335,6 +369,49 @@ tn, fp, fn, tp = metrics.confusion_matrix(true_immuno_labels,
 immuno_sensitivity = tp/(tp + fn)
 immuno_specificity = tn/(tn+fp)
 
+print("Immuno Digestion Model Performance - ")
 print("Sensitivity: ", immuno_sensitivity)
 print("Specificity: ", immuno_specificity)
 print("AUC: ", immuno_auc)
+
+
+# constit cross performance
+pos_epitope_preds_by_digestion = predict_digestion_mod(digestion_model, epitope_positive_features, proteasome_type="C")
+neg_epitope_preds_by_digestion = predict_digestion_mod(digestion_model, epitope_negative_features, proteasome_type="C")
+
+true_labels = [1] * len(pos_epitope_preds_by_digestion) + [0] * len(neg_epitope_preds_by_digestion)
+true_prob = pos_epitope_preds_by_digestion + neg_epitope_preds_by_digestion
+predicted_label = [p > .5 for p in true_prob]
+
+report = metrics.classification_report(true_labels, predicted_label)
+auc = metrics.roc_auc_score(true_labels, true_prob)
+tn, fp, fn, tp = metrics.confusion_matrix(true_labels,
+                                          predicted_label).ravel()
+sensitivity = tp/(tp + fn)
+specificity = tn/(tn+fp)
+
+print("Constitutive Digestion Model Performance On Epitope Data - ")
+print("Sensitivity: ", sensitivity)
+print("Specificity: ", specificity)
+print("AUC: ", auc)
+
+
+# epitope cross performance
+pos_constit_preds_by_epitope = predict_epitope_mod(epitope_model, digestion_constit_positive_features)
+neg_constit_preds_by_epitope = predict_epitope_mod(epitope_model, digestion_constit_negative_features)
+
+true_labels = [1] * len(pos_constit_preds_by_epitope) + [0] * len(neg_constit_preds_by_epitope)
+true_prob = pos_constit_preds_by_epitope + neg_constit_preds_by_epitope
+predicted_label = [p > .5 for p in true_prob]
+
+report = metrics.classification_report(true_labels, predicted_label)
+auc = metrics.roc_auc_score(true_labels, true_prob)
+tn, fp, fn, tp = metrics.confusion_matrix(true_labels,
+                                          predicted_label).ravel()
+sensitivity = tp/(tp + fn)
+specificity = tn/(tn+fp)
+
+print("Epitope  Model Performance On Constitutive Data - ")
+print("Sensitivity: ", sensitivity)
+print("Specificity: ", specificity)
+print("AUC: ", auc)

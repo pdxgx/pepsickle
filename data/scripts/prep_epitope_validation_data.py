@@ -1,8 +1,10 @@
 import pandas as pd
 from extraction_functions import *
 
-in_dir = "/Users/weeder/PycharmProjects/proteasome/data/validation_data"
-out_dir = "/Users/weeder/PycharmProjects/proteasome/data/validation_data"
+in_dir = "/Users/weeder/PycharmProjects/proteasome/data/validation_data/" \
+         "epitope_data"
+out_dir = "/Users/weeder/PycharmProjects/proteasome/data/validation_data/" \
+          "epitope_data"
 in_file = "/41467_2016_BFncomms13404_MOESM1318_ESM.csv"
 handle = in_dir + in_file
 dat = pd.read_csv(handle, low_memory=False, skiprows=0, header=1)
