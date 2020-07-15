@@ -34,7 +34,8 @@ def parse_args():
                       help="probability threshold to be used for cleavage "
                            "predictions")
     parser.add_option("--human_only", action="store_false", default=True,
-                      help="uses model_comparisons trained on human + non-human mammals")
+                      help="uses models trained on human data only instead " 
+                           "of all mammals")
     (options, args) = parser.parse_args()
     return options, args
 
@@ -46,8 +47,7 @@ def validate_input(options):
         "input must be either an individual sequence or a fasta file, not both"
     if options.model_type:
         assert (options.model_type in ['E', 'C', 'I']), \
-            "model type must be one of the following: 'E', 'C', " \
-            "'I'"
+            "model type must be one of the following: 'E', 'C', 'I'"
 
 def main():
     # parse args and validate expected input
