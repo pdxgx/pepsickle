@@ -56,10 +56,10 @@ def main():
 
     # initialize requested model
     if options.model_type == "E":
-        cleavage_model = initialize_epitope_model(all_mammal=
+        cleavage_model = initialize_epitope_model(human_only=
                                                   options.human_only)
     elif options.model_type in ['C', 'I']:
-        cleavage_model = initialize_digestion_model(all_mammal=
+        cleavage_model = initialize_digestion_model(human_only=
                                                     options.human_only)
 
     # two if statements for fasta vs. sequence input
