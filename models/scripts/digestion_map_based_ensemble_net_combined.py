@@ -43,9 +43,9 @@ dtype = torch.FloatTensor
 
 # load in data and set output directory
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
-indir = "/Users/weeder/PycharmProjects/pepsickle/data/generated_training_sets/"
-file = "/cleavage_windows_all_mammal_13aa.pickle"
-out_dir = "/models/model_weights"
+indir = "./data/generated_training_sets/"
+file = "./cleavage_windows_human_only_13aa.pickle"
+out_dir = "./models/model_weights"
 test_holdout_p = .1
 n_epoch = 42
 
@@ -157,33 +157,34 @@ handle = open(indir + file, "rb")
 data = pickle.load(handle)
 
 # create list of cleavage windows
-positive_dict = data['pepsickle']['positives']
+positive_dict = data['proteasome']['positives']
 pos_windows = []
 for key in positive_dict.keys():
     if key not in pos_windows:
         pos_windows.append(key)
 
 # create list of non-cleavage windows
-negative_dict = data['pepsickle']['negatives']
+negative_dict = data['proteasome']['negatives']
 neg_windows = []
 for key in negative_dict.keys():
     if key not in neg_windows:
         neg_windows.append(key)
 
-# generate lists of pepsickle type for each positive example
+# generate lists of proteasome type for each positive example
 pos_constitutive_proteasome = []
 pos_immuno_proteasome = []
 pos_type_list = []
 for key in pos_windows:
     proteasome_type = []
-    # by default neither pepsickle
+    # by default neither proteasome
     c_flag = False
     i_flag = False
     # create list of all associated data entries
     tmp_entry = list(positive_dict[key])
 
     for entry in tmp_entry:
-        # create list of all unique pepsickle types recorded for given window
+        # create list of all unique proteasome
+        # types recorded for given window
         p_type = entry[1]
         if p_type not in proteasome_type:
             proteasome_type.append(p_type)
@@ -249,7 +250,7 @@ for key in neg_windows:
 
 # generate feature set for cleavage windows
 pos_feature_matrix = torch.from_numpy(generate_feature_array(pos_windows))
-# append pepsickle type indicators
+# append proteasome type indicators
 pos_feature_set = [f_set for f_set in zip(pos_feature_matrix,
                                           pos_constitutive_proteasome,
                                           pos_immuno_proteasome)]
@@ -350,7 +351,7 @@ for epoch in range(n_epoch):
 
             # convert to proper data type
             matrix_dat = dat[0].type(dtype)
-            # extract pepsickle type parameters
+            # extract proteasome type parameters
             c_proteasome_dat = dat[1].clone().detach().type(dtype)
             i_proteasome_dat = dat[2].clone().detach().type(dtype)
             # convert labels if on GPU
@@ -379,7 +380,7 @@ for epoch in range(n_epoch):
     model.train()
 
 # save model states to file
-torch.save(mod_state, out_dir + "/all_mammal_cleavage_map_full_mod.pt")
+torch.save(mod_state, out_dir + "/human_only_cleavage_map_full_mod.pt")
 
 ## identify feature importance
 

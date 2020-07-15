@@ -24,9 +24,9 @@ dtype = torch.FloatTensor
 
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
-in_dir = "//data/generated_training_sets"
-out_dir = "/models/model_weights"
-file = "/cleavage_windows_human_only_13aa.pickle"
+in_dir = "./data/generated_training_sets"
+out_dir = "./models/model_weights"
+file = "/cleavage_windows_all_mammal_13aa.pickle"
 test_holdout_p = .2  # proportion of data held out for testing set
 n_epoch = 42
 
@@ -208,6 +208,6 @@ for epoch in range(n_epoch):
 
 
 # save model states to file
-torch.save(mod_state, out_dir + "/human_only_epitope_full_mod.pt")
+torch.save(mod_state, out_dir + "/all_mammal_epitope_full_mod.pt")
 
 

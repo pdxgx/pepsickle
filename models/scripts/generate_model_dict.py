@@ -2,8 +2,8 @@ import torch
 import os
 import pickle
 
-in_dir = "/models/model_weights"
-out_dir = "/models/deployed_models"
+in_dir = "/Users/weeder/PycharmProjects/proteasome/models/model_weights"
+out_dir = "/Users/weeder/PycharmProjects/proteasome/models/deployed_models"
 model_dict = {}
 for f in os.listdir(in_dir):
     if not f.startswith("."):
