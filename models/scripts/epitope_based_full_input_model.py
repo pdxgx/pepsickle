@@ -25,7 +25,7 @@ dtype = torch.FloatTensor
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 in_dir = "//data/generated_training_sets"
-out_dir = "/model_comparisons/model_weights"
+out_dir = "/models/model_weights"
 file = "/cleavage_windows_human_only_13aa.pickle"
 test_holdout_p = .2  # proportion of data held out for testing set
 n_epoch = 42
@@ -72,7 +72,7 @@ class FullNet(nn.Module):
 # initialize networks
 model = FullNet()
 
-# convert model_comparisons to cuda if on GPU
+# convert models to cuda if on GPU
 if dtype is torch.cuda.FloatTensor:
     model = model.cuda()
 
@@ -147,7 +147,7 @@ mod_criterion = nn.NLLLoss(
     weight=torch.tensor([1, len(neg_train)/len(pos_train)]).type(dtype))
 mod_optimizer = optim.Adam(model.parameters(), lr=.001)
 
-# initialize tracking of optimal model_comparisons and train
+# initialize tracking of optimal models and train
 prev_mod_auc = 0
 
 for epoch in range(n_epoch):

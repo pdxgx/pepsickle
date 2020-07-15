@@ -26,7 +26,7 @@ def parse_args():
     parser.add_option("-v", "--verbose", action="store_true", default=False,
                       help="prints progress during cleavage predictions")
     parser.add_option("-m", "--model", default="E", dest="model_type",
-                      help="allows the use of model_comparisons trained on alternative "
+                      help="allows the use of models trained on alternative "
                            "data. Defaults to epitope, with options for "
                            "C (constitutive proteasome) and I"
                            "(immunoproteasome)")
@@ -96,6 +96,7 @@ def main():
         out_df.to_csv(options.out_file, index=False)
     else:
         print(out_df)
+
 
 if __name__ == "__main__":
     options, args = parse_args()

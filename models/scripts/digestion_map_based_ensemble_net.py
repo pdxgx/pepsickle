@@ -45,7 +45,7 @@ dtype = torch.FloatTensor
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 indir = "/Users/weeder/PycharmProjects/pepsickle/data/generated_training_sets/"
 file = "/cleavage_windows_all_mammal_13aa.pickle"
-out_dir = "/model_comparisons/model_weights"
+out_dir = "/models/model_weights"
 test_holdout_p = .1
 n_epoch = 42
 

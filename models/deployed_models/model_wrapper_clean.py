@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-model_dir = "/model_comparisons/deployed_models"
+model_dir = "/models/deployed_models"
 handle = model_dir + '/trained_model_dict.pickle'
 all_mammal = False
 _model_dict = pickle.load(open(handle, "rb"))

@@ -25,7 +25,7 @@ dtype = torch.FloatTensor
 # prep data
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 in_dir = "//data/generated_training_sets"
-out_dir = "/model_comparisons/model_weights"
+out_dir = "/models/model_weights"
 file = "/cleavage_windows_human_only_13aa.pickle"
 test_holdout_p = .2  # proportion of data held out for testing set
 n_epoch = 42
@@ -88,7 +88,7 @@ class MotifNet(nn.Module):
 sequence_model = SeqNet()
 motif_model = MotifNet()
 
-# convert model_comparisons to cuda if on GPU
+# convert models to cuda if on GPU
 if dtype is torch.cuda.FloatTensor:
     sequence_model = sequence_model.cuda()
     motif_model = motif_model.cuda()
@@ -168,7 +168,7 @@ motif_criterion = nn.NLLLoss\
     (weight=torch.tensor([1, len(neg_train)/len(pos_train)]).type(dtype))
 motif_optimizer = optim.Adam(motif_model.parameters(), lr=.001)
 
-# initialize tracking of optimal model_comparisons and train
+# initialize tracking of optimal models and train
 prev_seq_auc = 0
 prev_motif_auc = 0
 

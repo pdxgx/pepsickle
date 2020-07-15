@@ -46,7 +46,7 @@ dtype = torch.FloatTensor
 # indir = "D:/Hobbies/Coding/proteasome_networks/data/"
 indir = "/Users/weeder/PycharmProjects/pepsickle/data/generated_training_sets/"
 file = "/cleavage_windows_dig_only_all_C.pickle"
-out_dir = "/model_comparisons/model_weights"
+out_dir = "/models/model_weights"
 test_holdout_p = .1
 n_epoch = 42
 
@@ -307,4 +307,4 @@ scaled_mean_grads = torch.mean(scaled_grads, dim=0)
 
 out_df = pd.DataFrame(scaled_mean_grads.numpy(), columns=["pI", "mol_vol", "hydrophobicity", "bond_entropy"])
 out_df['pos'] = range(-6, 6+1)
-out_df.to_csv("/Users/weeder/PycharmProjects/pepsickle/model_comparisons/results/mean_grads.csv", index=False)
+out_df.to_csv("/Users/weeder/PycharmProjects/pepsickle/models/results/mean_grads.csv", index=False)

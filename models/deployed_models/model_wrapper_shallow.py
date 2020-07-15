@@ -1,11 +1,10 @@
-from sequence_featurization_tools import *
 import pickle
 import torch
 import torch.nn as nn
 from sklearn import metrics
 import torch.nn.functional as F
 
-model_dir = "/model_comparisons/deployed_models"
+model_dir = "/models/deployed_models"
 handle = model_dir + '/trained_model_dict.pickle'
 all_mammal = False
 _model_dict = pickle.load(open(handle, "rb"))
@@ -64,12 +63,10 @@ class epitope_MotifNet(nn.Module):
 class proteasome_SeqNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.drop = nn.Dropout(p=0.4)
+        self.drop = nn.Dropout(p=0.2)
         self.input = nn.Linear(262, 136)
         self.bn1 = nn.BatchNorm1d(136)
-        self.fc1 = nn.Linear(136, 68)
-        self.bn2 = nn.BatchNorm1d(68)
-        self.fc2 = nn.Linear(68, 34)
+        self.fc2 = nn.Linear(136, 34)
         self.bn3 = nn.BatchNorm1d(34)
         self.out = nn.Linear(34, 2)
 
@@ -81,7 +78,6 @@ class proteasome_SeqNet(nn.Module):
         x = torch.cat((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
 
         x = self.drop(F.relu(self.bn1(self.input(x))))
-        x = self.drop(F.relu(self.bn2(self.fc1(x))))
         x = self.drop(F.relu(self.bn3(self.fc2(x))))
         x = F.log_softmax(self.out(x), dim=1)
 
@@ -91,12 +87,10 @@ class proteasome_SeqNet(nn.Module):
 class proteasome_MotifNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.drop = nn.Dropout(p=0.4)
+        self.drop = nn.Dropout(p=.2)
         self.conv = nn.Conv1d(4, 4, 3, groups=4)
         # self.fc1 = nn.Linear(78, 38)
-        self.fc1 = nn.Linear(46, 38)
-        self.bn1 = nn.BatchNorm1d(38)
-        self.fc2 = nn.Linear(38, 20)
+        self.fc1 = nn.Linear(46, 20)
         self.bn2 = nn.BatchNorm1d(20)
         self.out = nn.Linear(20, 2)
 
@@ -110,8 +104,7 @@ class proteasome_MotifNet(nn.Module):
         x = torch.cat((x, c_prot.reshape(c_prot.shape[0], -1)), 1)
         x = torch.cat((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
 
-        x = self.drop(F.relu(self.bn1(self.fc1(x))))
-        x = self.drop(F.relu(self.bn2(self.fc2(x))))
+        x = self.drop(F.relu(self.bn2(self.fc1(x))))
         x = F.log_softmax(self.out(x), dim=1)
 
         return x
@@ -166,7 +159,6 @@ def initialize_digestion_model(all_mammal=True):
     mod.eval()
     return mod
 '''
-
 
 def initialize_digestion_model():
     # set file paths

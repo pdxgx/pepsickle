@@ -5,7 +5,7 @@ model_functions.py
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
 This script contains functions for wrapping generated proteasomal cleavage
-prediction model_comparisons and handling fasta protein inputs for easy model
+prediction models and handling fasta protein inputs for easy model
 implementation.
 """
 
