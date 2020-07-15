@@ -1,17 +1,17 @@
 #!usr/bin/env python3
 import pickle
 
-epitope_val_data = "/Users/weeder/PycharmProjects/proteasome/data/" \
+epitope_val_data = "/Users/weeder/PycharmProjects/pepsickle/data/" \
                    "validation_data/validation_sets_pre-filter/" \
                    "epitope_val_windows_13aa_paired.pickle"
-digestion_val_data = "/Users/weeder/PycharmProjects/proteasome/data/" \
+digestion_val_data = "/Users/weeder/PycharmProjects/pepsickle/data/" \
                      "validation_data/validation_sets_pre-filter/" \
                      "digestion_val_windows_13aa_paired.pickle"
 
-human_only_training_data = "/Users/weeder/PycharmProjects/proteasome/data/" \
+human_only_training_data = "/Users/weeder/PycharmProjects/pepsickle/data/" \
                            "generated_training_sets/" \
                            "cleavage_windows_human_only_13aa.pickle"
-all_mammal_training_data = "/Users/weeder/PycharmProjects/proteasome/data/" \
+all_mammal_training_data = "/Users/weeder/PycharmProjects/pepsickle/data/" \
                            "generated_training_sets/" \
                            "cleavage_windows_all_mammal_13aa.pickle"
 
@@ -45,24 +45,24 @@ epitope_windows_filtered['negatives'] = epitope_negative_windows
 
 digestion_constit_positive_windows = dict()
 digestion_immuno_positive_windows = dict()
-for key in digestion_val_dict['proteasome']['positives'].keys():
-    if key not in all_mammal_training_dict['proteasome']['positives'].keys():
-        if "C" in list(digestion_val_dict['proteasome']['positives'][key])[0]:
-            digestion_constit_positive_windows[key] = digestion_val_dict['proteasome']['positives'][key].copy()
+for key in digestion_val_dict['pepsickle']['positives'].keys():
+    if key not in all_mammal_training_dict['pepsickle']['positives'].keys():
+        if "C" in list(digestion_val_dict['pepsickle']['positives'][key])[0]:
+            digestion_constit_positive_windows[key] = digestion_val_dict['pepsickle']['positives'][key].copy()
 
-        if "I" in list(digestion_val_dict['proteasome']['positives'][key])[0]:
-            digestion_immuno_positive_windows[key] = digestion_val_dict['proteasome']['positives'][key].copy()
+        if "I" in list(digestion_val_dict['pepsickle']['positives'][key])[0]:
+            digestion_immuno_positive_windows[key] = digestion_val_dict['pepsickle']['positives'][key].copy()
 
 
 digestion_constit_negative_windows = dict()
 digestion_immuno_negative_windows = dict()
-for key in digestion_val_dict['proteasome']['negatives'].keys():
-    if key not in all_mammal_training_dict['proteasome']['positives'].keys():
-        if key not in all_mammal_training_dict['proteasome']['negatives'].keys():
-            if "C" in list(digestion_val_dict['proteasome']['negatives'][key])[0]:
-                digestion_constit_negative_windows[key] = digestion_val_dict['proteasome']['negatives'][key].copy()
-            if "I" in list(digestion_val_dict['proteasome']['negatives'][key])[0]:
-                digestion_immuno_negative_windows[key] = digestion_val_dict['proteasome']['negatives'][key].copy()
+for key in digestion_val_dict['pepsickle']['negatives'].keys():
+    if key not in all_mammal_training_dict['pepsickle']['positives'].keys():
+        if key not in all_mammal_training_dict['pepsickle']['negatives'].keys():
+            if "C" in list(digestion_val_dict['pepsickle']['negatives'][key])[0]:
+                digestion_constit_negative_windows[key] = digestion_val_dict['pepsickle']['negatives'][key].copy()
+            if "I" in list(digestion_val_dict['pepsickle']['negatives'][key])[0]:
+                digestion_immuno_negative_windows[key] = digestion_val_dict['pepsickle']['negatives'][key].copy()
 
 
 digestion_constit_windows_filtered = dict()
@@ -83,32 +83,28 @@ print("Digestion constitutive negatives: ", len(digestion_constit_negative_windo
 print("Digestion immuno positives: ", len(digestion_immuno_positive_windows))
 print("Digestion immuno negatives: ", len(digestion_immuno_negative_windows))
 
-pickle.dump(epitope_windows_filtered, open("/Users/weeder/PycharmProjects/"
-                                           "proteasome/data/validation_data/"
+pickle.dump(epitope_windows_filtered, open("//data/validation_data/"
                                            "completed_validation_sets/"
                                            "window_dictionaries/"
                                            "epitope_val_filtered.pickle", "wb"))
 
-pickle.dump(epitope_prev_neg_windows, open("/Users/weeder/PycharmProjects/"
-                                           "proteasome/data/validation_data/"
+pickle.dump(epitope_prev_neg_windows, open("//data/validation_data/"
                                            "completed_validation_sets/"
                                            "window_dictionaries/"
                                            "epitope_prev_negs_val.pickle", "wb"))
 
-pickle.dump(digestion_constit_windows_filtered, open("/Users/weeder/PycharmProjects/"
-                                                     "proteasome/data/validation_data/"
+pickle.dump(digestion_constit_windows_filtered, open("//data/validation_data/"
                                                      "completed_validation_sets/"
                                                      "window_dictionaries/"
                                                      "digestion_constitutive_validation_filtered.pickle", "wb"))
 
-pickle.dump(digestion_immuno_windows_filtered, open("/Users/weeder/PycharmProjects/"
-                                                     "proteasome/data/validation_data/"
-                                                     "completed_validation_sets/"
-                                                     "window_dictionaries/"
-                                                     "digestion_immuno_validation_filtered.pickle", "wb"))
+pickle.dump(digestion_immuno_windows_filtered, open("//data/validation_data/"
+                                                    "completed_validation_sets/"
+                                                    "window_dictionaries/"
+                                                    "digestion_immuno_validation_filtered.pickle", "wb"))
 
 # make this a function?
-epitope_val_handle = "/Users/weeder/PycharmProjects/proteasome/data/" \
+epitope_val_handle = "/Users/weeder/PycharmProjects/pepsickle/data/" \
                     "validation_data/completed_validation_sets/" \
                      "window_fasta_files/epitope_val_data.fasta"
 epitope_val_fasta = open(epitope_val_handle, "w")
@@ -130,7 +126,7 @@ for i in range(len(epitope_negative_windows)):
 epitope_val_fasta.close()
 
 
-digestion_constitutive_val_handle = "/Users/weeder/PycharmProjects/proteasome/data/" \
+digestion_constitutive_val_handle = "/Users/weeder/PycharmProjects/pepsickle/data/" \
                     "validation_data//completed_validation_sets/" \
                     "window_fasta_files/digestion_constitutive_validation_data.fasta"
 digestion_constit_val_fasta = open(digestion_constitutive_val_handle, "w")
@@ -152,7 +148,7 @@ for i in range(len(digestion_constit_negative_windows)):
 digestion_constit_val_fasta.close()
 
 
-digestion_immuno_val_handle = "/Users/weeder/PycharmProjects/proteasome/data/" \
+digestion_immuno_val_handle = "/Users/weeder/PycharmProjects/pepsickle/data/" \
                     "validation_data//completed_validation_sets/" \
                     "window_fasta_files/digestion_immuno_validation_data.fasta"
 digestion_immuno_val_fasta = open(digestion_immuno_val_handle, "w")

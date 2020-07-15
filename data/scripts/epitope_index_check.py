@@ -6,7 +6,7 @@ from optparse import OptionParser
 # define command line parameters
 parser = OptionParser()
 parser.add_option("-i", "--in_file", dest="in_file",
-                  help="pandas data frame of fully merged proteasome info")
+                  help="pandas data frame of fully merged pepsickle info")
 parser.add_option("-o", "--out_dict", dest="out_dict",
                   help="output directory where vetted CSV is exported")
 

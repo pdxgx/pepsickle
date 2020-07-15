@@ -483,7 +483,7 @@ if __name__ == '__main__':
 	# Create feature arrays for positive and negative examples for each set
 	data_set = {
 					'epitope': {'positives': {}, 'negatives': {}, 'unknowns': {}}, 
-					'proteasome': {'positives': {}, 'negatives': {}}, 
+					'pepsickle': {'positives': {}, 'negatives': {}},
 			   }
 	# Store epitope positives/negatves
 	for window in epitope_positives:
@@ -492,32 +492,32 @@ if __name__ == '__main__':
 		data_set['epitope']['negatives'][window] = epitope_negatives[window]
 	for window in epitope_unknowns:
 		data_set['epitope']['unknowns'][window] = epitope_unknowns[window]
-	# Store constitutive proteasome positives/negatives
+	# Store constitutive pepsickle positives/negatives
 	for window in proteasome_positives:
-		data_set['proteasome']['positives'][window] = proteasome_positives[window]
+		data_set['pepsickle']['positives'][window] = proteasome_positives[window]
 	for window in proteasome_negatives:
-		data_set['proteasome']['negatives'][window] = proteasome_negatives[window]
+		data_set['pepsickle']['negatives'][window] = proteasome_negatives[window]
 	# Store immunoproteasome positives/negatives
 	for window in immunoproteasome_positives:
-		if window in data_set['proteasome']['positives']:
-			data_set['proteasome']['positives'][window].update(immunoproteasome_positives[window])
+		if window in data_set['pepsickle']['positives']:
+			data_set['pepsickle']['positives'][window].update(immunoproteasome_positives[window])
 		else:
-			data_set['proteasome']['positives'][window] = immunoproteasome_positives[window]
+			data_set['pepsickle']['positives'][window] = immunoproteasome_positives[window]
 	for window in immunoproteasome_negatives:
-		if window in data_set['proteasome']['negatives']:
-			data_set['proteasome']['negatives'][window].update(immunoproteasome_negatives[window])
+		if window in data_set['pepsickle']['negatives']:
+			data_set['pepsickle']['negatives'][window].update(immunoproteasome_negatives[window])
 		else:
-			data_set['proteasome']['negatives'][window] = immunoproteasome_negatives[window]
+			data_set['pepsickle']['negatives'][window] = immunoproteasome_negatives[window]
 	for window in mixed_positives:
-		if window in data_set['proteasome']['positives']:
-			data_set['proteasome']['positives'][window].update(mixed_positives[window])
+		if window in data_set['pepsickle']['positives']:
+			data_set['pepsickle']['positives'][window].update(mixed_positives[window])
 		else:
-			data_set['proteasome']['positives'][window] = mixed_positives[window]
+			data_set['pepsickle']['positives'][window] = mixed_positives[window]
 	for window in mixed_negatives:
-		if window in data_set['proteasome']['negatives']:
-			data_set['proteasome']['negatives'][window].update(mixed_negatives[window])
+		if window in data_set['pepsickle']['negatives']:
+			data_set['pepsickle']['negatives'][window].update(mixed_negatives[window])
 		else:
-			data_set['proteasome']['negatives'][window] = mixed_negatives[window]
+			data_set['pepsickle']['negatives'][window] = mixed_negatives[window]
 	# Store dataset to pickled dictionary
 	with open(args.output_dict, 'wb') as p:
 		pickle.dump(data_set, p)

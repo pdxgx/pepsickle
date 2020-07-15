@@ -1,8 +1,8 @@
 import pandas as pd
 from extraction_functions import *
 
-in_dir = "/Users/weeder/PycharmProjects/proteasome/data/raw_data"
-out_dir = "/Users/weeder/PycharmProjects/proteasome/data/un-merged_data"
+in_dir = "//data/raw_data"
+out_dir = "//data/un-merged_data"
 in_file = "/Winter_et_al_results.csv"
 handle = in_dir + in_file
 dat = pd.read_csv(handle, low_memory=False, header=0)
