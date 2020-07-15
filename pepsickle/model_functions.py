@@ -89,11 +89,11 @@ class proteasome_FullNet(nn.Module):
         return x
 
 
-def initialize_epitope_model(all_mammal=False):
+def initialize_epitope_model(human_only=True):
     """
     initializes an epitope based cleavage prediction model
-    :param all_mammal: if true, model weights trained using human and non-human
-    mammals will be used
+    :param human_only: if true, model weights trained using human data only and
+     non-human mammal data will be excluded
     :return: functional pytorch model for predicting proteasomal cleavage
     """
     _model_path = os.path.join(_model_dir,
@@ -102,10 +102,10 @@ def initialize_epitope_model(all_mammal=False):
     _model_dict = pickle.load(open(_model_path, 'rb'))
 
     # set proper model file
-    if all_mammal:
-        mod_state = _model_dict['all_mammal_epitope_full_mod']
-    else:
+    if human_only:
         mod_state = _model_dict['human_only_epitope_full_mod']
+    else:
+        mod_state = _model_dict['all_mammal_epitope_full_mod']
 
     # initialize model
     mod = epitope_FullNet()
@@ -114,11 +114,11 @@ def initialize_epitope_model(all_mammal=False):
     return mod
 
 
-def initialize_digestion_model(all_mammal=True):
+def initialize_digestion_model(human_only=False):
     """
     initializes an in-vitro digestion based cleavage prediction model
-    :param all_mammal: if true, model weights trained using human and non-human
-    mammals will be used
+    :param human_only: if true, model weights trained using human data only and
+    non-human mammal data will be excluded
     :return: functional pytorch model for predicting proteasomal cleavage
     """
     _model_path = os.path.join(_model_dir,
@@ -127,10 +127,10 @@ def initialize_digestion_model(all_mammal=True):
     _model_dict = pickle.load(open(_model_path, 'rb'))
 
     # set proper model file
-    if all_mammal:
-        mod_state = _model_dict['all_mammal_cleavage_map_full_mod']
-    else:
+    if human_only:
         mod_state = _model_dict['human_only_cleavage_map_full_mod']
+    else:
+        mod_state = _model_dict['all_mammal_cleavage_map_full_mod']
 
     # initialize model
     mod = proteasome_FullNet()

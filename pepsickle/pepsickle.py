@@ -33,7 +33,7 @@ def parse_args():
     parser.add_option("-t", "--threshold", dest="threshold", default=0.5,
                       help="probability threshold to be used for cleavage "
                            "predictions")
-    parser.add_option("--human_only", action="store_false", default=True,
+    parser.add_option("--human_only", action="store_true", default=False,
                       help="uses models trained on human data only instead " 
                            "of all mammals")
     (options, args) = parser.parse_args()
