@@ -233,8 +233,12 @@ def predict_protein_cleavage_locations(protein_id, protein_seq, model,
     if mod_type == "digestion":
         preds = predict_digestion_mod(model, window_features,
                                       proteasome_type=proteasome_type)
+
+    # By definition, last position can never be a cleavage site
+    preds[len(preds)-1] = 0
     positions = range(1, len(preds)+1)
     cleave = [p > threshold for p in preds]
+
     out_df = pd.DataFrame(zip(positions, preds, cleave),
                           columns=["pos", "p_cleavage", "cleaved"])
     out_df['prot_id'] = protein_id
