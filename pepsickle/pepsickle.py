@@ -102,6 +102,3 @@ if __name__ == "__main__":
     options, args = parse_args()
     validate_input(options)
     main()
-
-
-
