@@ -9,9 +9,10 @@ prediction models and handling fasta protein inputs for easy model
 implementation.
 """
 
-from pepsickle import *
-
+from model_functions import *
 import unittest
+from inspect import getsourcefile
+import os.path as path, sys
 import os
 
 
@@ -20,33 +21,72 @@ class TestSequenceProcessing(unittest.TestCase):
     tests proper handling of proteasomal cleavage predictions from direct
     sequence input to the command line interface
     """
-
     def setUP(self):
         """
 
         Returns:
 
         """
+        self.seq = "MPLEQRSQHCKPEEGLEARGEALGLVGAQAPATEEQEAASSSSTLVEVTLGEVPAAE" \
+                   "SPDPPQSPQGASSLPTTMNYPLWSQSYEDSSNQEEEGPSTFPDLESEFQAALSRKVA" \
+                   "ELVHFLLLKYRAREPVTKAEMLGSVVGNWQYFFPVIFSKASSSLQLVFGIELMEVDP" \
+                   "IGHLYIFATCLGLSYDGLLGDNQIMPKAGLLIIVLAIIAREGDCAPEEKIWEELSVL" \
+                   "EVFEGREDSILGDPKKLLTQHFVQENYLEYRQVPGSDPACYEFLWGPRALVETSYVK" \
+                   "VLHHMVKISGGPHISYPPLHEWVLREGEE"
 
-    def testEpitopeModel(self):
+    def test_epitope_model(self):
         """
 
         Returns:
 
         """
-    def testConstitutiveDigestionModel(self):
+        cleavage_model = initialize_epitope_model()
+        self.assertIsInstance(cleavage_model, epitope_FullNet)
+        out_df = predict_protein_cleavage_locations("None",
+                                                    self.seq,
+                                                    cleavage_model,
+                                                    mod_type="epitope",
+                                                    proteasome_type="E")
+        self.assertEqual(out_df.shape, (313, 4))
+
+    def test_constitutive_digestion_model(self):
         """
 
         Returns:
 
         """
+        cleavage_model = initialize_digestion_model()
+        self.assertIsInstance(cleavage_model, epitope_FullNet)
+        out_df = predict_protein_cleavage_locations("None",
+                                                    self.seq,
+                                                    cleavage_model,
+                                                    mod_type="epitope",
+                                                    proteasome_type="E")
+        self.assertEqual(out_df.shape, (313, 4))
     def testImmunoDigestionModel(self):
         """
 
         Returns:
 
         """
+    def testEpitopeModelHuman(self):
+        """
 
+        Returns:
+
+        """
+    def testConstitutiveDigestionModelHuman(self):
+        """
+
+        Returns:
+
+        """
+    def testImmunoDigestionModelHuman(self):
+        """
+
+        Returns:
+
+        """
 
 class TestFastaProcessing(unittest.TestCase):
     """
@@ -109,3 +149,7 @@ class testThreshodling(unittest.TestCase):
         Returns:
 
         """
+
+
+if __name__ == "__main__":
+    unittest.main()
