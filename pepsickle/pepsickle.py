@@ -49,6 +49,7 @@ def validate_input(options):
         assert (options.model_type in ['E', 'C', 'I']), \
             "model type must be one of the following: 'E', 'C', 'I'"
 
+
 def main():
     # parse args and validate expected input
     options, args = parse_args()
@@ -64,12 +65,12 @@ def main():
 
     # two if statements for fasta vs. sequence input
     if options.fasta:
-        if isinstance(cleavage_model, epitope_FullNet):
+        if isinstance(cleavage_model, epitopeFullNet):
             out_df = process_fasta(options.fasta,
                                    cleavage_model,
                                    verbose=options.verbose,
                                    threshold=options.threshold)
-        elif isinstance(cleavage_model, proteasome_FullNet):
+        elif isinstance(cleavage_model, digestionFullNet):
             out_df = process_fasta(options.fasta,
                                    cleavage_model,
                                    verbose=options.verbose,
@@ -77,14 +78,14 @@ def main():
                                    proteasome_type=options.model_type,
                                    threshold=options.threshold)
     elif options.input_seq:
-        if isinstance(cleavage_model, epitope_FullNet):
+        if isinstance(cleavage_model, epitopeFullNet):
             out_df = predict_protein_cleavage_locations("None",
                                                         options.input_seq,
                                                         cleavage_model,
                                                         mod_type="epitope",
                                                         proteasome_type=options.model_type,
                                                         threshold=options.threshold)
-        elif isinstance(cleavage_model, proteasome_FullNet):
+        elif isinstance(cleavage_model, digestionFullNet):
             out_df = predict_protein_cleavage_locations("None",
                                                         options.input_seq,
                                                         cleavage_model,

@@ -22,7 +22,7 @@ import torch.nn.functional as F
 _model_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-class epitope_FullNet(nn.Module):
+class epitopeFullNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.drop = nn.Dropout(p=0.2)
@@ -54,7 +54,7 @@ class epitope_FullNet(nn.Module):
         return x
 
 
-class proteasome_FullNet(nn.Module):
+class digestionFullNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.drop = nn.Dropout(p=0.2)
@@ -108,7 +108,7 @@ def initialize_epitope_model(human_only=True):
         mod_state = _model_dict['all_mammal_epitope_full_mod']
 
     # initialize model
-    mod = epitope_FullNet()
+    mod = epitopeFullNet()
     mod.load_state_dict(mod_state)
     mod.eval()
     return mod
@@ -133,7 +133,7 @@ def initialize_digestion_model(human_only=False):
         mod_state = _model_dict['all_mammal_cleavage_map_full_mod']
 
     # initialize model
-    mod = proteasome_FullNet()
+    mod = digestionFullNet()
     mod.load_state_dict(mod_state)
     mod.eval()
     return mod
