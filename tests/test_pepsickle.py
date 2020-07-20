@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-test_model_functions.py
+test_pepsickle.py
 
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
@@ -10,8 +10,6 @@ implementation.
 """
 
 from pepsickle import *
-import pepsickle.sequence_featurization_tools as sft
-from pepsickle.model_functions import *
 import unittest
 from inspect import getsourcefile
 import os.path as path, sys
@@ -74,24 +72,63 @@ class TestSequenceProcessing(unittest.TestCase):
         Returns:
 
         """
+        self.setUP()
+        cleavage_model = initialize_digestion_model()
+        self.assertIsInstance(cleavage_model, digestionFullNet)
+        out_df = predict_protein_cleavage_locations("None",
+                                                    self.seq,
+                                                    cleavage_model,
+                                                    mod_type="digestion",
+                                                    proteasome_type="I")
+        self.assertEqual(out_df.shape, (313, 4))
+
     def testEpitopeModelHuman(self):
         """
 
         Returns:
 
         """
+        self.setUP()
+        cleavage_model = initialize_epitope_model(human_only=True)
+        self.assertIsInstance(cleavage_model, epitopeFullNet)
+        out_df = predict_protein_cleavage_locations("None",
+                                                    self.seq,
+                                                    cleavage_model,
+                                                    mod_type="epitope")
+        self.assertEqual(out_df.shape, (313, 4))
+
     def testConstitutiveDigestionModelHuman(self):
         """
 
         Returns:
 
         """
+        self.setUP()
+        cleavage_model = initialize_digestion_model(human_only=True)
+        self.assertIsInstance(cleavage_model, digestionFullNet)
+        out_df = predict_protein_cleavage_locations("None",
+                                                    self.seq,
+                                                    cleavage_model,
+                                                    mod_type="digestion",
+                                                    proteasome_type="C")
+        self.assertEqual(out_df.shape, (313, 4))
+
     def testImmunoDigestionModelHuman(self):
         """
 
         Returns:
 
         """
+        self.setUP()
+        cleavage_model = initialize_digestion_model(human_only=True)
+        self.assertIsInstance(cleavage_model, digestionFullNet)
+        out_df = predict_protein_cleavage_locations("None",
+                                                    self.seq,
+                                                    cleavage_model,
+                                                    mod_type="digestion",
+                                                    proteasome_type="I")
+        self.assertEqual(out_df.shape, (313, 4))
+
 
 class TestFastaProcessing(unittest.TestCase):
     """
