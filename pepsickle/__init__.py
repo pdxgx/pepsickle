@@ -24,7 +24,8 @@ def parse_args():
                            "none is provided, the output will be printed "
                            "directly")
     parser.add_option("-v", "--verbose", action="store_true", default=False,
-                      help="prints progress during cleavage predictions")
+                      help="prints progress during cleavage predictions for "
+                           "fasta files with multiple protein sequences")
     parser.add_option("-m", "--model", default="E", dest="model_type",
                       help="allows the use of models trained on alternative "
                            "data. Defaults to epitope, with options for "
