@@ -10,10 +10,12 @@ implementation.
 """
 
 from pepsickle import *
-import unittest
 from inspect import getsourcefile
-import os.path as path, sys
-import os
+import unittest
+
+pepsickle_dir = os.path.dirname(
+    os.path.dirname((os.path.abspath(getsourcefile(lambda: 0))))
+)
 
 
 class TestSequenceProcessing(unittest.TestCase):
@@ -66,7 +68,7 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     proteasome_type="C")
         self.assertEqual(out_df.shape, (313, 4))
 
-    def testImmunoDigestionModel(self):
+    def test_immuno_digestion_model(self):
         """
 
         Returns:
@@ -82,7 +84,7 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     proteasome_type="I")
         self.assertEqual(out_df.shape, (313, 4))
 
-    def testEpitopeModelHuman(self):
+    def test_epitope_model_human(self):
         """
 
         Returns:
@@ -97,7 +99,7 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     mod_type="epitope")
         self.assertEqual(out_df.shape, (313, 4))
 
-    def testConstitutiveDigestionModelHuman(self):
+    def test_constitutive_digestion_model_human(self):
         """
 
         Returns:
@@ -113,7 +115,7 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     proteasome_type="C")
         self.assertEqual(out_df.shape, (313, 4))
 
-    def testImmunoDigestionModelHuman(self):
+    def test_immuno_digestion_model_human(self):
         """
 
         Returns:
@@ -142,25 +144,51 @@ class TestFastaProcessing(unittest.TestCase):
         Returns:
 
         """
+        self.base_dir = os.path.join(pepsickle_dir, "tests")
+        self.fasta = os.path.join(self.base_dir, "P43357.fasta")
 
-    def testEpitopeModel(self):
+    def test_epitope_model(self):
         """
 
         Returns:
 
         """
-    def testConstitutiveDigestionModel(self):
+        self.setUP()
+        cleavage_model = initialize_epitope_model()
+        self.assertIsInstance(cleavage_model, epitopeFullNet)
+        out_df = process_fasta(self.fasta,
+                               cleavage_model)
+        self.assertEqual(out_df.shape, (313, 4))
+
+    def test_constitutive_digestion_model(self):
         """
 
         Returns:
 
         """
-    def testImmunopDigestionModel(self):
+        self.setUP()
+        cleavage_model = initialize_digestion_model()
+        self.assertIsInstance(cleavage_model, digestionFullNet)
+        out_df = process_fasta(self.fasta,
+                               cleavage_model,
+                               mod_type="digestion",
+                               proteasome_type="C")
+        self.assertEqual(out_df.shape, (313, 4))
+
+    def test_immuno_digestion_model(self):
         """
 
         Returns:
 
         """
+        self.setUP()
+        cleavage_model = initialize_digestion_model()
+        self.assertIsInstance(cleavage_model, digestionFullNet)
+        out_df = process_fasta(self.fasta,
+                               cleavage_model,
+                               mod_type="digestion",
+                               proteasome_type="I")
+        self.assertEqual(out_df.shape, (313, 4))
 
 
 class testFileOutput(unittest.TestCase):
