@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-pepsickle.py
+__init__.py
 
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
 """
 
-from model_functions import *
+from pepsickle.model_functions import *
 from optparse import OptionParser
 
 
@@ -100,6 +100,4 @@ def main():
 
 
 if __name__ == "__main__":
-    options, args = parse_args()
-    validate_input(options)
     main()

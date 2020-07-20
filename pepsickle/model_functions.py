@@ -10,7 +10,7 @@ implementation.
 """
 
 import os
-import sequence_featurization_tools as sft
+import pepsickle.sequence_featurization_tools as sft
 import pandas as pd
 from Bio import SeqIO
 import pickle

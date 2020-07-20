@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-test_pepsickle.py
+test_model_functions.py
 
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
@@ -9,7 +9,9 @@ prediction models and handling fasta protein inputs for easy model
 implementation.
 """
 
-from model_functions import *
+from pepsickle import *
+import pepsickle.sequence_featurization_tools as sft
+from pepsickle.model_functions import *
 import unittest
 from inspect import getsourcefile
 import os.path as path, sys
@@ -40,8 +42,9 @@ class TestSequenceProcessing(unittest.TestCase):
         Returns:
 
         """
+        self.setUP()
         cleavage_model = initialize_epitope_model()
-        self.assertIsInstance(cleavage_model, epitope_FullNet)
+        self.assertIsInstance(cleavage_model, epitopeFullNet)
         out_df = predict_protein_cleavage_locations("None",
                                                     self.seq,
                                                     cleavage_model,
@@ -55,14 +58,16 @@ class TestSequenceProcessing(unittest.TestCase):
         Returns:
 
         """
+        self.setUP()
         cleavage_model = initialize_digestion_model()
-        self.assertIsInstance(cleavage_model, epitope_FullNet)
+        self.assertIsInstance(cleavage_model, digestionFullNet)
         out_df = predict_protein_cleavage_locations("None",
                                                     self.seq,
                                                     cleavage_model,
-                                                    mod_type="epitope",
-                                                    proteasome_type="E")
+                                                    mod_type="digestion",
+                                                    proteasome_type="C")
         self.assertEqual(out_df.shape, (313, 4))
+
     def testImmunoDigestionModel(self):
         """
 
