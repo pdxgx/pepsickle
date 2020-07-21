@@ -67,7 +67,7 @@ setup(
     include_package_data=True,
     package_data={"pepsickle": ["*.py", "*.pickle"]},
     zip_safe=False,
-    install_requires=[],
+    install_requires=["pandas", "biopython", "numpy", "torch"],
     entry_points={"console_scripts": ["pepsickle=pepsickle:main"]},
     cmdclass={"download": DownloadDependencies, "test": DiscoverTest},
     keywords=["proteasome", "cleavage", "peptide", "degredation"],

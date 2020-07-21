@@ -1,4 +1,0 @@
-pandas
-Bio
-numpy
-torch
