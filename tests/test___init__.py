@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-test_pepsickle.py
+test___init__.py
 
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
@@ -199,7 +199,7 @@ class testFileOutput(unittest.TestCase):
 
         """
 
-    def testCSV(self):
+    def test_CSV(self):
         """
         tests if output option gives correct CSV file and format
         Returns:

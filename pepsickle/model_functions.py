@@ -209,7 +209,7 @@ def create_windows_from_protein(protein_seq, **kwargs):
     return protein_windows
 
 
-def predict_protein_cleavage_locations(protein_id, protein_seq, model,
+def predict_protein_cleavage_locations(protein_seq, model, protein_id="",
                                        mod_type="epitope",
                                        proteasome_type="C",
                                        threshold=.5):
@@ -261,7 +261,7 @@ def process_fasta(fasta_file, cleavage_model, verbose=False, **kwargs):
     end = len(protein_list)
 
     for protein_id in protein_list:
-        if counter %100 == 0:
+        if counter % 100 == 0:
             print("completed:", counter, "of", end)
         tmp_out = predict_protein_cleavage_locations(protein_id,
                                                      protein_list[protein_id],
