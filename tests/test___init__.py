@@ -4,9 +4,6 @@ test___init__.py
 
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
-This script contains functions for wrapping generated proteasomal cleavage
-prediction models and handling fasta protein inputs for easy model
-implementation.
 """
 
 from pepsickle import *
@@ -16,6 +13,74 @@ import unittest
 pepsickle_dir = os.path.dirname(
     os.path.dirname((os.path.abspath(getsourcefile(lambda: 0))))
 )
+
+
+class TestExactModelOutput(unittest.TestCase):
+    """
+    tests exact output of loaded models to verify model stability
+    """
+    def setUP(self):
+        """
+
+        :return:
+        """
+        self.seq = ["MPLEQRSQHCKPE"]
+
+    def test_epitope_model(self):
+        """
+
+        :return:
+        """
+        self.setUP()
+        cleavage_model = initialize_epitope_model()
+        feature_set = sft.generate_feature_array(self.seq)
+
+        pred = predict_epitope_mod(cleavage_model, feature_set)
+        self.assertEqual(pred[0], 0.18569166958332062)
+
+    def test_constitutive_digestion_model(self):
+        self.setUP()
+        cleavage_model = initialize_digestion_model()
+        feature_set = sft.generate_feature_array(self.seq)
+
+        pred = predict_digestion_mod(cleavage_model, feature_set, proteasome_type="C")
+        self.assertEqual(pred[0], 0.9985870122909546)
+
+    def test_immuno_digestion_model(self):
+        self.setUP()
+        cleavage_model = initialize_digestion_model()
+        feature_set = sft.generate_feature_array(self.seq)
+
+        pred = predict_digestion_mod(cleavage_model, feature_set, proteasome_type="I")
+        self.assertEqual(pred[0], 0.7862799167633057)
+
+    def test_epitope_model_human(self):
+        """
+
+        :return:
+        """
+        self.setUP()
+        cleavage_model = initialize_epitope_model(human_only=True)
+        feature_set = sft.generate_feature_array(self.seq)
+
+        pred = predict_epitope_mod(cleavage_model, feature_set)
+        self.assertEqual(pred[0], 0.18569166958332062)
+
+    def test_constitutive_digestion_model_human(self):
+        self.setUP()
+        cleavage_model = initialize_digestion_model(human_only=True)
+        feature_set = sft.generate_feature_array(self.seq)
+
+        pred = predict_digestion_mod(cleavage_model, feature_set, proteasome_type="C")
+        self.assertEqual(pred[0], 0.9977787137031555)
+
+    def test_immuno_digestion_model_human(self):
+        self.setUP()
+        cleavage_model = initialize_digestion_model(human_only=True)
+        feature_set = sft.generate_feature_array(self.seq)
+
+        pred = predict_digestion_mod(cleavage_model, feature_set, proteasome_type="I")
+        self.assertEqual(pred[0], 0.003087429329752922)
 
 
 class TestSequenceProcessing(unittest.TestCase):
@@ -45,7 +110,6 @@ class TestSequenceProcessing(unittest.TestCase):
         self.setUP()
         cleavage_model = initialize_epitope_model()
         self.assertIsInstance(cleavage_model, epitopeFullNet)
-        print(self.seq)
         out_df = predict_protein_cleavage_locations(protein_id="None",
                                                     protein_seq=self.seq,
                                                     model=cleavage_model,
@@ -201,6 +265,7 @@ class testFileOutput(unittest.TestCase):
         """
 
     def test_CSV(self):
+
         """
         tests if output option gives correct CSV file and format
         Returns:
