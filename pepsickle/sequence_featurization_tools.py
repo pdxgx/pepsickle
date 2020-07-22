@@ -74,7 +74,8 @@ def featurize_sequence(seq):
     :param seq: a string of amino acid symbols of any length
     :return feature_matrix:
     """
-    feature_matrix = np.array([_features[aa] for aa in seq], dtype=float)
+    feature_matrix = np.array([_features[aa.upper()] for aa in seq],
+                              dtype=float)
     return feature_matrix
 
 
