@@ -45,9 +45,10 @@ class TestSequenceProcessing(unittest.TestCase):
         self.setUP()
         cleavage_model = initialize_epitope_model()
         self.assertIsInstance(cleavage_model, epitopeFullNet)
-        out_df = predict_protein_cleavage_locations("None",
-                                                    self.seq,
-                                                    cleavage_model,
+        print(self.seq)
+        out_df = predict_protein_cleavage_locations(protein_id="None",
+                                                    protein_seq=self.seq,
+                                                    model=cleavage_model,
                                                     mod_type="epitope",
                                                     proteasome_type="E")
         self.assertEqual(out_df.shape, (313, 4))
@@ -61,9 +62,9 @@ class TestSequenceProcessing(unittest.TestCase):
         self.setUP()
         cleavage_model = initialize_digestion_model()
         self.assertIsInstance(cleavage_model, digestionFullNet)
-        out_df = predict_protein_cleavage_locations("None",
-                                                    self.seq,
-                                                    cleavage_model,
+        out_df = predict_protein_cleavage_locations(protein_id="None",
+                                                    protein_seq=self.seq,
+                                                    model=cleavage_model,
                                                     mod_type="digestion",
                                                     proteasome_type="C")
         self.assertEqual(out_df.shape, (313, 4))
@@ -77,9 +78,9 @@ class TestSequenceProcessing(unittest.TestCase):
         self.setUP()
         cleavage_model = initialize_digestion_model()
         self.assertIsInstance(cleavage_model, digestionFullNet)
-        out_df = predict_protein_cleavage_locations("None",
-                                                    self.seq,
-                                                    cleavage_model,
+        out_df = predict_protein_cleavage_locations(protein_id="None",
+                                                    protein_seq=self.seq,
+                                                    model=cleavage_model,
                                                     mod_type="digestion",
                                                     proteasome_type="I")
         self.assertEqual(out_df.shape, (313, 4))
@@ -93,9 +94,9 @@ class TestSequenceProcessing(unittest.TestCase):
         self.setUP()
         cleavage_model = initialize_epitope_model(human_only=True)
         self.assertIsInstance(cleavage_model, epitopeFullNet)
-        out_df = predict_protein_cleavage_locations("None",
-                                                    self.seq,
-                                                    cleavage_model,
+        out_df = predict_protein_cleavage_locations(protein_id="None",
+                                                    protein_seq=self.seq,
+                                                    model=cleavage_model,
                                                     mod_type="epitope")
         self.assertEqual(out_df.shape, (313, 4))
 
@@ -108,9 +109,9 @@ class TestSequenceProcessing(unittest.TestCase):
         self.setUP()
         cleavage_model = initialize_digestion_model(human_only=True)
         self.assertIsInstance(cleavage_model, digestionFullNet)
-        out_df = predict_protein_cleavage_locations("None",
-                                                    self.seq,
-                                                    cleavage_model,
+        out_df = predict_protein_cleavage_locations(protein_id="None",
+                                                    protein_seq=self.seq,
+                                                    model=cleavage_model,
                                                     mod_type="digestion",
                                                     proteasome_type="C")
         self.assertEqual(out_df.shape, (313, 4))
@@ -124,9 +125,9 @@ class TestSequenceProcessing(unittest.TestCase):
         self.setUP()
         cleavage_model = initialize_digestion_model(human_only=True)
         self.assertIsInstance(cleavage_model, digestionFullNet)
-        out_df = predict_protein_cleavage_locations("None",
-                                                    self.seq,
-                                                    cleavage_model,
+        out_df = predict_protein_cleavage_locations(protein_id="None",
+                                                    protein_seq=self.seq,
+                                                    model=cleavage_model,
                                                     mod_type="digestion",
                                                     proteasome_type="I")
         self.assertEqual(out_df.shape, (313, 4))
@@ -169,8 +170,8 @@ class TestFastaProcessing(unittest.TestCase):
         self.setUP()
         cleavage_model = initialize_digestion_model()
         self.assertIsInstance(cleavage_model, digestionFullNet)
-        out_df = process_fasta(self.fasta,
-                               cleavage_model,
+        out_df = process_fasta(fasta_file=self.fasta,
+                               cleavage_model=cleavage_model,
                                mod_type="digestion",
                                proteasome_type="C")
         self.assertEqual(out_df.shape, (313, 4))
@@ -184,8 +185,8 @@ class TestFastaProcessing(unittest.TestCase):
         self.setUP()
         cleavage_model = initialize_digestion_model()
         self.assertIsInstance(cleavage_model, digestionFullNet)
-        out_df = process_fasta(self.fasta,
-                               cleavage_model,
+        out_df = process_fasta(fasta_file=self.fasta,
+                               cleavage_model=cleavage_model,
                                mod_type="digestion",
                                proteasome_type="I")
         self.assertEqual(out_df.shape, (313, 4))
