@@ -36,23 +36,25 @@ class TestExactModelOutput(unittest.TestCase):
         feature_set = sft.generate_feature_array(self.seq)
 
         pred = predict_epitope_mod(cleavage_model, feature_set)
-        self.assertEqual(pred[0], 0.18569166958332062)
+        self.assertAlmostEqual(round(pred[0], 5), 0.18569)
 
     def test_constitutive_digestion_model(self):
         self.setUP()
         cleavage_model = initialize_digestion_model()
         feature_set = sft.generate_feature_array(self.seq)
 
-        pred = predict_digestion_mod(cleavage_model, feature_set, proteasome_type="C")
-        self.assertEqual(pred[0], 0.9985870122909546)
+        pred = predict_digestion_mod(cleavage_model, feature_set,
+                                     proteasome_type="C")
+        self.assertAlmostEqual(round(pred[0], 5), 0.99859)
 
     def test_immuno_digestion_model(self):
         self.setUP()
         cleavage_model = initialize_digestion_model()
         feature_set = sft.generate_feature_array(self.seq)
 
-        pred = predict_digestion_mod(cleavage_model, feature_set, proteasome_type="I")
-        self.assertEqual(pred[0], 0.7862799167633057)
+        pred = predict_digestion_mod(cleavage_model, feature_set,
+                                     proteasome_type="I")
+        self.assertAlmostEqual(round(pred[0], 5), 0.78628)
 
     def test_epitope_model_human(self):
         """
@@ -64,7 +66,7 @@ class TestExactModelOutput(unittest.TestCase):
         feature_set = sft.generate_feature_array(self.seq)
 
         pred = predict_epitope_mod(cleavage_model, feature_set)
-        self.assertEqual(pred[0], 0.18569166958332062)
+        self.assertAlmostEqual(round(pred[0], 5), 0.18569)
 
     def test_constitutive_digestion_model_human(self):
         self.setUP()
@@ -72,7 +74,7 @@ class TestExactModelOutput(unittest.TestCase):
         feature_set = sft.generate_feature_array(self.seq)
 
         pred = predict_digestion_mod(cleavage_model, feature_set, proteasome_type="C")
-        self.assertEqual(pred[0], 0.9977787137031555)
+        self.assertAlmostEqual(round(pred[0], 5), 0.99778)
 
     def test_immuno_digestion_model_human(self):
         self.setUP()
@@ -80,7 +82,7 @@ class TestExactModelOutput(unittest.TestCase):
         feature_set = sft.generate_feature_array(self.seq)
 
         pred = predict_digestion_mod(cleavage_model, feature_set, proteasome_type="I")
-        self.assertEqual(pred[0], 0.003087429329752922)
+        self.assertAlmostEqual(round(pred[0], 5), 0.00309)
 
 
 class TestSequenceProcessing(unittest.TestCase):
