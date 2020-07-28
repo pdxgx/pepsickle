@@ -80,16 +80,16 @@ def main():
                                    threshold=options.threshold)
     elif options.input_seq:
         if isinstance(cleavage_model, epitopeFullNet):
-            out_df = predict_protein_cleavage_locations("None",
-                                                        options.input_seq,
-                                                        cleavage_model,
+            out_df = predict_protein_cleavage_locations(protein_id="None",
+                                                        protein_seq=options.input_seq,
+                                                        model=cleavage_model,
                                                         mod_type="epitope",
                                                         proteasome_type=options.model_type,
                                                         threshold=options.threshold)
         elif isinstance(cleavage_model, digestionFullNet):
-            out_df = predict_protein_cleavage_locations("None",
-                                                        options.input_seq,
-                                                        cleavage_model,
+            out_df = predict_protein_cleavage_locations(protein_id="None",
+                                                        protein_seq=options.input_seq,
+                                                        model=cleavage_model,
                                                         mod_type="digestion",
                                                         proteasome_type=options.model_type,
                                                         threshold=options.threshold)
