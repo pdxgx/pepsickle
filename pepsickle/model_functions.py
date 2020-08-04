@@ -261,10 +261,11 @@ def process_fasta(fasta_file, cleavage_model, verbose=False, **kwargs):
     end = len(protein_list)
 
     for protein_id in protein_list:
-        if counter % 100 == 0:
+        if counter % 100 == 0 and verbose is True:
             print("completed:", counter, "of", end)
         tmp_out = predict_protein_cleavage_locations(protein_id=protein_id,
-                                                     protein_seq=protein_list[protein_id],
+                                                     protein_seq=protein_list[
+                                                         protein_id],
                                                      model=cleavage_model,
                                                      **kwargs)
         cleavage_preds.append(tmp_out)

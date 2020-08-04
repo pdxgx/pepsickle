@@ -5,7 +5,7 @@ sequence_featurization_tools.py
 For issues contact Ben Weeder (weeder@ohsu.edu)
 
 This script contains an amino acid feature matrix as well as functions for
-extracting, processing, encoding and formatting amino acid sequences into
+extracting, processing, encoding, and formatting amino acid sequences into
 feature arrays for downstream analysis.
 """
 
