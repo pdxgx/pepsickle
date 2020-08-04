@@ -131,7 +131,7 @@ def get_peptide_window(sequence, starting_position, ending_position, upstream=6,
     # set cleavage site index based on function flag
     if c_terminal:
         cleave_index = int(ending_position) - 1
-    if not c_terminal:
+    else:
         cleave_index = int(starting_position) - 1
 
     if cleave_index < 0 or (cleave_index - 1) >= len(sequence):
@@ -141,7 +141,7 @@ def get_peptide_window(sequence, starting_position, ending_position, upstream=6,
     if (cleave_index - upstream) >= 0:
         upstream_seq = sequence[(cleave_index - upstream):cleave_index]
     # if peptide boundary is within upstream window
-    if cleave_index - upstream < 0:
+    else:
         # retrieve relevant sequence
         tmp_seq = sequence[0:cleave_index]
         # add empty AA's prior to seq start
@@ -150,7 +150,7 @@ def get_peptide_window(sequence, starting_position, ending_position, upstream=6,
     if (cleave_index + 1 + downstream) < len(sequence):
         downstream_seq = sequence[(cleave_index + 1):(cleave_index +
                                                       downstream + 1)]
-    if (cleave_index + 1 + downstream) >= len(sequence):
+    else:
         # handles issue where cleavage site was end of protein and
         # cleave_index + 1 was beyond sequence bounds
         if cleave_index == (len(sequence) - 1):
