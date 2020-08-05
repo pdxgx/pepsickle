@@ -12,21 +12,21 @@ from optparse import OptionParser
 
 def parse_args():
     parser = OptionParser()
-    parser.add_option("-s", "--sequence", dest="input_seq",
+    parser.add_option("-s", "--sequence",
                       help="option to use pepsickle in single sequence mode. "
                            "takes a string sequence as input and returns "
                            "predicted cleavage sites in standard format")
-    parser.add_option("-f", "--fasta", dest="fasta",
+    parser.add_option("-f", "--fasta",
                       help="fasta file with protein ID's and corresponding "
                            "sequences")
-    parser.add_option("-o", "--out_file", dest="out_file",
+    parser.add_option("-o", "--out",
                       help="name and destination for prediction outputs. If "
                            "none is provided, the output will be printed "
                            "directly")
     parser.add_option("-v", "--verbose", action="store_true", default=False,
                       help="prints progress during cleavage predictions for "
                            "fasta files with multiple protein sequences")
-    parser.add_option("-m", "--model", default="E", dest="model_type",
+    parser.add_option("-m", "--model-type", default="E",
                       help="allows the use of models trained on alternative "
                            "data. Defaults to epitope, with options for "
                            "C (constitutive proteasome) and I"
@@ -34,7 +34,7 @@ def parse_args():
     parser.add_option("-t", "--threshold", dest="threshold", default=0.5,
                       help="probability threshold to be used for cleavage "
                            "predictions")
-    parser.add_option("--human_only", action="store_true", default=False,
+    parser.add_option("--human-only", action="store_true",
                       help="uses models trained on human data only instead " 
                            "of all mammals")
     (options, args) = parser.parse_args()
@@ -42,9 +42,9 @@ def parse_args():
 
 
 def validate_input(options):
-    assert (options.fasta or options.input_seq), \
+    assert (options.fasta or options.sequence), \
         "input sequence or file required for model predictions"
-    assert not (options.fasta and options.input_seq), \
+    assert not (options.fasta and options.sequence), \
         "input must be either an individual sequence or a fasta file, not both"
     if options.model_type:
         assert (options.model_type in ['E', 'C', 'I']), \
@@ -78,24 +78,24 @@ def main():
                                    mod_type="digestion",
                                    proteasome_type=options.model_type,
                                    threshold=options.threshold)
-    elif options.input_seq:
+    elif options.sequence:
         if isinstance(cleavage_model, epitopeFullNet):
             out_df = predict_protein_cleavage_locations(protein_id="None",
-                                                        protein_seq=options.input_seq,
+                                                        protein_seq=options.sequence,
                                                         model=cleavage_model,
                                                         mod_type="epitope",
                                                         proteasome_type=options.model_type,
                                                         threshold=options.threshold)
         elif isinstance(cleavage_model, digestionFullNet):
             out_df = predict_protein_cleavage_locations(protein_id="None",
-                                                        protein_seq=options.input_seq,
+                                                        protein_seq=options.sequence,
                                                         model=cleavage_model,
                                                         mod_type="digestion",
                                                         proteasome_type=options.model_type,
                                                         threshold=options.threshold)
 
-    if options.out_file:
-        out_df.to_csv(options.out_file, index=False)
+    if options.out:
+        out_df.to_csv(options.out, index=False)
     else:
         print(out_df)
 
