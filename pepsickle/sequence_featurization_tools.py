@@ -66,26 +66,14 @@ _features = {
 }
 
 
-# define function that returns np array of feature vectors
-def featurize_sequence(seq):
-    """
-    takes an input aa sequence of any length and returns a 2D numpy array
-    of feature values with rows as positions and columns as feature values
-    :param seq: a string of amino acid symbols of any length
-    :return feature_matrix:
-    """
-    feature_matrix = np.array([_features[aa.upper()] for aa in seq],
-                              dtype=float)
-    return feature_matrix
-
-
 def generate_feature_array(seq_list):
     """
     generates a 3D array of of 2D feature matrices for a list of sequences
     :param seq_list: list of sequences to featurize (of the same length)
     :return feature_array: 3D numpy array of 2D feature matrices for each seq
     """
-    feature_array = np.array([featurize_sequence(s) for s in seq_list])
+    feature_array = np.array([np.array([_features[aa.upper()] for aa in seq],
+                                       dtype=float) for seq in seq_list])
     return feature_array
 
 
