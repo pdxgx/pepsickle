@@ -77,38 +77,38 @@ def generate_feature_array(seq_list):
     return feature_array
 
 
-def create_sequence_regex(epitope_sequence):
+def create_sequence_regex(peptide_sequence):
     """
     creates a regular expression from a possibly ambiguous AA sequence
-    :param epitope_sequence: epitope sequence of any length (string)
-    :return: epitope sequence in re form (string)
+    :param peptide_sequence: peptide sequence of any length (string)
+    :return: peptide sequence in re form (string)
     """
     # ensure that sequence is a string
-    epitope_sequence = str(epitope_sequence)
+    peptide_sequence = str(peptide_sequence)
     # if no ambiguous characters are present, return the original seq.
-    if ("B" not in epitope_sequence and "J" not in epitope_sequence and "Z"
-            not in epitope_sequence and "X" not in epitope_sequence):
-        return epitope_sequence
+    if ("B" not in peptide_sequence and "J" not in peptide_sequence and "Z"
+            not in peptide_sequence and "X" not in peptide_sequence):
+        return peptide_sequence
     # if any ambiguous characters are present, replace them with OR statements
     else:
-        epitope_sequence = epitope_sequence.replace("B", "[B|D|N]")
-        epitope_sequence = epitope_sequence.replace("J", "[J|I|L]")
-        epitope_sequence = epitope_sequence.replace("Z", "[Z|E|Q]")
-        epitope_sequence = epitope_sequence.replace("X", "[A-Z]")
-        return epitope_sequence
+        peptide_sequence = peptide_sequence.replace("B", "[B|D|N]")
+        peptide_sequence = peptide_sequence.replace("J", "[J|I|L]")
+        peptide_sequence = peptide_sequence.replace("Z", "[Z|E|Q]")
+        peptide_sequence = peptide_sequence.replace("X", "[A-Z]")
+        return peptide_sequence
 
 
 def get_peptide_window(sequence, starting_position, ending_position, upstream=6,
                        downstream=6, c_terminal=True):
     """
-    returns the window of AA's around the C-term of an epitope, given defined
+    returns the window of AA's around the C-term of an peptide, given defined
     upstream and downstream window sizes and a row from a pandas df with
-    ending position and full origin sequence of the epitope.
+    ending position and full origin sequence of the peptide.
     :param pd_entry: pandas entry with (at min.) ending_position and sequence
     :param sequence: protein sequence from which to extract peptide window
-    :param starting_position: N terminal starting position for epitope
+    :param starting_position: N terminal starting position for peptide
                               (1 based, inclusive)
-    :param ending_position: C terminal ending position for epitope (1 based,
+    :param ending_position: C terminal ending position for peptide (1 based,
                              exclusive)
     :param upstream: number of upstream AA's to return
     :param downstream: number of downstream AA's to return
