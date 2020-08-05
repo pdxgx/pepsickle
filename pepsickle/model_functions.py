@@ -23,6 +23,12 @@ _model_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class epitopeFullNet(nn.Module):
+    """
+    Epitope trained proteasomal prediction model using encoded amino acid
+    sequences and physical properties. This network uses a 1D convolutional
+    mask over the physical property values, followed by 3 fully connected
+    internal layers with dropout and batch normalization at each step.
+    """
     def __init__(self):
         super().__init__()
         self.drop = nn.Dropout(p=0.2)
@@ -46,6 +52,7 @@ class epitopeFullNet(nn.Module):
         x_conv = x_conv.reshape(x_conv.shape[0], -1)
         x = torch.cat((x_seq, x_conv), 1)
 
+        # pass through  network architecture
         x = self.drop(F.relu(self.bn1(self.input(x))))
         x = self.drop(F.relu(self.bn2(self.fc1(x))))
         x = self.drop(F.relu(self.bn3(self.fc2(x))))
@@ -55,6 +62,12 @@ class epitopeFullNet(nn.Module):
 
 
 class digestionFullNet(nn.Module):
+    """
+    in-vitro digestion data trained proteasomal prediction model using encoded
+    amino acid sequences and physical properties. This network uses a 1D
+    convolutional mask over the physical property values, followed by 3 fully
+    connected internal layers with dropout and batch normalization at each step.
+    """
     def __init__(self):
         super().__init__()
         self.drop = nn.Dropout(p=0.2)
@@ -78,9 +91,11 @@ class digestionFullNet(nn.Module):
         x_conv = x_conv.reshape(x_conv.shape[0], -1)
         x = torch.cat((x_seq, x_conv), 1)
 
+        # add on proteasome type one-hot encoding
         x = torch.cat((x, c_prot.reshape(c_prot.shape[0], -1)), 1)
         x = torch.cat((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
 
+        # pass through the network architecture
         x = self.drop(F.relu(self.bn1(self.input(x))))
         x = self.drop(F.relu(self.bn2(self.fc1(x))))
         x = self.drop(F.relu(self.bn3(self.fc2(x))))
@@ -174,9 +189,11 @@ def predict_digestion_mod(model, features, proteasome_type="C"):
     if proteasome_type == "C":
         c_prot = torch.tensor([1] * features.shape[0]).type(torch.FloatTensor)
         i_prot = torch.tensor([0] * features.shape[0]).type(torch.FloatTensor)
-    if proteasome_type == "I":
+    elif proteasome_type == "I":
         c_prot = torch.tensor([0] * features.shape[0]).type(torch.FloatTensor)
         i_prot = torch.tensor([1] * features.shape[0]).type(torch.FloatTensor)
+    else:
+        return ValueError("Proteasome type was not recognized")
 
     with torch.no_grad():
         log_p1 = mod1(features.type(torch.FloatTensor),
@@ -190,8 +207,7 @@ def predict_digestion_mod(model, features, proteasome_type="C"):
 def create_windows_from_protein(protein_seq, **kwargs):
     """
     wrapper for get_peptide_window(). takes in a protein sequence and returns
-    a vector of k-merized windows. Fixed at 6 upstream, 6 downstream for model
-    compatibility.
+    a vector of k-merized windows.
     :param protein_seq: protein sequence
     :return: vector of protein windows
     """
@@ -209,7 +225,7 @@ def create_windows_from_protein(protein_seq, **kwargs):
     return protein_windows
 
 
-def predict_protein_cleavage_locations(protein_seq, model, protein_id="",
+def predict_protein_cleavage_locations(protein_seq, model, protein_id=None,
                                        mod_type="epitope",
                                        proteasome_type="C",
                                        threshold=.5):
@@ -225,6 +241,7 @@ def predict_protein_cleavage_locations(protein_seq, model, protein_id="",
     :param threshold: threshold used to call cleavage vs. non-cleavage
     :return: summary table for each position in the peptide
     """
+    # TODO: get desired window size from model expected size, maybe leave as comment
     protein_windows = create_windows_from_protein(protein_seq)
     window_features = sft.generate_feature_array(protein_windows)
 
@@ -235,7 +252,7 @@ def predict_protein_cleavage_locations(protein_seq, model, protein_id="",
                                       proteasome_type=proteasome_type)
 
     # By definition, last position can never be a cleavage site
-    preds[len(preds)-1] = 0
+    preds[-1] = 0
     positions = range(1, len(preds)+1)
     cleave = [p > threshold for p in preds]
 
@@ -257,19 +274,16 @@ def process_fasta(fasta_file, cleavage_model, verbose=False, **kwargs):
     """
     protein_list = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
     cleavage_preds = []
-    counter = 0
     end = len(protein_list)
 
-    for protein_id in protein_list:
-        if counter % 100 == 0 and verbose is True:
-            print("completed:", counter, "of", end)
+    for i, protein_id in enumerate(protein_list):
+        if i % 100 == 0 and verbose:
+            print("completed:", i, "of", end)
         tmp_out = predict_protein_cleavage_locations(protein_id=protein_id,
                                                      protein_seq=protein_list[
                                                          protein_id],
                                                      model=cleavage_model,
                                                      **kwargs)
         cleavage_preds.append(tmp_out)
-        counter += 1
     out_df = pd.concat(cleavage_preds)
     return out_df
-
