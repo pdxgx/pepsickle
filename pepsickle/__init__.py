@@ -67,37 +67,55 @@ def main():
     # two if statements for fasta vs. sequence input
     if options.fasta:
         if isinstance(cleavage_model, epitopeFullNet):
-            out_df = process_fasta(options.fasta,
-                                   cleavage_model,
-                                   verbose=options.verbose,
-                                   threshold=options.threshold)
+            out = process_fasta(options.fasta,
+                                cleavage_model,
+                                verbose=options.verbose,
+                                threshold=options.threshold)
         elif isinstance(cleavage_model, digestionFullNet):
-            out_df = process_fasta(options.fasta,
-                                   cleavage_model,
-                                   verbose=options.verbose,
-                                   mod_type="digestion",
-                                   proteasome_type=options.model_type,
-                                   threshold=options.threshold)
+            out = process_fasta(options.fasta,
+                                cleavage_model,
+                                verbose=options.verbose,
+                                mod_type="digestion",
+                                proteasome_type=options.model_type,
+                                threshold=options.threshold)
+
+        if options.out:
+            with open(options.out, "w") as f:
+                f.writelines(out)
+            f.close()
+        else:
+            for line in out:
+                print(line)
+
     elif options.sequence:
         if isinstance(cleavage_model, epitopeFullNet):
-            out_df = predict_protein_cleavage_locations(protein_id="None",
-                                                        protein_seq=options.sequence,
-                                                        model=cleavage_model,
-                                                        mod_type="epitope",
-                                                        proteasome_type=options.model_type,
-                                                        threshold=options.threshold)
-        elif isinstance(cleavage_model, digestionFullNet):
-            out_df = predict_protein_cleavage_locations(protein_id="None",
-                                                        protein_seq=options.sequence,
-                                                        model=cleavage_model,
-                                                        mod_type="digestion",
-                                                        proteasome_type=options.model_type,
-                                                        threshold=options.threshold)
+            out = predict_protein_cleavage_locations(protein_id="None",
+                                                     protein_seq=options.sequence,
+                                                     model=cleavage_model,
+                                                     mod_type="epitope",
+                                                     proteasome_type=options.model_type,
+                                                     threshold=options.threshold)
 
-    if options.out:
-        out_df.to_csv(options.out, index=False)
-    else:
-        print(out_df)
+        elif isinstance(cleavage_model, digestionFullNet):
+            out = predict_protein_cleavage_locations(protein_id="None",
+                                                     protein_seq=options.sequence,
+                                                     model=cleavage_model,
+                                                     mod_type="digestion",
+                                                     proteasome_type=options.model_type,
+                                                     threshold=options.threshold)
+
+        master_lines = ["positions \t cleav_prob \t cleaved \t protein_id"]
+        for line in format_protein_cleavage_locations(out):
+            master_lines.append(line)
+
+        if options.out:
+            with open(options.out, "w") as f:
+                for line in master_lines:
+                    f.write(line + "\n")
+            f.close()
+        else:
+            for line in master_lines:
+                print(line)
 
 
 if __name__ == "__main__":
