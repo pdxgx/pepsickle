@@ -81,7 +81,8 @@ def main():
 
         if options.out:
             with open(options.out, "w") as f:
-                f.writelines(out)
+                for line in out:
+                    f.write(line + "\n")
             f.close()
         else:
             for line in out:
