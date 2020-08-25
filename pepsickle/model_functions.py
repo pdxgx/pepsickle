@@ -11,7 +11,6 @@ implementation.
 
 import os
 import pepsickle.sequence_featurization_tools as sft
-import pandas as pd
 from Bio import SeqIO
 import pickle
 import torch
@@ -225,6 +224,7 @@ def create_windows_from_protein(protein_seq, **kwargs):
     return protein_windows
 
 
+# TODO: move positional print outside of function
 def predict_protein_cleavage_locations(protein_seq, model, protein_id=None,
                                        mod_type="epitope",
                                        proteasome_type="C",
@@ -253,37 +253,44 @@ def predict_protein_cleavage_locations(protein_seq, model, protein_id=None,
 
     # By definition, last position can never be a cleavage site
     preds[-1] = 0
+    out_preds = [round(p, 4) for p in preds]
     positions = range(1, len(preds)+1)
     cleave = [p > threshold for p in preds]
-
-    out_df = pd.DataFrame(zip(positions, preds, cleave),
-                          columns=["pos", "p_cleavage", "cleaved"])
-    out_df['prot_id'] = protein_id
-    return out_df
+    prot_list = [protein_id] * len(positions)
+    out_zip = zip(positions, out_preds, cleave, prot_list)
+    return out_zip
 
 
-def process_fasta(fasta_file, cleavage_model, verbose=False, **kwargs):
+def format_protein_cleavage_locations(protein_preds):
+    out_lines = []
+    for item in protein_preds:
+        line = "{}\t{}\t{}\t{}".format(item[0], item[1], item[2], item[3])
+        out_lines.append(line)
+    return out_lines
+
+
+def process_fasta(fasta_file, cleavage_model, verbose=False,  **kwargs):
     """
     handles fasta file path and returns pandas df with cleavage prediction
     results
     :param fasta_file: path to the fasta file that needs processed
     :param cleavage_model: active model or model initialization to be used
     :param verbose: flag to print out progress when list of proteins is given
+    :param out_file_location: output location where results are written.
     :param kwargs: parameters to be passed to the cleavage prediction model
     :return: pandas dataframe with cleavage predictions
     """
     protein_list = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
-    cleavage_preds = []
     end = len(protein_list)
-
+    master_lines = ["positions \t cleav_prob \t cleaved \t protein_id"]
     for i, protein_id in enumerate(protein_list):
         if i % 100 == 0 and verbose:
             print("completed:", i, "of", end)
-        tmp_out = predict_protein_cleavage_locations(protein_id=protein_id,
-                                                     protein_seq=protein_list[
-                                                         protein_id],
-                                                     model=cleavage_model,
-                                                     **kwargs)
-        cleavage_preds.append(tmp_out)
-    out_df = pd.concat(cleavage_preds)
-    return out_df
+        tmp_out = predict_protein_cleavage_locations(
+            protein_id=protein_id, protein_seq=protein_list[protein_id],
+            model=cleavage_model, **kwargs)
+
+        for line in format_protein_cleavage_locations(tmp_out):
+            master_lines.append(line)
+
+    return master_lines
