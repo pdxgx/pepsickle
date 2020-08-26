@@ -224,7 +224,6 @@ def create_windows_from_protein(protein_seq, **kwargs):
     return protein_windows
 
 
-# TODO: move positional print outside of function
 def predict_protein_cleavage_locations(protein_seq, model, protein_id=None,
                                        mod_type="epitope",
                                        proteasome_type="C",
