@@ -258,7 +258,8 @@ def predict_protein_cleavage_locations(protein_seq, model, protein_id=None,
     cleave = [p > threshold for p in preds]
     prot_list = [protein_id] * len(positions)
     out_zip = zip(positions, out_preds, cleave, prot_list)
-    return out_zip
+    out = [i for i in out_zip]
+    return out
 
 
 def format_protein_cleavage_locations(protein_preds):
