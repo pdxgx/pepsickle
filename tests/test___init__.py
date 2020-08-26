@@ -36,7 +36,7 @@ class TestExactModelOutput(unittest.TestCase):
         feature_set = sft.generate_feature_array(self.seq)
 
         pred = predict_epitope_mod(cleavage_model, feature_set)
-        self.assertAlmostEqual(round(pred[0], 5), 0.18569)
+        self.assertAlmostEqual(round(pred[0], 5), round(0.18569, 5))
 
     def test_constitutive_digestion_model(self):
         self.setUP()
@@ -117,7 +117,9 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     model=cleavage_model,
                                                     mod_type="epitope",
                                                     proteasome_type="E")
-        self.assertEqual(out_df.shape, (313, 4))
+        for i, entry in enumerate(out_df):
+            self.assertEqual(len(entry), 4)
+        self.assertEqual(i, 312)
 
     def test_constitutive_digestion_model(self):
         """
@@ -133,7 +135,10 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     model=cleavage_model,
                                                     mod_type="digestion",
                                                     proteasome_type="C")
-        self.assertEqual(out_df.shape, (313, 4))
+
+        for i, entry in enumerate(out_df):
+            self.assertEqual(len(entry), 4)
+        self.assertEqual(i, 312)
 
     def test_immuno_digestion_model(self):
         """
@@ -149,7 +154,9 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     model=cleavage_model,
                                                     mod_type="digestion",
                                                     proteasome_type="I")
-        self.assertEqual(out_df.shape, (313, 4))
+        for i, entry in enumerate(out_df):
+            self.assertEqual(len(entry), 4)
+        self.assertEqual(i, 312)
 
     def test_epitope_model_human(self):
         """
@@ -164,7 +171,9 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     protein_seq=self.seq,
                                                     model=cleavage_model,
                                                     mod_type="epitope")
-        self.assertEqual(out_df.shape, (313, 4))
+        for i, entry in enumerate(out_df):
+            self.assertEqual(len(entry), 4)
+        self.assertEqual(i, 312)
 
     def test_constitutive_digestion_model_human(self):
         """
@@ -180,7 +189,9 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     model=cleavage_model,
                                                     mod_type="digestion",
                                                     proteasome_type="C")
-        self.assertEqual(out_df.shape, (313, 4))
+        for i, entry in enumerate(out_df):
+            self.assertEqual(len(entry), 4)
+        self.assertEqual(i, 312)
 
     def test_immuno_digestion_model_human(self):
         """
@@ -196,7 +207,9 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     model=cleavage_model,
                                                     mod_type="digestion",
                                                     proteasome_type="I")
-        self.assertEqual(out_df.shape, (313, 4))
+        for i, entry in enumerate(out_df):
+            self.assertEqual(len(entry), 4)
+        self.assertEqual(i, 312)
 
 
 class TestFastaProcessing(unittest.TestCase):
@@ -225,7 +238,7 @@ class TestFastaProcessing(unittest.TestCase):
         self.assertIsInstance(cleavage_model, epitopeFullNet)
         out_df = process_fasta(self.fasta,
                                cleavage_model)
-        self.assertEqual(out_df.shape, (313, 4))
+        self.assertEqual(len(out_df), 314)
 
     def test_constitutive_digestion_model(self):
         """
@@ -240,7 +253,7 @@ class TestFastaProcessing(unittest.TestCase):
                                cleavage_model=cleavage_model,
                                mod_type="digestion",
                                proteasome_type="C")
-        self.assertEqual(out_df.shape, (313, 4))
+        self.assertEqual(len(out_df), 314)
 
     def test_immuno_digestion_model(self):
         """
@@ -255,7 +268,7 @@ class TestFastaProcessing(unittest.TestCase):
                                cleavage_model=cleavage_model,
                                mod_type="digestion",
                                proteasome_type="I")
-        self.assertEqual(out_df.shape, (313, 4))
+        self.assertEqual(len(out_df), 314)
 
 
 class testFileOutput(unittest.TestCase):
