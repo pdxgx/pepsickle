@@ -12,66 +12,25 @@ implementation.
 import os
 import pepsickle.sequence_featurization_tools as sft
 from Bio import SeqIO
+import numpy as np
 import pickle
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import joblib
+from sklearn.ensemble import RandomForestClassifier
 
 # sets path to stored model weights
 _model_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-class epitopeFullNet(nn.Module):
-    """
-    Epitope trained proteasomal prediction model using encoded amino acid
-    sequences and physical properties. This network uses a 1D convolutional
-    mask over the physical property values, followed by 3 fully connected
-    internal layers with dropout and batch normalization at each step.
-    """
+class DigestionSeqNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.drop = nn.Dropout(p=0.2)
-        self.conv = nn.Conv1d(4, 4, 3, groups=4)
-        self.input = nn.Linear(304, 136)
-        self.bn1 = nn.BatchNorm1d(136)
-        self.fc1 = nn.Linear(136, 68)
-        self.bn2 = nn.BatchNorm1d(68)
-        self.fc2 = nn.Linear(68, 34)
-        self.bn3 = nn.BatchNorm1d(34)
-        self.out = nn.Linear(34, 2)
-
-    def forward(self, x):
-        # perform convolution prior to flattening
-        x_seq = x[:, :, :20]
-        x_conv = x[:, :, 22:].transpose(1, 2)
-        x_conv = self.conv(x_conv)
-
-        # make sure input tensor is flattened
-        x_seq = x_seq.reshape(x_seq.shape[0], -1)
-        x_conv = x_conv.reshape(x_conv.shape[0], -1)
-        x = torch.cat((x_seq, x_conv), 1)
-
-        # pass through  network architecture
-        x = self.drop(F.relu(self.bn1(self.input(x))))
-        x = self.drop(F.relu(self.bn2(self.fc1(x))))
-        x = self.drop(F.relu(self.bn3(self.fc2(x))))
-        x = F.log_softmax(self.out(x), dim=1)
-
-        return x
-
-
-class digestionFullNet(nn.Module):
-    """
-    in-vitro digestion data trained proteasomal prediction model using encoded
-    amino acid sequences and physical properties. This network uses a 1D
-    convolutional mask over the physical property values, followed by 3 fully
-    connected internal layers with dropout and batch normalization at each step.
-    """
-    def __init__(self):
-        super().__init__()
-        self.drop = nn.Dropout(p=0.2)
-        self.conv = nn.Conv1d(4, 4, 3, groups=4)
-        self.input = nn.Linear(306, 136)
+        # self.in_nodes = 262 # for normal 13aa window
+        self.in_nodes = 7 * 20 + 2
+        self.drop = nn.Dropout(p=0.25)
+        self.input = nn.Linear(self.in_nodes, 136)
         self.bn1 = nn.BatchNorm1d(136)
         self.fc1 = nn.Linear(136, 68)
         self.bn2 = nn.BatchNorm1d(68)
@@ -81,20 +40,11 @@ class digestionFullNet(nn.Module):
 
     def forward(self, x, c_prot, i_prot):
         # make sure input tensor is flattened
-        x_seq = x[:, :, :20]
-        x_conv = x[:, :, 22:].transpose(1, 2)
-        x_conv = self.conv(x_conv)
 
-        # make sure input tensor is flattened
-        x_seq = x_seq.reshape(x_seq.shape[0], -1)
-        x_conv = x_conv.reshape(x_conv.shape[0], -1)
-        x = torch.cat((x_seq, x_conv), 1)
-
-        # add on proteasome type one-hot encoding
+        x = x.reshape(x.shape[0], -1)
         x = torch.cat((x, c_prot.reshape(c_prot.shape[0], -1)), 1)
         x = torch.cat((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
 
-        # pass through the network architecture
         x = self.drop(F.relu(self.bn1(self.input(x))))
         x = self.drop(F.relu(self.bn2(self.fc1(x))))
         x = self.drop(F.relu(self.bn3(self.fc2(x))))
@@ -103,7 +53,90 @@ class digestionFullNet(nn.Module):
         return x
 
 
-def initialize_epitope_model(human_only=True):
+class DigestionMotifNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # self.in_nodes = 46
+        self.in_nodes = (7 - 2) * 4 + 2
+        self.drop = nn.Dropout(p=.25)
+        self.conv = nn.Conv1d(4, 4, 3, groups=4)
+        # self.fc1 = nn.Linear(78, 38)
+        self.fc1 = nn.Linear(self.in_nodes, 38)
+        self.bn1 = nn.BatchNorm1d(38)
+        self.fc2 = nn.Linear(38, 20)
+        self.bn2 = nn.BatchNorm1d(20)
+        self.out = nn.Linear(20, 2)
+
+    def forward(self, x, c_prot, i_prot):
+        # perform convolution prior to flattening
+        x = x.transpose(1, 2)
+        x = self.conv(x)
+
+        # make sure input tensor is flattened
+        x = x.reshape(x.shape[0], -1)
+        x = torch.cat((x, c_prot.reshape(c_prot.shape[0], -1)), 1)
+        x = torch.cat((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
+
+        x = self.drop(F.relu(self.bn1(self.fc1(x))))
+        x = self.drop(F.relu(self.bn2(self.fc2(x))))
+        x = F.log_softmax(self.out(x), dim=1)
+
+        return x
+
+
+class EpitopeSeqNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.in_nodes = 17 * 20
+        self.drop = nn.Dropout(p=0.2)
+        self.input = nn.Linear(self.in_nodes, 136)
+        self.bn1 = nn.BatchNorm1d(136)
+        self.fc1 = nn.Linear(136, 68)
+        self.bn2 = nn.BatchNorm1d(68)
+        self.fc2 = nn.Linear(68, 34)
+        self.bn3 = nn.BatchNorm1d(34)
+        self.out = nn.Linear(34, 2)
+
+    def forward(self, x):
+        # make sure input tensor is flattened
+        x = x.reshape(x.shape[0], -1)
+
+        x = self.drop(F.relu(self.bn1(self.input(x))))
+        x = self.drop(F.relu(self.bn2(self.fc1(x))))
+        x = self.drop(F.relu(self.bn3(self.fc2(x))))
+        x = F.log_softmax(self.out(x), dim=1)
+
+        return x
+
+
+class EpitopeMotifNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.in_nodes = (17 - 2) * 4
+        self.drop = nn.Dropout(p=0.2)
+        self.conv = nn.Conv1d(4, 4, 3, groups=4)
+        self.fc1 = nn.Linear(self.in_nodes, 38)
+        self.bn1 = nn.BatchNorm1d(38)
+        self.fc2 = nn.Linear(38, 20)
+        self.bn2 = nn.BatchNorm1d(20)
+        self.out = nn.Linear(20, 2)
+
+    def forward(self, x):
+        # perform convolution prior to flattening
+        x = x.transpose(1, 2)
+        x = self.conv(x)
+
+        # make sure input tensor is flattened
+        x = x.reshape(x.shape[0], -1)
+
+        x = self.drop(F.relu(self.bn1(self.fc1(x))))
+        x = self.drop(F.relu(self.bn2(self.fc2(x))))
+        x = F.log_softmax(self.out(x), dim=1)
+
+        return x
+
+
+def initialize_epitope_model(human_only=False):
     """
     initializes an epitope based cleavage prediction model
     :param human_only: if true, model weights trained using human data only and
@@ -111,21 +144,25 @@ def initialize_epitope_model(human_only=True):
     :return: functional pytorch model for predicting proteasomal cleavage
     """
     _model_path = os.path.join(_model_dir,
-                              "pepsickle",
-                              "trained_model_dict.pickle")
+                               "pepsickle",
+                               "trained_model_dict.pickle")
     _model_dict = pickle.load(open(_model_path, 'rb'))
-
     # set proper model file
     if human_only:
-        mod_state = _model_dict['human_only_epitope_full_mod']
+        seq_mod_state = _model_dict['human_epitope_sequence_mod']
+        motif_mod_state = _model_dict['human_epitope_motif_mod']
     else:
-        mod_state = _model_dict['all_mammal_epitope_full_mod']
+        seq_mod_state = _model_dict['all_mammal_epitope_sequence_mod']
+        motif_mod_state = _model_dict['all_mammal_epitope_motif_mod']
 
-    # initialize model
-    mod = epitopeFullNet()
-    mod.load_state_dict(mod_state)
-    mod.eval()
-    return mod
+    # initialize models
+    seq_mod = EpitopeSeqNet()
+    motif_mod = EpitopeMotifNet()
+    seq_mod.load_state_dict(seq_mod_state)
+    motif_mod.load_state_dict(motif_mod_state)
+    seq_mod.eval()
+    motif_mod.eval()
+    return [seq_mod, motif_mod]
 
 
 def initialize_digestion_model(human_only=False):
@@ -136,38 +173,57 @@ def initialize_digestion_model(human_only=False):
     :return: functional pytorch model for predicting proteasomal cleavage
     """
     _model_path = os.path.join(_model_dir,
-                              "pepsickle",
-                              "trained_model_dict.pickle")
+                               "pepsickle",
+                               "trained_model_dict.pickle")
     _model_dict = pickle.load(open(_model_path, 'rb'))
 
     # set proper model file
     if human_only:
-        mod_state = _model_dict['human_only_cleavage_map_full_mod']
+        seq_mod_state = _model_dict['human_20S_digestion_sequence_mod']
+        motif_mod_state = _model_dict['human_20S_digestion_motif_mod.']
     else:
-        mod_state = _model_dict['all_mammal_cleavage_map_full_mod']
+        seq_mod_state = _model_dict['all_mammal_20S_digestion_sequence_mod']
+        motif_mod_state = _model_dict['all_mammal_20S_digestion_motif_mod']
 
-    # initialize model
-    mod = digestionFullNet()
-    mod.load_state_dict(mod_state)
-    mod.eval()
-    return mod
+    # initialize models
+    seq_mod = DigestionSeqNet()
+    motif_mod = DigestionMotifNet()
+    seq_mod.load_state_dict(seq_mod_state)
+    motif_mod.load_state_dict(motif_mod_state)
+    seq_mod.eval()
+    motif_mod.eval()
+    return [seq_mod, motif_mod]
+
+
+def initialize_digestion_rf_model(human_only=False):
+    # TODO: add in human only/non-human only options
+    _model_path = os.path.join(_model_dir,
+                               "pepsickle",
+                               "model.joblib")
+    model = joblib.load(_model_path)
+    return model
 
 
 def predict_epitope_mod(model, features):
     """
     Model wrapper that takes an epitope based model and feature array and
     returns a vector of cleavage prediction probabilities
-    :param model: epitope based cleavage prediction model
+    :param model: epitope based cleavage prediction models (list)
     :param features: array of features from generate_feature_array()
     :return: vector of cleavage probabilities
     """
     features = torch.from_numpy(features)
     with torch.no_grad():
-        p_cleavage = torch.exp(
-            model(features.type(torch.FloatTensor))[:, 1]
+        p_cleavage1 = torch.exp(
+            model[0](features.type(torch.FloatTensor)[:, :, :20])[:, 1]
         )
+        p_cleavage2 = torch.exp(
+            model
+            [1](features.type(torch.FloatTensor)[:, :, 22:])[:, 1]
+        )
+        p_cleavage_avg = (p_cleavage1 + p_cleavage2) / 2
 
-    output_p = [float(x) for x in p_cleavage]
+    output_p = [float(x) for x in p_cleavage_avg]
     return output_p
 
 
@@ -175,7 +231,7 @@ def predict_digestion_mod(model, features, proteasome_type="C"):
     """
     Model wrapper that takes an in-vitro digestion based model and feature
     array and returns a vector of cleavage prediction probabilities
-    :param model: digestion based cleavage prediction model
+    :param model: digestion based cleavage prediction model (list)
     :param features: array of features from generate_feature_array()
     :param proteasome_type: takes "C" to base predictions on the constitutive
     pepsickle or "I" to base predictions on the immunoproteasome
@@ -183,7 +239,6 @@ def predict_digestion_mod(model, features, proteasome_type="C"):
     """
     # assert features.shape[2] == 24
     features = torch.from_numpy(features)
-    mod1 = model
 
     if proteasome_type == "C":
         c_prot = torch.tensor([1] * features.shape[0]).type(torch.FloatTensor)
@@ -195,12 +250,34 @@ def predict_digestion_mod(model, features, proteasome_type="C"):
         return ValueError("Proteasome type was not recognized")
 
     with torch.no_grad():
-        log_p1 = mod1(features.type(torch.FloatTensor),
-                      c_prot, i_prot)[:, 1]
-        p_cleavage = torch.exp(log_p1)
+        p1 = torch.exp(
+            model[0](features.type(torch.FloatTensor)[:, :, :20], c_prot,
+                      i_prot)[:, 1]
+        )
+        p2 = torch.exp(
+            model[1](features.type(torch.FloatTensor)[:, :, 22:], c_prot,
+                      i_prot)[:, 1]
+        )
+        p_cleavage = (p1 + p2) / 2
 
     output_p = [float(x) for x in p_cleavage]
     return output_p
+
+
+def predict_digestion_rf_mod(model, features, proteasome_type="C"):
+    # set c/i identity for each entry
+    if proteasome_type == "C":
+        c_prot = np.array([1] * features.shape[0])
+        i_prot = np.array([0] * features.shape[0])
+    elif proteasome_type == "I":
+        c_prot = np.array([0] * features.shape[0])
+        i_prot = np.array([1] * features.shape[0])
+    x = features[:, :, 22:].reshape(features.shape[0], -1)
+    x = np.concatenate((x, c_prot.reshape(c_prot.shape[0], -1)), 1)
+    x = np.concatenate((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
+    p = model.predict_proba(x)[:, 1]
+    probs = [float(x) for x in p]
+    return probs
 
 
 def create_windows_from_protein(protein_seq, **kwargs):
@@ -212,9 +289,9 @@ def create_windows_from_protein(protein_seq, **kwargs):
     """
     # NOTE: last AA not made into window since c-terminal would be cleavage pos
     protein_windows = []
-    for pos in range(len(protein_seq)-1):
+    for pos in range(len(protein_seq)):
         start_pos = pos + 1
-        end_pos = pos + 2
+        end_pos = pos + 1
         tmp_window = sft.get_peptide_window(protein_seq,
                                             starting_position=start_pos,
                                             ending_position=end_pos,
@@ -240,15 +317,35 @@ def predict_protein_cleavage_locations(protein_seq, model, protein_id=None,
     :param threshold: threshold used to call cleavage vs. non-cleavage
     :return: summary table for each position in the peptide
     """
-    # TODO: get desired window size from model expected size, maybe leave as comment
-    protein_windows = create_windows_from_protein(protein_seq)
-    window_features = sft.generate_feature_array(protein_windows)
 
     if mod_type == "epitope":
+        upstream = 8
+        downstream = 8
+        protein_windows = create_windows_from_protein(protein_seq,
+                                                      upstream=upstream,
+                                                      downstream=downstream)
+        window_features = sft.generate_feature_array(protein_windows)
         preds = predict_epitope_mod(model, window_features)
-    if mod_type == "digestion":
+
+    elif mod_type == "in-vitro-2":
+        upstream = 3
+        downstream = 3
+        protein_windows = create_windows_from_protein(protein_seq,
+                                                      upstream=upstream,
+                                                      downstream=downstream)
+        window_features = sft.generate_feature_array(protein_windows)
         preds = predict_digestion_mod(model, window_features,
                                       proteasome_type=proteasome_type)
+    elif mod_type == "in-vitro":
+        upstream = 3
+        downstream = 3
+        protein_windows = create_windows_from_protein(protein_seq,
+                                                      upstream=upstream,
+                                                      downstream=downstream)
+        window_features = sft.generate_feature_array(protein_windows,
+                                                     normalize=True)
+        preds = predict_digestion_rf_mod(model, window_features,
+                                         proteasome_type=proteasome_type)
 
     # By definition, last position can never be a cleavage site
     preds[-1] = 0

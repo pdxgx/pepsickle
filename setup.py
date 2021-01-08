@@ -65,7 +65,7 @@ setup(
     license="MIT",
     packages=["pepsickle"],
     include_package_data=True,
-    package_data={"pepsickle": ["*.py", "*.pickle"]},
+    package_data={"pepsickle": ["*.py", "*.pickle", "*.joblib"]},
     zip_safe=False,
     install_requires=["biopython", "numpy", "torch"],
     entry_points={"console_scripts": ["pepsickle=pepsickle:main"]},
