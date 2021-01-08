@@ -66,13 +66,26 @@ _features = {
 }
 
 
-def generate_feature_array(seq_list):
+def generate_feature_array(seq_list, normalize=False):
     """
     generates a 3D array of of 2D feature matrices for a list of sequences
     :param seq_list: list of sequences to featurize (of the same length)
     :return feature_array: 3D numpy array of 2D feature matrices for each seq
     """
-    feature_array = np.array([np.array([_features[aa.upper()] for aa in seq],
+    if normalize:
+        tmp_features = [_features[x] for x in _features]
+        X = np.array(tmp_features)
+        X_std = (X - X.min(axis=0)) / (X.max(axis=0) - X.min(axis=0))
+        X_scaled = X_std * (1 - 0) + 0
+        norm_features = {}
+        aa_keys = list(_features.keys())
+        for i in range(len(aa_keys)):
+            norm_features[aa_keys[i]] = _features[aa_keys[i]][:22] + \
+                                        list(X_scaled[i, 22:])
+        feature_mat = norm_features
+    else:
+        feature_mat = _features
+    feature_array = np.array([np.array([feature_mat[aa.upper()] for aa in seq],
                                        dtype=float) for seq in seq_list])
     return feature_array
 

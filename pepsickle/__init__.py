@@ -26,11 +26,18 @@ def parse_args():
     parser.add_option("-v", "--verbose", action="store_true", default=False,
                       help="prints progress during cleavage predictions for "
                            "fasta files with multiple protein sequences")
-    parser.add_option("-m", "--model-type", default="E",
+    parser.add_option("-m", "--model-type", default="epitope",
                       help="allows the use of models trained on alternative "
-                           "data. Defaults to epitope, with options for "
-                           "C (constitutive proteasome) and I"
-                           "(immunoproteasome)")
+                           "data. Defaults to epitope based model, with options "
+                           "for in-vitro based random forest model (in-vitro) "
+                           "or an experimental neural network based in-vitro "
+                           "model (in-vitro-2)")
+    parser.add_option("-p", "--proteasome-type", default="C",
+                      help="allows predictions to be made based on consitutive "
+                           "proteasomal or immunoproteasomal cleavage profiles. "
+                           "Note that if predictions are made using the "
+                           "epitope-based model (default), predictions will be "
+                           "proteasome type agnostic.")
     parser.add_option("-t", "--threshold", dest="threshold", default=0.5,
                       help="probability threshold to be used for cleavage "
                            "predictions")
@@ -47,8 +54,12 @@ def validate_input(options):
     assert not (options.fasta and options.sequence), \
         "input must be either an individual sequence or a fasta file, not both"
     if options.model_type:
-        assert (options.model_type in ['E', 'C', 'I']), \
-            "model type must be one of the following: 'E', 'C', 'I'"
+        assert (options.model_type in ["epitope", "in-vitro", "in-vitro-2"]), \
+            "model type must be one of the following: 'epitope', 'in-vitro', " \
+            "'in-vitro-2'"
+    if options.proteasome_type:
+        assert (options.proteasome_type in ['C', 'I']), \
+            "Proteasome type must C (constitutive) or I (immuno)"
 
 
 def main():
@@ -57,26 +68,37 @@ def main():
     validate_input(options)
 
     # initialize requested model
-    if options.model_type == "E":
+    if options.model_type == "epitope":
         cleavage_model = initialize_epitope_model(human_only=
                                                   options.human_only)
-    elif options.model_type in ['C', 'I']:
+    elif options.model_type == 'in-vitro-2':
         cleavage_model = initialize_digestion_model(human_only=
                                                     options.human_only)
+    else:
+        cleavage_model = initialize_digestion_rf_model(human_only=
+                                                       options.human_only)
+        pass
 
     # two if statements for fasta vs. sequence input
     if options.fasta:
-        if isinstance(cleavage_model, epitopeFullNet):
+        if options.model_type == 'epitope':
             out = process_fasta(options.fasta,
                                 cleavage_model,
                                 verbose=options.verbose,
                                 threshold=options.threshold)
-        elif isinstance(cleavage_model, digestionFullNet):
+        elif options.model_type == 'in-vitro-2':
             out = process_fasta(options.fasta,
                                 cleavage_model,
                                 verbose=options.verbose,
-                                mod_type="digestion",
-                                proteasome_type=options.model_type,
+                                mod_type='in-vitro-2',
+                                proteasome_type=options.proteasome_type,
+                                threshold=options.threshold)
+        elif options.model_type == 'in-vitro':
+            out = process_fasta(options.fasta,
+                                cleavage_model,
+                                verbose=options.verbose,
+                                mod_type='in-vitro',
+                                proteasome_type=options.proteasome_type,
                                 threshold=options.threshold)
 
         if options.out:
@@ -89,23 +111,31 @@ def main():
                 print(line)
 
     elif options.sequence:
-        if isinstance(cleavage_model, epitopeFullNet):
+        if options.model_type == 'epitope':
             out = predict_protein_cleavage_locations(protein_id="None",
                                                      protein_seq=options.sequence,
                                                      model=cleavage_model,
                                                      mod_type="epitope",
-                                                     proteasome_type=options.model_type,
+                                                     proteasome_type=options.proteasome_type,
                                                      threshold=options.threshold)
 
-        elif isinstance(cleavage_model, digestionFullNet):
+        elif options.model_type == 'in-vitro-2':
             out = predict_protein_cleavage_locations(protein_id="None",
                                                      protein_seq=options.sequence,
                                                      model=cleavage_model,
-                                                     mod_type="digestion",
-                                                     proteasome_type=options.model_type,
+                                                     mod_type="in-vitro-2",
+                                                     proteasome_type=options.proteasome_type,
                                                      threshold=options.threshold)
 
-        master_lines = ["positions \t cleav_prob \t cleaved \t protein_id"]
+        elif options.model_type == 'in-vitro':
+            out = predict_protein_cleavage_locations(protein_id="None",
+                                                     protein_seq=options.sequence,
+                                                     model=cleavage_model,
+                                                     mod_type="in-vitro",
+                                                     proteasome_type=options.proteasome_type,
+                                                     threshold=options.threshold)
+
+        master_lines = ["positions\tcleav_prob\tcleaved\tprotein_id"]
         for line in format_protein_cleavage_locations(out):
             master_lines.append(line)
 
