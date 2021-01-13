@@ -264,7 +264,7 @@ def predict_digestion_mod(model, features, proteasome_type="C"):
     return output_p
 
 
-def predict_digestion_rf_mod(model, features, proteasome_type="C"):
+def predict_digestion_rf_mod(model, features, proteasome_type="C", shift_p = True):
     # set c/i identity for each entry
     if proteasome_type == "C":
         c_prot = np.array([1] * features.shape[0])
@@ -275,8 +275,17 @@ def predict_digestion_rf_mod(model, features, proteasome_type="C"):
     x = features[:, :, 22:].reshape(features.shape[0], -1)
     x = np.concatenate((x, c_prot.reshape(c_prot.shape[0], -1)), 1)
     x = np.concatenate((x, i_prot.reshape(i_prot.shape[0], -1)), 1)
+
+    # shift based on class imbalance:
+    if shift_p:
+        if proteasome_type == "C":
+            shift = 0.371  # proteasome specific class imbalance
+        else:
+            shift = .343  # proteasome specific class imbalance
+    else:
+        shift = 0
     p = model.predict_proba(x)[:, 1]
-    probs = [float(x) for x in p]
+    probs = [min((float(x) + shift), 1) for x in p]
     return probs
 
 
