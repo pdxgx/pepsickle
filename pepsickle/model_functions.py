@@ -18,7 +18,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import joblib
-from sklearn.ensemble import RandomForestClassifier
+
 
 # sets path to stored model weights
 _model_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
