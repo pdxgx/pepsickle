@@ -180,7 +180,7 @@ def initialize_digestion_model(human_only=False):
     # set proper model file
     if human_only:
         seq_mod_state = _model_dict['human_20S_digestion_sequence_mod']
-        motif_mod_state = _model_dict['human_20S_digestion_motif_mod.']
+        motif_mod_state = _model_dict['human_20S_digestion_motif_mod']
     else:
         seq_mod_state = _model_dict['all_mammal_20S_digestion_sequence_mod']
         motif_mod_state = _model_dict['all_mammal_20S_digestion_motif_mod']
@@ -195,7 +195,7 @@ def initialize_digestion_model(human_only=False):
     return [seq_mod, motif_mod]
 
 
-def initialize_digestion_rf_model(human_only=False):
+def initialize_digestion_gb_model(human_only=False):
     # TODO: add in human only/non-human only options
     _model_path = os.path.join(_model_dir,
                                "pepsickle",
@@ -264,7 +264,7 @@ def predict_digestion_mod(model, features, proteasome_type="C"):
     return output_p
 
 
-def predict_digestion_rf_mod(model, features, proteasome_type="C",
+def predict_digestion_gb_mod(model, features, proteasome_type="C",
                              shift_p=False):
     # set c/i identity for each entry
     if proteasome_type == "C":
@@ -357,7 +357,7 @@ def predict_protein_cleavage_locations(protein_seq, model, protein_id=None,
                                                       downstream=downstream)
         window_features = sft.generate_feature_array(protein_windows,
                                                      normalize=True)
-        preds = predict_digestion_rf_mod(model, window_features,
+        preds = predict_digestion_gb_mod(model, window_features,
                                          proteasome_type=proteasome_type)
 
     # By definition, last position can never be a cleavage site
@@ -392,7 +392,7 @@ def process_fasta(fasta_file, cleavage_model, verbose=False,  **kwargs):
     """
     protein_list = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
     end = len(protein_list)
-    master_lines = ["positions \t cleav_prob \t cleaved \t protein_id"]
+    master_lines = ["positions\tcleav_prob\tcleaved\tprotein_id"]
     for i, protein_id in enumerate(protein_list):
         if i % 100 == 0 and verbose:
             print("completed:", i, "of", end)

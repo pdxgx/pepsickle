@@ -75,7 +75,7 @@ def main():
         cleavage_model = initialize_digestion_model(human_only=
                                                     options.human_only)
     else:
-        cleavage_model = initialize_digestion_rf_model(human_only=
+        cleavage_model = initialize_digestion_gb_model(human_only=
                                                        options.human_only)
         pass
 
