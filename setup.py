@@ -67,7 +67,7 @@ setup(
     include_package_data=True,
     package_data={"pepsickle": ["*.py", "*.pickle", "*.joblib"]},
     zip_safe=False,
-    install_requires=["biopython", "numpy", "torch", "joblib"],
+    install_requires=["biopython", "numpy", "torch", "joblib", "sklearn"],
     entry_points={"console_scripts": ["pepsickle=pepsickle:main"]},
     cmdclass={"download": DownloadDependencies, "test": DiscoverTest},
     keywords=["proteasome", "cleavage", "peptide", "degredation"],
