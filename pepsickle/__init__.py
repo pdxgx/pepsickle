@@ -29,13 +29,13 @@ def parse_args():
     parser.add_option("-m", "--model-type", default="epitope",
                       help="allows the use of models trained on alternative "
                            "data. Defaults to epitope based model, with options "
-                           "for in-vitro based random forest model (in-vitro) "
+                           "for in-vitro based gradient boosted model (in-vitro) "
                            "or an experimental neural network based in-vitro "
                            "model (in-vitro-2)")
     parser.add_option("-p", "--proteasome-type", default="C",
-                      help="allows predictions to be made based on consitutive "
-                           "proteasomal or immunoproteasomal cleavage profiles. "
-                           "Note that if predictions are made using the "
+                      help="allows predictions to be made based on constitutive "
+                           "proteasomal (C) or immunoproteasomal (I) cleavage "
+                           "profiles. Note that if predictions are made using the "
                            "epitope-based model (default), predictions will be "
                            "proteasome type agnostic.")
     parser.add_option("-t", "--threshold", dest="threshold", default=0.5,
