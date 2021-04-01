@@ -31,7 +31,7 @@ using the `-s` option:
 
 `pepsickle -s VSGLEQLESIINFEKLTEWTSSNV`
 
-For long peptide sequences, or to run multiple sequences at once, `pepsickle`can be run using the `-f` option:
+For long peptide sequences or to run multiple sequences at once, `pepsickle`can be run using the fasta file `-f` option:
 
 `pepsickle -f /PATH/TO/FASTA.fasta`
 
