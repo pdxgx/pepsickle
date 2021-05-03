@@ -364,9 +364,10 @@ def predict_protein_cleavage_locations(protein_seq, model, protein_id=None,
     preds[-1] = 0
     out_preds = [round(p, 4) for p in preds]
     positions = range(1, len(preds)+1)
+    residues = list(protein_seq)
     cleave = [p > threshold for p in preds]
     prot_list = [protein_id] * len(positions)
-    out_zip = zip(positions, out_preds, cleave, prot_list)
+    out_zip = zip(positions, residues, out_preds, cleave, prot_list)
     out = [i for i in out_zip]
     return out
 
@@ -374,7 +375,7 @@ def predict_protein_cleavage_locations(protein_seq, model, protein_id=None,
 def format_protein_cleavage_locations(protein_preds):
     out_lines = []
     for item in protein_preds:
-        line = "{}\t{}\t{}\t{}".format(item[0], item[1], item[2], item[3])
+        line = "{}\t{}\t{}\t{}\t{}".format(item[0], item[1], item[2], item[3], item[4])
         out_lines.append(line)
     return out_lines
 
@@ -392,7 +393,7 @@ def process_fasta(fasta_file, cleavage_model, verbose=False,  **kwargs):
     """
     protein_list = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
     end = len(protein_list)
-    master_lines = ["positions\tcleav_prob\tcleaved\tprotein_id"]
+    master_lines = ["position\tresidue\tcleav_prob\tcleaved\tprotein_id"]
     for i, protein_id in enumerate(protein_list):
         if i % 100 == 0 and verbose:
             print("completed:", i, "of", end)

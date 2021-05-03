@@ -135,7 +135,7 @@ def main():
                                                      proteasome_type=options.proteasome_type,
                                                      threshold=options.threshold)
 
-        master_lines = ["positions\tcleav_prob\tcleaved\tprotein_id"]
+        master_lines = ["position\tresidue\tcleav_prob\tcleaved\tprotein_id"]
         for line in format_protein_cleavage_locations(out):
             master_lines.append(line)
 
