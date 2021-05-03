@@ -66,6 +66,13 @@ _features = {
 }
 
 
+def check_sequence_validity(sequence):
+    assert(all([s in _features.keys() for s in sequence])), \
+        "\nInvalid residue in sequence:\n{}\nPlease make sure all included " \
+        "residues are one of the following:\n{}".format(sequence,
+                                                        _features.keys())
+
+
 def generate_feature_array(seq_list, normalize=False):
     """
     generates a 3D array of of 2D feature matrices for a list of sequences

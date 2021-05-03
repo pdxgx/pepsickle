@@ -330,7 +330,7 @@ def predict_protein_cleavage_locations(protein_seq, model, protein_id=None,
     :param threshold: threshold used to call cleavage vs. non-cleavage
     :return: summary table for each position in the peptide
     """
-
+    sft.check_sequence_validity(protein_seq)
     if mod_type == "epitope":
         upstream = 8
         downstream = 8

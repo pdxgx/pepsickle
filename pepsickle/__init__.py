@@ -48,7 +48,7 @@ def parse_args():
     return options, args
 
 
-def validate_input(options):
+def validate_options(options):
     assert (options.fasta or options.sequence), \
         "input sequence or file required for model predictions"
     assert not (options.fasta and options.sequence), \
@@ -65,7 +65,7 @@ def validate_input(options):
 def main():
     # parse args and validate expected input
     options, args = parse_args()
-    validate_input(options)
+    validate_options(options)
 
     # initialize requested model
     if options.model_type == "epitope":
