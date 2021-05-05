@@ -122,7 +122,7 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     mod_type="epitope",
                                                     proteasome_type="E")
         for i, entry in enumerate(out_df):
-            self.assertEqual(len(entry), 4)
+            self.assertEqual(len(entry), 5)
         self.assertEqual(i+1, len(self.seq))
 
     def test_constitutive_digestion_model(self):
@@ -140,7 +140,7 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     proteasome_type="C")
 
         for i, entry in enumerate(out_df):
-            self.assertEqual(len(entry), 4)
+            self.assertEqual(len(entry), 5)
         self.assertEqual(i+1, len(self.seq))
 
     def test_immuno_digestion_model(self):
@@ -157,7 +157,7 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     mod_type="in-vitro",
                                                     proteasome_type="I")
         for i, entry in enumerate(out_df):
-            self.assertEqual(len(entry), 4)
+            self.assertEqual(len(entry), 5)
         self.assertEqual(i+1, len(self.seq))
 
     def test_epitope_model_human(self):
@@ -173,7 +173,7 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     model=cleavage_model,
                                                     mod_type="epitope")
         for i, entry in enumerate(out_df):
-            self.assertEqual(len(entry), 4)
+            self.assertEqual(len(entry), 5)
         self.assertEqual(i+1, len(self.seq))
 
     def test_constitutive_digestion_model_human(self):
@@ -190,7 +190,7 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     mod_type="in-vitro",
                                                     proteasome_type="C")
         for i, entry in enumerate(out_df):
-            self.assertEqual(len(entry), 4)
+            self.assertEqual(len(entry), 5)
         self.assertEqual(i+1, len(self.seq))
 
     def test_immuno_digestion_model_human(self):
@@ -207,7 +207,7 @@ class TestSequenceProcessing(unittest.TestCase):
                                                     mod_type="in-vitro",
                                                     proteasome_type="I")
         for i, entry in enumerate(out_df):
-            self.assertEqual(len(entry), 4)
+            self.assertEqual(len(entry), 5)
         self.assertEqual(i+1, len(self.seq))
 
 
