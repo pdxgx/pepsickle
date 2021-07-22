@@ -61,7 +61,7 @@ setup(
     url="https://github.com/pdxgx/pepsickle/archive/refs/tags/v0.1.0.tar.gz",
     download_url="https://github.com/pdxgx/pepsickle.git",
     author="",
-    author_email="thompsre@ohsu.edu",
+    author_email="weederb@ohsu.edu",
     license="MIT",
     packages=["pepsickle"],
     include_package_data=True,
