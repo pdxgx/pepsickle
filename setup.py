@@ -58,7 +58,7 @@ setup(
     description="proteasomal cleavage prediction tool",
     long_description=(
         ""),
-    url="https://github.com/pdxgx/pepsickle",
+    url="https://github.com/pdxgx/pepsickle/archive/refs/tags/v0.1.0.tar.gz",
     download_url="https://github.com/pdxgx/pepsickle.git",
     author="",
     author_email="thompsre@ohsu.edu",
