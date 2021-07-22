@@ -396,8 +396,10 @@ def process_fasta(fasta_file, cleavage_model, verbose=False,  **kwargs):
     try:
         protein_list = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
     except ValueError:
-        warnings.warn("""Multiple proteins are using the same identifier, 
-        it is recommended to  use unique identifiers for each protein input.""")
+        warnings.warn("Multiple proteins are using the same identifier, "
+                      "it is recommended to  use unique identifiers for "
+                      "each protein input. ID numbers will be appended to "
+                      "provide unique protein ID's")
         pass
         c = count(start=1)
         protein_list = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"),
