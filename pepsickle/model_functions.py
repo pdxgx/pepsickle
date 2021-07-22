@@ -10,8 +10,10 @@ implementation.
 """
 
 import os
+import warnings
 import pepsickle.sequence_featurization_tools as sft
 from Bio import SeqIO
+from itertools import count
 import numpy as np
 import pickle
 import torch
@@ -394,8 +396,13 @@ def process_fasta(fasta_file, cleavage_model, verbose=False,  **kwargs):
     try:
         protein_list = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
     except ValueError:
-        print("Multiple proteins are using the same identifier. Please use "
-              "unique identifiers so that results can be tracked appropriately.")
+        warnings.warn("Multiple proteins are using the same identifier. "
+                      "It is recommended to  use unique identifiers for each "
+                      "protein input.")
+        pass
+        c = count(start=1)
+        protein_list = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"),
+                                     key_function=lambda x: f"{x.id}_{next(c)}")
 
     end = len(protein_list)
     master_lines = ["position\tresidue\tcleav_prob\tcleaved\tprotein_id"]
