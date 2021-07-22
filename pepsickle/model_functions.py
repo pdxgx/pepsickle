@@ -391,7 +391,12 @@ def process_fasta(fasta_file, cleavage_model, verbose=False,  **kwargs):
     :param kwargs: parameters to be passed to the cleavage prediction model
     :return: pandas dataframe with cleavage predictions
     """
-    protein_list = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
+    try:
+        protein_list = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
+    except ValueError:
+        print("Multiple proteins are using the same identifier. Please use "
+              "unique identifiers so that results can be tracked appropriately.")
+
     end = len(protein_list)
     master_lines = ["position\tresidue\tcleav_prob\tcleaved\tprotein_id"]
     for i, protein_id in enumerate(protein_list):
