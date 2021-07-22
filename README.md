@@ -15,12 +15,10 @@ A context aware tool for proteasomal cleavage predictions
 `pepsickle` relies on `Python 3` and a few other required packages. A complete list of dependencies can be found in [requirements.txt](https://github.com/pdxgx/pepsickle/blob/master/requirements.txt)
 
 ## Installation
-Installing `pepsickle` is easy! If you already have [Python 3](https://www.python.org/downloads/), `pepsickle` can simply be installed via the command line by cloning the git repository, then using `pip`: 
+Installing `pepsickle` is easy! If you already have [Python 3](https://www.python.org/downloads/), `pepsickle` can simply be installed via the command line by using `pip`:
 
 ```
-git clone https://github.com/pdxgx/pepsickle.git
-cd ./pepsickle
-pip3 install .
+pip install pepsickle
 ```
 
 We also recommend using a version control system like [Anaconda](https://docs.anaconda.com/anaconda/install/) to make sure version requirements for pepsickle don't interfere with other packages in use.
