@@ -113,7 +113,7 @@ def main():
     elif options.sequence:
         if options.model_type == 'epitope':
             out = predict_protein_cleavage_locations(protein_id="None",
-                                                     protein_seq=options.sequence,
+                                                     protein_seq=options.sequence.upper(),
                                                      model=cleavage_model,
                                                      mod_type="epitope",
                                                      proteasome_type=options.proteasome_type,
@@ -121,7 +121,7 @@ def main():
 
         elif options.model_type == 'in-vitro-2':
             out = predict_protein_cleavage_locations(protein_id="None",
-                                                     protein_seq=options.sequence,
+                                                     protein_seq=options.sequence.upper(),
                                                      model=cleavage_model,
                                                      mod_type="in-vitro-2",
                                                      proteasome_type=options.proteasome_type,
@@ -129,7 +129,7 @@ def main():
 
         elif options.model_type == 'in-vitro':
             out = predict_protein_cleavage_locations(protein_id="None",
-                                                     protein_seq=options.sequence,
+                                                     protein_seq=options.sequence.upper(),
                                                      model=cleavage_model,
                                                      mod_type="in-vitro",
                                                      proteasome_type=options.proteasome_type,
