@@ -54,7 +54,7 @@ class DownloadDependencies(Command):
 
 setup(
     name="pepsickle",
-    version="0.1.0",
+    version="0.1.1",
     description="proteasomal cleavage prediction tool",
     long_description=(
         ""),
@@ -65,7 +65,9 @@ setup(
     license="MIT",
     packages=["pepsickle"],
     include_package_data=True,
-    package_data={"pepsickle": ["*.py", "*.pickle", "*.joblib"]},
+    package_dir={'pepsickle': 'pepsickle'},
+    package_data={'pepsickle': ['*.pickle', '*.joblib', 'in-vitro_human/*',
+                                'in-vitro_mammal/*']},
     zip_safe=False,
     install_requires=["biopython>=1.77", "numpy>=1.16.5", "torch>=1.3.1",
                       "joblib>=0.11", "scikit-learn>=0.23.2"],
