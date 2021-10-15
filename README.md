@@ -3,7 +3,7 @@ A context aware tool for proteasomal cleavage predictions
 
 
 ## About
-`pepsickle` is an open-source command line tool for  proteasomal cleavage prediction. `pepsickle` is designed with flexibility in mind allows for the use of either direct amino acid sequences or the use of `FASTA` files. Predictions can also be determined based on a variety of available models including those trained on: *in-vivo* epitope data (default), *in-vitro* constitutive proteasome data, or *in-vitro* immunoproteasome data. For information on available models and how they were trained, see the [companion paper in *XXXX*]() highlighting this tool, as well as the accompanying [paper repo](https://github.com/pdxgx/pepsickle-paper) with code for training and reproduction.
+`pepsickle` is an open-source command line tool for  proteasomal cleavage prediction. `pepsickle` is designed with flexibility in mind allows for the use of either direct amino acid sequences or the use of `FASTA` files. Predictions can also be determined based on a variety of available models including those trained on: *in-vivo* epitope data (default), *in-vitro* constitutive proteasome data, or *in-vitro* immunoproteasome data. For information on available models and how they were trained, see the [companion paper in *Bioinformatics*](https://academic.oup.com/bioinformatics/advance-article/doi/10.1093/bioinformatics/btab628/6363787) highlighting this tool, as well as the accompanying [paper repo](https://github.com/pdxgx/pepsickle-paper) with code for training and reproduction.
 
 ## License 
 `pepsickle` is licensed under the [MIT](https://choosealicense.com/licenses/mit/) license. See [LICENSE](https://github.com/pdxgx/pepsickle/blob/master/LICENSE) for more details.
