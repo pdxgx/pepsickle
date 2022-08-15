@@ -54,7 +54,7 @@ class DownloadDependencies(Command):
 
 setup(
     name="pepsickle",
-    version="0.1.2",
+    version="0.1.3",
     description="proteasomal cleavage prediction tool",
     long_description=(
         ""),
