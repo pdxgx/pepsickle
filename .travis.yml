@@ -2,6 +2,7 @@ language: python
 python:
   - "3.7"
 install:
+  - pip install setuptools
   - pip install importlib-metadata
   - pip install .
 script:
