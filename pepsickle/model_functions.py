@@ -201,7 +201,6 @@ def initialize_digestion_model(human_only=False):
 
 
 def initialize_digestion_gb_model(human_only=False):
-    # TODO: add in human only/non-human only options
     if human_only:
         _model_path = os.path.join(_model_dir,
                                    "pepsickle",
