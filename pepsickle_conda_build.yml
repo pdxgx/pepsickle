@@ -1,0 +1,40 @@
+name: pepsickle-v0-2-0
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bzip2=1.0.8=h0d85af4_4
+  - ca-certificates=2022.12.7=h033912b_0
+  - joblib=1.2.0=pyhd8ed1ab_0
+  - libblas=3.9.0=16_osx64_openblas
+  - libcblas=3.9.0=16_osx64_openblas
+  - libcxx=14.0.6=hccf4f1f_0
+  - libffi=3.4.2=h0d85af4_5
+  - libgfortran=5.0.0=11_3_0_h97931a8_27
+  - libgfortran5=11.3.0=h082f757_27
+  - liblapack=3.9.0=16_osx64_openblas
+  - libopenblas=0.3.21=openmp_h429af6e_3
+  - libsqlite=3.40.0=ha978bb4_0
+  - libzlib=1.2.13=hfd90126_4
+  - llvm-openmp=15.0.6=h61d9ccf_0
+  - ncurses=6.3=h96cf925_1
+  - numpy=1.24.0=py38hc2f29e8_0
+  - openssl=3.0.7=hfd90126_1
+  - pip=22.3.1=pyhd8ed1ab_0
+  - python=3.8.15=hf9b03c3_0_cpython
+  - python_abi=3.8=3_cp38
+  - readline=8.1.2=h3899abd_0
+  - scikit-learn=1.2.0=py38h573ff9c_0
+  - scipy=1.9.3=py38hfb8b963_2
+  - setuptools=65.6.3=pyhd8ed1ab_0
+  - threadpoolctl=3.1.0=pyh8a188c0_0
+  - tk=8.6.12=h5dbffcc_0
+  - wheel=0.38.4=pyhd8ed1ab_0
+  - xz=5.2.6=h775f41a_0
+  - pip:
+    - biopython==1.80
+    - pepsickle==0.2.0
+    - torch==1.13.1
+    - typing-extensions==4.4.0
+
