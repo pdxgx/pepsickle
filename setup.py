@@ -66,7 +66,7 @@ setup(
     packages=["pepsickle"],
     include_package_data=True,
     package_dir={'pepsickle': 'pepsickle'},
-    package_data={'pepsickle': ['*.pickle', '*.joblib', '/in-vitro-models/in-vitro_human/*',
+    package_data={'pepsickle': ['*.pickle', '*.joblib', 'in-vitro-models/in-vitro_human/*',
                                 'in-vitro-models/in-vitro_mammal/*']},
     zip_safe=False,
     install_requires=["biopython>=1.80", "numpy>=1.24.0", "torch==1.13.1",
