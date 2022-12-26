@@ -2,6 +2,8 @@ language: python
 python:
   - "3.8"
 install:
+  - pip install setuptools==60.9.0
+  - pip install importlib-metadata
   - pip install .
 script:
   - python tests/test___init__.py

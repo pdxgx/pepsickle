@@ -148,7 +148,9 @@ def initialize_epitope_model(human_only=False):
     _model_path = os.path.join(_model_dir,
                                "pepsickle",
                                "trained_model_dict.pickle")
-    _model_dict = pickle.load(open(_model_path, 'rb'))
+    with open(_model_path, 'rb') as f:
+        _model_dict = pickle.load(f)
+        
     # set proper model file
     if human_only:
         seq_mod_state = _model_dict['human_epitope_sequence_mod']
@@ -177,7 +179,8 @@ def initialize_digestion_model(human_only=False):
     _model_path = os.path.join(_model_dir,
                                "pepsickle",
                                "trained_model_dict.pickle")
-    _model_dict = pickle.load(open(_model_path, 'rb'))
+    with open(_model_path, 'rb') as f:
+        _model_dict = pickle.load(f)
 
     # set proper model file
     if human_only:
