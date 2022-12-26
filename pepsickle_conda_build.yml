@@ -34,7 +34,7 @@ dependencies:
   - xz=5.2.6=h775f41a_0
   - pip:
     - biopython==1.80
-    - pepsickle==0.2.0
+    - pepsickle==0.2.1
     - torch==1.13.1
     - typing-extensions==4.4.0
 

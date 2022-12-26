@@ -54,11 +54,11 @@ class DownloadDependencies(Command):
 
 setup(
     name="pepsickle",
-    version="0.2.0",
+    version="0.2.1",
     description="proteasomal cleavage prediction tool",
     long_description=(
         ""),
-    url="https://github.com/pdxgx/pepsickle/archive/refs/tags/v0.2.0.tar.gz",
+    url="https://github.com/pdxgx/pepsickle/archive/refs/tags/v0.2.1.tar.gz",
     download_url="https://github.com/pdxgx/pepsickle.git",
     author="weederb23",
     author_email="weeder@ohsu.edu",
