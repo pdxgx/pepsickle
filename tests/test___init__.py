@@ -48,7 +48,7 @@ class TestExactModelOutput(unittest.TestCase):
 
         pred = predict_digestion_gb_mod(cleavage_model, feature_set,
                                      proteasome_type="C")
-        self.assertAlmostEqual(round(pred[0], 5), 0.46193)
+        self.assertAlmostEqual(round(pred[0], 5), 0.38087)
 
     def test_immuno_digestion_model(self):
         self.setUP()
