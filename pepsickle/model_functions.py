@@ -202,9 +202,18 @@ def initialize_digestion_model(human_only=False):
 
 def initialize_digestion_gb_model(human_only=False):
     # TODO: add in human only/non-human only options
-    _model_path = os.path.join(_model_dir,
-                               "pepsickle",
-                               "model.joblib")
+    if human_only:
+        _model_path = os.path.join(_model_dir,
+                                   "pepsickle",
+                                   "in-vitro-models",
+                                   "in-vitro_human",
+                                   "model.joblib")
+    else:
+        _model_path = os.path.join(_model_dir,
+                                   "pepsickle",
+                                   "in-vitro-models",
+                                   "in-vitro_mammal",
+                                   "model.joblib")
     model = joblib.load(_model_path)
     return model
 
