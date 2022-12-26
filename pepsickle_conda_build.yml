@@ -1,4 +1,4 @@
-name: pepsickle-v0-2-0
+name: pepsickle-v0-2-1
 channels:
   - conda-forge
   - bioconda

@@ -15,13 +15,24 @@ A context aware tool for proteasomal cleavage predictions
 `pepsickle` relies on `Python 3` and a few other required packages. A complete list of dependencies can be found in [requirements.txt](https://github.com/pdxgx/pepsickle/blob/master/requirements.txt)
 
 ## Installation
-Installing `pepsickle` is easy! If you already have [Python 3](https://www.python.org/downloads/), `pepsickle` can simply be installed via the command line by using `pip`:
+### Installation via Conda
+We recommend using a version control system like [Anaconda](https://docs.anaconda.com/anaconda/install/) to make sure version requirements for `pepsickle` don't interfere with other packages in use. 
+
+For ease of use, we've provided a `.yml` file for easy conda setup. After conda is installed, from the main directory simply type:
+
+```
+conda env create --file pepsickle_conda_build.yml 
+conda activate pepsickle-v0-2-1
+```
+This conda environment contains both `pepsickle` and it's dependencies, which allows use with no other steps required.
+
+### Installation via pip
+
+If you do not want to use conda, but already have [Python 3](https://www.python.org/downloads/) installed, `pepsickle` can simply be installed via the command line by using `pip`:
 
 ```
 pip install pepsickle
 ```
-
-We also recommend using a version control system like [Anaconda](https://docs.anaconda.com/anaconda/install/) to make sure version requirements for pepsickle don't interfere with other packages in use.
 
 ## Use
 `pepsickle` allows for multiple methods of use. By default, predictions are made based on a model trained using *in-vivo* epitope data. 
