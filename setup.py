@@ -54,11 +54,11 @@ class DownloadDependencies(Command):
 
 setup(
     name="pepsickle",
-    version="0.2.2",
+    version="0.2.0",
     description="proteasomal cleavage prediction tool",
     long_description=(
         ""),
-    url="https://github.com/pdxgx/pepsickle/archive/refs/tags/v0.2.2.tar.gz",
+    url="https://github.com/pdxgx/pepsickle/archive/refs/tags/v0.2.0.tar.gz",
     download_url="https://github.com/pdxgx/pepsickle.git",
     author="weederb23",
     author_email="weeder@ohsu.edu",
@@ -69,8 +69,8 @@ setup(
     package_data={'pepsickle': ['*.pickle', '*.joblib', 'in-vitro_human/*',
                                 'in-vitro_mammal/*']},
     zip_safe=False,
-    install_requires=["biopython>=1.77", "numpy>=1.16.5", "torch==1.3.1",
-                      "joblib>=0.11", "scikit-learn==1.2.0"],
+    install_requires=["biopython>=1.80", "numpy>=1.24.0", "torch==1.13.1",
+                      "joblib>=1.2.0", "scikit-learn==1.2.0"],
     entry_points={"console_scripts": ["pepsickle=pepsickle:main"]},
     cmdclass={"download": DownloadDependencies, "test": DiscoverTest},
     keywords=["proteasome", "cleavage", "peptide", "degredation"],
