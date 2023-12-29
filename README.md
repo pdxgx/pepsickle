@@ -22,7 +22,7 @@ For ease of use, we've provided a `.yml` file for easy conda setup. After conda 
 
 ```
 conda env create --file pepsickle_conda_build.yml 
-conda activate pepsickle-v0-2-1
+conda activate pepsickle-v0-2-2
 ```
 This conda environment contains both `pepsickle` and it's dependencies, which allows use with no other steps required.
 
