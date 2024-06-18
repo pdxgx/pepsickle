@@ -70,7 +70,7 @@ setup(
                                 'in-vitro-models/in-vitro_mammal/*']},
     zip_safe=False,
     install_requires=["biopython>=1.80", "numpy>=1.24.0", "torch==1.13.1",
-                      "joblib>=1.2.0", "scikit-learn==1.2.0"],
+                      "joblib>=1.2.0", "scikit-learn==1.5.0"],
     entry_points={"console_scripts": ["pepsickle=pepsickle:main"]},
     cmdclass={"download": DownloadDependencies, "test": DiscoverTest},
     keywords=["proteasome", "cleavage", "peptide", "degredation"],
