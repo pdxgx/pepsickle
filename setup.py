@@ -69,7 +69,7 @@ setup(
     package_data={'pepsickle': ['*.pickle', '*.joblib', 'in-vitro-models/in-vitro_human/*',
                                 'in-vitro-models/in-vitro_mammal/*']},
     zip_safe=False,
-    install_requires=["biopython>=1.80", "numpy>=1.24.0", "torch==1.13.1",
+    install_requires=["biopython>=1.80", "numpy>=1.24.0", "torch==2.2.0",
                       "joblib>=1.2.0", "scikit-learn==1.2.0"],
     entry_points={"console_scripts": ["pepsickle=pepsickle:main"]},
     cmdclass={"download": DownloadDependencies, "test": DiscoverTest},
