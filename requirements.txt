@@ -1,5 +1,5 @@
 biopython>=1.80
 numpy>=1.24.0
-torch>=1.13.1
+torch>=2.12.0
 joblib>=1.2.0
 scikit-learn==1.2.0
